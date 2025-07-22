@@ -1,0 +1,311 @@
+'use client';
+
+import type { ColumnDef } from '@tanstack/react-table';
+
+export type CallLog = {
+  call_id: string;
+  call_type: string;
+  agent_id: string;
+  agent_version?: number;
+  call_status: string;
+  start_timestamp: number;
+  end_timestamp: number;
+  duration_ms: number;
+  disconnection_reason: string;
+  call_cost: {
+    combined_cost: number;
+    total_duration_seconds: number;
+    product_costs?: Array<{
+      product: string;
+      unitPrice: number;
+      cost: number;
+    }>;
+    total_duration_unit_price?: number;
+    total_one_time_price?: number;
+  };
+  call_analysis: {
+    user_sentiment: string;
+    call_successful: boolean;
+    call_summary?: string;
+    in_voicemail?: boolean;
+    custom_analysis_data?: any;
+  };
+  from_number?: string;
+  to_number?: string;
+  direction?: string;
+  batch_call_id?: string;
+  latency?: {
+    e2e?: {
+      p50: number;
+      p90: number;
+      p95: number;
+      p99: number;
+      max: number;
+      min: number;
+      num: number;
+      values: number[];
+    };
+    llm?: {
+      p50: number;
+      p90: number;
+      p95: number;
+      p99: number;
+      max: number;
+      min: number;
+      num: number;
+      values: number[];
+    };
+    llm_websocket_network_rtt?: {
+      p50: number;
+      p90: number;
+      p95: number;
+      p99: number;
+      max: number;
+      min: number;
+      num: number;
+      values: number[];
+    };
+    tts?: {
+      p50: number;
+      p90: number;
+      p95: number;
+      p99: number;
+      max: number;
+      min: number;
+      num: number;
+      values: number[];
+    };
+    knowledge_base?: {
+      p50: number;
+      p90: number;
+      p95: number;
+      p99: number;
+      max: number;
+      min: number;
+      num: number;
+      values: number[];
+    };
+    s2s?: {
+      p50: number;
+      p90: number;
+      p95: number;
+      p99: number;
+      max: number;
+      min: number;
+      num: number;
+      values: number[];
+    };
+  };
+  transcript?: string;
+  transcript_object?: Array<{
+    role: string;
+    content: string;
+    words?: Array<{
+      word: string;
+      start: number;
+      end: number;
+    }>;
+  }>;
+  transcript_with_tool_calls?: Array<{
+    role: string;
+    content: string;
+    words?: Array<{
+      word: string;
+      start: number;
+      end: number;
+    }>;
+  }>;
+  recording_url?: string;
+  public_log_url?: string;
+  knowledge_base_retrieved_contents_url?: string;
+  metadata?: any;
+  retell_llm_dynamic_variables?: any;
+  collected_dynamic_variables?: any;
+  opt_out_sensitive_data_storage?: boolean;
+  opt_in_signed_url?: boolean;
+  access_token?: string;
+  llm_token_usage?: {
+    values: number[];
+    average: number;
+    num_requests: number;
+  };
+};
+
+const formatTime = (timestamp: number) => {
+  return new Date(timestamp).toLocaleString('es-ES', {
+    month: '2-digit',
+    day: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+};
+
+const formatDuration = (durationMs: number | null) => {
+  if (durationMs === null || durationMs === 0) return '0:00';
+  const seconds = Math.floor(durationMs / 1000);
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
+const formatCost = (cost: number) => {
+  return `$${(cost / 100).toFixed(3)}`;
+};
+
+const StatusIndicator = ({ status, type }: { status: string; type: 'success' | 'error' | 'neutral' }) => {
+  const colorMap = {
+    success: 'bg-green-400',
+    error: 'bg-red-400',
+    neutral: 'bg-gray-400'
+  };
+
+  const translatedStatus = (status: string) => {
+    switch (status) {
+      case 'Successful':
+        return 'Exitosa';
+      case 'Unsuccessful':
+        return 'Fallida';
+      case 'completed':
+        return 'Completada';
+      case 'registered':
+        return 'Registrada';
+      case 'error':
+        return 'Error';
+      case 'Unknown':
+        return 'Desconocido';
+      case 'dial_no_answer':
+        return 'No contestada';
+      case 'agent_hangup':
+        return 'Agente colgó';
+      case 'user_hangup':
+        return 'Usuario colgó';
+      case 'call_failed':
+        return 'Llamada fallida';
+      default:
+        return status;
+    }
+  };
+
+  return (
+    <div className="flex items-center">
+      <div className={`mr-2 h-2 w-2 rounded-full ${colorMap[type]}`}></div>
+      <span className="text-sm text-gray-900">{translatedStatus(status)}</span>
+    </div>
+  );
+};
+
+export const columns: ColumnDef<CallLog>[] = [
+  {
+    accessorKey: 'start_timestamp',
+    header: 'Hora',
+    cell: ({ row }) => {
+      return <div className="text-sm text-gray-900">{formatTime(row.getValue('start_timestamp'))}</div>;
+    }
+  },
+  {
+    accessorKey: 'duration_ms',
+    header: 'Duración',
+    cell: ({ row }) => {
+      return <div className="text-sm text-gray-900">{formatDuration(row.getValue('duration_ms'))}</div>;
+    }
+  },
+  {
+    accessorKey: 'call_type',
+    header: 'Tipo de Canal',
+    cell: ({ row }) => {
+      const callType = row.getValue('call_type') as string;
+      return (
+        <div className="text-sm text-gray-900">{callType === 'phone_call' ? 'Llamada telefónica' : 'Llamada web'}</div>
+      );
+    }
+  },
+  {
+    accessorKey: 'call_cost',
+    header: 'Costo',
+    cell: ({ row }) => {
+      const callData = row.original;
+      let costValue = 0;
+
+      if (callData.call_cost) {
+        if (typeof callData.call_cost === 'number') {
+          costValue = callData.call_cost;
+        } else if (callData.call_cost.combined_cost !== undefined) {
+          costValue = callData.call_cost.combined_cost;
+        } else if (callData.call_cost.total_cost !== undefined) {
+          costValue = callData.call_cost.total_cost;
+        }
+      }
+
+      return <div className="text-sm text-gray-900">{formatCost(costValue)}</div>;
+    }
+  },
+  {
+    accessorKey: 'call_id',
+    header: 'ID de Sesión',
+    cell: ({ row }) => {
+      return <div className="font-mono text-sm text-xs text-gray-900">{row.getValue('call_id')}</div>;
+    }
+  },
+  {
+    accessorKey: 'disconnection_reason',
+    header: 'Razón de Finalización',
+    cell: ({ row }) => {
+      const reason = row.getValue('disconnection_reason') as string;
+      return <StatusIndicator status={reason || 'dial_no_answer'} type="error" />;
+    }
+  },
+  {
+    accessorKey: 'call_status',
+    header: 'Estado de Sesión',
+    cell: ({ row }) => {
+      const status = row.getValue('call_status') as string;
+      return <StatusIndicator status={status || 'error'} type={status === 'completed' ? 'success' : 'error'} />;
+    }
+  },
+  {
+    accessorKey: 'call_analysis',
+    header: 'Sentimiento del Usuario',
+    cell: ({ row }) => {
+      const analysis = row.getValue('call_analysis') as CallLog['call_analysis'];
+      return <StatusIndicator status={analysis?.user_sentiment || 'Unknown'} type="neutral" />;
+    }
+  },
+  {
+    accessorKey: 'from_number',
+    header: 'De',
+    cell: ({ row }) => {
+      return <div className="text-sm text-gray-900">{row.getValue('from_number') || 'Desconocido'}</div>;
+    }
+  },
+  {
+    accessorKey: 'to_number',
+    header: 'Para',
+    cell: ({ row }) => {
+      return <div className="text-sm text-gray-900">{row.getValue('to_number') || 'Desconocido'}</div>;
+    }
+  },
+  {
+    id: 'session_outcome',
+    header: 'Resultado de Sesión',
+    cell: ({ row }) => {
+      const analysis = row.original.call_analysis;
+      return (
+        <StatusIndicator
+          status={analysis?.call_successful ? 'Successful' : 'Unsuccessful'}
+          type={analysis?.call_successful ? 'success' : 'error'}
+        />
+      );
+    }
+  },
+  {
+    id: 'latency',
+    header: 'Latencia de Extremo a Extremo',
+    cell: ({ row }) => {
+      const latency = row.original.latency;
+      const latencyValue = latency?.e2e?.p50;
+      return <div className="text-sm text-gray-900">{latencyValue ? `${latencyValue}ms` : '-'}</div>;
+    }
+  }
+];

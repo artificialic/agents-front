@@ -1,0 +1,14 @@
+module.exports = {
+  arrowParens: 'always',
+  bracketSpacing: true,
+  semi: true,
+  useTabs: false,
+  trailingComma: 'none',
+  singleQuote: true,
+  tabWidth: 2,
+  endOfLine: 'lf',
+  plugins: ['prettier-plugin-tailwindcss'],
+  printWidth: 120,
+  quoteProps: 'as-needed',
+  jsxSingleQuote: true
+};
