@@ -167,7 +167,7 @@ export default function AppSidebar() {
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={() => signOut()}>
+                <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/login' })}>
                   <LogOut className="mr-1" />
                   Cerrar sesión
                 </DropdownMenuItem>

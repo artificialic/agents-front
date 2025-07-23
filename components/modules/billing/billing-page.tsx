@@ -63,6 +63,14 @@ export default function BillingPage() {
     fetchTransactionHistory();
   }, []);
 
+  const handleRechargeClick = () => {
+    if (!userProfile?.paymentSource) {
+      alert('Debe agregar una tarjeta de pago antes de poder recargar saldo');
+      return;
+    }
+    setShowCreditPurchaseModal(true);
+  };
+
   const handleCreditCardSubmit = async (data: CreditCardFormValues) => {
     try {
       setIsSubmittingCard(true);
@@ -112,7 +120,11 @@ export default function BillingPage() {
               )
             )}
           </div>
-          <Button onClick={() => setShowCreditPurchaseModal(true)} className="bg-green-600 hover:bg-green-700">
+          <Button
+            onClick={handleRechargeClick}
+            disabled={!userProfile?.paymentSource}
+            className="bg-green-600 hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+          >
             Recargar Saldo
           </Button>
         </div>
@@ -215,10 +227,20 @@ export default function BillingPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowCreditCardForm(true)}
+                disabled={isSubmittingCard}
                 className="flex items-center gap-2"
               >
-                <Plus className="h-4 w-4" />
-                Agregar Tarjeta
+                {isSubmittingCard ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4" />
+                    Agregar Tarjeta
+                  </>
+                )}
               </Button>
             </div>
 
@@ -235,6 +257,7 @@ export default function BillingPage() {
                     setShowCreditCardForm(false);
                     setPaymentResult(null);
                   }}
+                  isSubmitting={isSubmittingCard}
                 />
                 {paymentResult && (
                   <div

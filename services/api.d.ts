@@ -210,3 +210,51 @@ interface TransactionHistory {
   createdAt: string;
   updatedAt: string;
 }
+
+interface PhoneNumber {
+  phone_number: string;
+  phone_number_type: string;
+  phone_number_pretty: string;
+  nickname: string;
+  inbound_agent_id: string;
+  outbound_agent_id: string;
+  last_modification_timestamp: number;
+  inbound_agent_version: number;
+  outbound_agent_version: number;
+}
+
+interface CallDetail {
+  call_id: string;
+  call_type: string;
+  agent_id: string;
+  agent_version: number;
+  agent_name: string;
+  retell_llm_dynamic_variables: Record<string, string>;
+  collected_dynamic_variables: Record<string, string>;
+  call_status: string;
+  start_timestamp: number;
+  end_timestamp: number;
+  duration_ms: number;
+  public_log_url: string;
+  disconnection_reason: string;
+  latency: Record<string, any>;
+  call_cost: {
+    total_duration_unit_price: number;
+    product_costs: any[];
+    combined_cost: number;
+    total_duration_seconds: number;
+  };
+  call_analysis: {
+    in_voicemail: boolean;
+    call_summary: string;
+    user_sentiment: string;
+    custom_analysis_data: Record<string, any>;
+    call_successful: boolean;
+  };
+  opt_out_sensitive_data_storage: boolean;
+  opt_in_signed_url: boolean;
+  batch_call_id: string;
+  from_number: string;
+  to_number: string;
+  direction: string;
+}

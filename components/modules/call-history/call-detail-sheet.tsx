@@ -2,10 +2,9 @@
 
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { Trash2, Download } from 'lucide-react';
+import { Copy, Download } from 'lucide-react';
 import type { CallLog } from './call-history-columns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CopyIcon, Cross2Icon } from '@radix-ui/react-icons';
 
 interface CallDetailSheetProps {
   call: CallLog | null;
@@ -74,13 +73,6 @@ export default function CallDetailSheet({ call, open, onOpenChange }: CallDetail
     copyToClipboard(contentToCopy);
   };
 
-  const handleDelete = () => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta llamada?')) {
-      console.log('Eliminando llamada:', call.call_id);
-      onOpenChange(false);
-    }
-  };
-
   const formatTranscript = () => {
     if (!call.transcript_object || call.transcript_object.length === 0) {
       return <div className="text-sm text-gray-500">No hay transcripción disponible.</div>;
@@ -115,18 +107,6 @@ export default function CallDetailSheet({ call, open, onOpenChange }: CallDetail
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
-        <div className="flex items-center justify-between border-b pb-4">
-          <div className="flex items-center space-x-2 text-xs text-gray-500">
-            <span>Usar</span>
-            <kbd className="rounded border bg-gray-100 px-1 py-0.5 text-xs">↑</kbd>
-            <kbd className="rounded border bg-gray-100 px-1 py-0.5 text-xs">↓</kbd>
-            <span>para navegar</span>
-          </div>
-          <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)}>
-            <Cross2Icon className="h-4 w-4" />
-          </Button>
-        </div>
-
         <div className="sticky top-12 border-b bg-white pb-4 pt-2" style={{ zIndex: 10 }}>
           <div className="flex w-full flex-col items-start justify-center bg-white py-1">
             <div className="w-full text-lg font-medium leading-normal text-gray-950">
@@ -134,16 +114,6 @@ export default function CallDetailSheet({ call, open, onOpenChange }: CallDetail
                 <div>
                   {formatTime(call.start_timestamp)}{' '}
                   {call.call_type === 'phone_call' ? 'Llamada telefónica' : 'Llamada web'}
-                </div>
-                <div className="relative">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleDelete}
-                    className="rounded-lg p-2 hover:bg-gray-50"
-                  >
-                    <Trash2 className="h-4 w-4 text-gray-600" />
-                  </Button>
                 </div>
               </div>
             </div>
@@ -157,7 +127,7 @@ export default function CallDetailSheet({ call, open, onOpenChange }: CallDetail
                   </span>
                   (<span className="text-gray-400">age...{call.agent_id.slice(-3)}</span>)
                   <button className="ml-1 cursor-pointer" onClick={() => copyToClipboard(call.agent_id)}>
-                    <CopyIcon className="inline-block h-4 w-4 text-gray-400" />
+                    <Copy className="inline-block h-4 w-4 text-gray-400" />
                   </button>
                 </div>
                 <div className="w-2 text-center text-xs font-normal leading-none text-gray-400">∙</div>
@@ -171,7 +141,7 @@ export default function CallDetailSheet({ call, open, onOpenChange }: CallDetail
                     {call.call_id.substring(0, 3)}...{call.call_id.slice(-3)}
                   </span>
                   <button className="ml-1 cursor-pointer" onClick={() => copyToClipboard(call.call_id)}>
-                    <CopyIcon className="inline-block h-4 w-4 text-gray-400" />
+                    <Copy className="inline-block h-4 w-4 text-gray-400" />
                   </button>
                 </div>
               </div>
@@ -446,7 +416,7 @@ export default function CallDetailSheet({ call, open, onOpenChange }: CallDetail
                 </TabsTrigger>
               </TabsList>
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={copyTabContent}>
-                <CopyIcon className="h-4 w-4 text-gray-400" />
+                <Copy className="h-4 w-4 text-gray-400" />
               </Button>
             </div>
 
@@ -479,21 +449,14 @@ export default function CallDetailSheet({ call, open, onOpenChange }: CallDetail
                           ))
                         : null}
 
-                      {call.collected_dynamic_variables && Object.keys(call.collected_dynamic_variables).length > 0 ? (
+                      {call.collected_dynamic_variables &&
+                        Object.keys(call.collected_dynamic_variables).length > 0 &&
                         Object.entries(call.collected_dynamic_variables).map(([key, value]) => (
                           <div key={key}>
                             <div className="text-sm font-normal leading-tight text-gray-950">{key}</div>
                             <div className="text-sm font-normal leading-tight text-gray-400">{String(value)}</div>
                           </div>
-                        ))
-                      ) : (
-                        <div>
-                          <div className="text-sm font-normal leading-tight text-gray-950">estado_actual_agente</div>
-                          <div className="text-sm font-normal leading-tight text-gray-400">
-                            verificacion_titularidad
-                          </div>
-                        </div>
-                      )}
+                        ))}
                     </div>
                   </div>
                 </div>

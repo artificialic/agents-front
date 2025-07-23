@@ -73,6 +73,14 @@ class ApiServiceLocal extends ApiService {
   async getTransactionsByUser(): Promise<ApiResponse<TransactionHistory[]>> {
     return this.getFullResponse<TransactionHistory[]>('/transaction-history/by-user');
   }
+
+  async getPhoneNumbers(): Promise<ApiResponse<PhoneNumber[]>> {
+    return this.getFullResponse<PhoneNumber[]>('/retell/phone-numbers');
+  }
+
+  async getCallById(callId: string): Promise<ApiResponse<CallDetail>> {
+    return this.getFullResponse<CallDetail>(`/retell/call/${callId}`);
+  }
 }
 
 export const apiService = new ApiServiceLocal();

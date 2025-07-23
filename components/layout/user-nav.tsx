@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { signOut, useSession } from 'next-auth/react';
+
 export function UserNav() {
   const { data: session } = useSession();
   if (session) {
@@ -44,7 +45,7 @@ export function UserNav() {
             <DropdownMenuItem>App</DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => signOut()}>
+          <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/login" })}>
             Cerrar sesión
             <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
           </DropdownMenuItem>

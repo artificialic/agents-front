@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Users, RefreshCw, Phone, Clock } from 'lucide-react';
+import { ChevronLeft, Users, Loader2, RefreshCw, Phone, Clock, Eye } from 'lucide-react';
 import { apiService } from '@/services';
-import { ChevronLeftIcon, ReloadIcon } from '@radix-ui/react-icons';
+import CallDetailSheet from '@/components/modules/call-history/call-detail-sheet';
 
 interface CampaignContactsDashboardProps {
   campaignId: string;
@@ -33,6 +33,9 @@ export default function CampaignContactsDashboard({
   const [contacts, setContacts] = useState<ContactByCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCall, setSelectedCall] = useState<any>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [loadingCall, setLoadingCall] = useState(false);
 
   const fetchContacts = async () => {
     try {
@@ -48,6 +51,21 @@ export default function CampaignContactsDashboard({
       console.error('Error fetching campaign contacts:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleViewContact = async (contact: ContactByCampaign) => {
+    if (!contact.callId) return;
+
+    try {
+      setLoadingCall(true);
+      const callData = await apiService.getCallById(contact.callId);
+      setSelectedCall(callData);
+      setIsSheetOpen(true);
+    } catch (err) {
+      console.error('Error fetching call details:', err);
+    } finally {
+      setLoadingCall(false);
     }
   };
 
@@ -131,7 +149,7 @@ export default function CampaignContactsDashboard({
           <div className="flex items-center">
             {onBack && (
               <Button variant="ghost" size="icon" className="mr-3" onClick={onBack}>
-                <ChevronLeftIcon className="h-5 w-5" />
+                <ChevronLeft className="h-5 w-5" />
               </Button>
             )}
             <div className="flex items-center">
@@ -206,7 +224,7 @@ export default function CampaignContactsDashboard({
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <ReloadIcon className="h-6 w-6 text-blue-400" />
+                  <Loader2 className="h-6 w-6 text-blue-400" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
@@ -241,7 +259,7 @@ export default function CampaignContactsDashboard({
       <div className="p-6">
         {loading && (
           <div className="flex items-center justify-center py-12">
-            <ReloadIcon className="h-8 w-8 animate-spin text-gray-400" />
+            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
             <span className="ml-2 text-gray-600">Cargando contactos...</span>
           </div>
         )}
@@ -286,6 +304,9 @@ export default function CampaignContactsDashboard({
                   <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     Procesado
                   </TableHead>
+                  <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Acciones
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -323,6 +344,22 @@ export default function CampaignContactsDashboard({
                         <span className="text-sm text-gray-400">-</span>
                       )}
                     </TableCell>
+                    <TableCell className="py-4">
+                      {contact.callId ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={() => handleViewContact(contact)}
+                          disabled={loadingCall}
+                        >
+                          {loadingCall ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
+                          <span className="sr-only">Ver contacto</span>
+                        </Button>
+                      ) : (
+                        <span className="text-sm text-gray-400">-</span>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -330,6 +367,8 @@ export default function CampaignContactsDashboard({
           </div>
         )}
       </div>
+
+      <CallDetailSheet call={selectedCall} open={isSheetOpen} onOpenChange={setIsSheetOpen} />
     </div>
   );
 }
