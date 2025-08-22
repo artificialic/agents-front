@@ -258,3 +258,18 @@ interface CallDetail {
   to_number: string;
   direction: string;
 }
+
+interface Template {
+  _id: string;
+  name: string;
+  agentId: string;
+  filePath: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface CreateTemplatePayload {
+  name: string;
+  agentId: string;
+  filePath: string;
+}

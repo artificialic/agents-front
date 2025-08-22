@@ -59,5 +59,14 @@ export const navItems: NavItem[] = [
     shortcut: ['c', 'l'],
     items: [],
     role: [ROLES.USER]
+  },
+  {
+    title: 'Plantillas',
+    url: '/dashboard/templates',
+    icon: 'users',
+    isActive: true,
+    shortcut: ['c', 'l'],
+    items: [],
+    role: [ROLES.ADMIN]
   }
 ];

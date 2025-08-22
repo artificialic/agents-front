@@ -50,3 +50,14 @@ export function downloadFile(url: string, filename: string) {
   link.click();
   document.body.removeChild(link);
 }
+
+export function formatDate(dateString: string) {
+  return new Date(dateString).toLocaleString('es-ES', {
+    month: '2-digit',
+    day: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+}

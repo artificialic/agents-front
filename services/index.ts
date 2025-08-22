@@ -81,6 +81,17 @@ class ApiServiceLocal extends ApiService {
   async getCallById(callId: string): Promise<ApiResponse<CallDetail>> {
     return this.getFullResponse<CallDetail>(`/retell/call/${callId}`);
   }
+
+  /* Templates */
+  async getTemplates(): Promise<ApiResponse<Template[]>> {
+    return this.getFullResponse<Template[]>('/templates');
+  }
+  async createTemplate(data: CreateTemplatePayload): Promise<Template> {
+    return this.post<Template>('/templates', data);
+  }
+  async updateTemplate(id: string, data: Partial<Template>): Promise<Template> {
+    return this.put<Template>(`/templates/${id}`, data);
+  }
 }
 
 export const apiService = new ApiServiceLocal();
