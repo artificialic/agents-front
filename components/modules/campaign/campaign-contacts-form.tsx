@@ -1,4 +1,3 @@
-'use client';
 
 import type React from 'react';
 import { useState } from 'react';
@@ -6,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ChevronLeft, UploadCloud, Loader2 } from 'lucide-react';
 import { apiService } from '@/services';
+import { downloadFile } from '@/lib/utils';
 
 interface CampaignContactsFormProps {
   campaignId: string;
@@ -120,15 +120,21 @@ export default function CampaignContactsForm({
     try {
       const contacts = csvData.rows.map((row) => {
         let toNumber = row[0];
-        const fullName = row[1] || '';
 
         if (!toNumber.startsWith('+')) {
           toNumber = '+' + toNumber;
         }
 
+        const dynamicVariables: Record<string, string> = {};
+        for (let i = 1; i < row.length && i < csvData.headers.length; i++) {
+          if (row[i]) {
+            dynamicVariables[csvData.headers[i]] = row[i];
+          }
+        }
+
         return {
           toNumber,
-          fullName
+          dynamicVariables
         };
       });
 
@@ -143,6 +149,10 @@ export default function CampaignContactsForm({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDownloadTemplate = () => {
+    downloadFile('/templates/template-contacts-calls.csv', 'plantilla-contactos-llamadas.csv');
   };
 
   return (
@@ -177,9 +187,20 @@ export default function CampaignContactsForm({
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <Label className="mb-1 block text-sm font-medium text-gray-700">Subir contactos</Label>
-                <p className="mb-3 text-sm text-gray-500">
-                  El CSV debe contener: telefono_destino (primera columna) y nombre (segunda columna)
-                </p>
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-sm text-gray-500">
+                    El CSV debe contener: telefono_destino (primera columna) y variables dinámicas adicionales
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownloadTemplate}
+                    className="border-blue-300 bg-transparent text-blue-600 hover:bg-blue-50"
+                  >
+                    Descargar plantilla
+                  </Button>
+                </div>
 
                 <input
                   id="contacts-csv-file-input"
@@ -205,8 +226,8 @@ export default function CampaignContactsForm({
                           fill="#FB3748"
                         />
                         <path
-                          d="M9.10938 19.7594H7.94063C7.90729 19.5677 7.84583 19.3979 7.75625 19.25C7.66667 19.1 7.55521 18.9729 7.42188 18.8687C7.28854 18.7646 7.13646 18.6865 6.96563 18.6344C6.79688 18.5802 6.61458 18.5531 6.41875 18.5531C6.07083 18.5531 5.7625 18.6406 5.49375 18.8156C5.225 18.9885 5.01458 19.2427 4.8625 19.5781C4.71042 19.9115 4.63438 20.3187 4.63438 20.8C4.63438 21.2896 4.71042 21.7021 4.8625 22.0375C5.01667 22.3708 5.22708 22.6229 5.49375 22.7937C5.7625 22.9625 6.06979 23.0469 6.41563 23.0469C6.60729 23.0469 6.78646 23.0219 6.95313 22.9719C7.12188 22.9198 7.27292 22.8437 7.40625 22.7437C7.54167 22.6437 7.65521 22.5208 7.74688 22.375C7.84063 22.2292 7.90521 22.0625 7.94063 21.875L9.10938 21.8812C9.06563 22.1854 8.97083 22.4708 8.825 22.7375C8.68125 23.0042 8.49271 23.2396 8.25938 23.4437C8.02604 23.6458 7.75313 23.8042 7.44063 23.9187C7.12813 24.0312 6.78125 24.0875 6.4 24.0875C5.8375 24.0875 5.33542 23.9573 4.89375 23.6969C4.45208 23.4365 4.10417 23.0604 3.85 22.5687C3.59583 22.0771 3.46875 21.4875 3.46875 20.8C3.46875 20.1104 3.59688 19.5208 3.85313 19.0312C4.10938 18.5396 4.45833 18.1635 4.9 17.9031C5.34167 17.6427 5.84167 17.5125 6.4 17.5125C6.75625 17.5125 7.0875 17.5625 7.39375 17.6625C7.7 17.7625 7.97292 17.9094 8.2125 18.1031C8.45208 18.2948 8.64896 18.5302 8.80313 18.8094C8.95938 19.0865 9.06146 19.4031 9.10938 19.7594ZM13.8252 19.3594C13.7961 19.0865 13.6731 18.874 13.4565 18.7219C13.2419 18.5698 12.9627 18.4937 12.619 18.4937C12.3773 18.4937 12.17 18.5302 11.9971 18.6031C11.8242 18.676 11.6919 18.775 11.6002 18.9C11.5086 19.025 11.4617 19.1677 11.4596 19.3281C11.4596 19.4615 11.4898 19.5771 11.5502 19.675C11.6127 19.7729 11.6971 19.8562 11.8033 19.925C11.9096 19.9917 12.0273 20.0479 12.1565 20.0937C12.2856 20.1396 12.4158 20.1781 12.5471 20.2094L13.1471 20.3594C13.3888 20.4156 13.6211 20.4917 13.844 20.5875C14.069 20.6833 14.27 20.8042 14.4471 20.95C14.6263 21.0958 14.7679 21.2719 14.8721 21.4781C14.9763 21.6844 15.0283 21.926 15.0283 22.2031C15.0283 22.5781 14.9325 22.9083 14.7408 23.1937C14.5492 23.4771 14.2721 23.699 13.9096 23.8594C13.5492 24.0177 13.1127 24.0969 12.6002 24.0969C12.1023 24.0969 11.67 24.0198 11.3033 23.8656C10.9388 23.7115 10.6533 23.4865 10.4471 23.1906C10.2429 22.8948 10.1325 22.5344 10.1158 22.1094H11.2565C11.2731 22.3323 11.3419 22.5177 11.4627 22.6656C11.5836 22.8135 11.7408 22.924 11.9346 22.9969C12.1304 23.0698 12.3492 23.1062 12.5908 23.1062C12.8429 23.1062 13.0638 23.0687 13.2533 22.9937C13.445 22.9167 13.595 22.8104 13.7033 22.675C13.8117 22.5375 13.8669 22.3771 13.869 22.1937C13.8669 22.0271 13.8179 21.8896 13.7221 21.7812C13.6263 21.6708 13.4919 21.5792 13.319 21.5062C13.1481 21.4312 12.9481 21.3646 12.719 21.3062L11.9908 21.1187C11.4638 20.9833 11.0471 20.7781 10.7408 20.5031C10.4367 20.226 10.2846 19.8583 10.2846 19.4C10.2846 19.0229 10.3867 18.6927 10.5908 18.4094C10.7971 18.126 11.0773 17.9062 11.4315 17.75C11.7856 17.5917 12.1867 17.5125 12.6346 17.5125C13.0888 17.5125 13.4867 17.5917 13.8283 17.75C14.1721 17.9062 14.4419 18.124 14.6377 18.4031C14.8336 18.6802 14.9346 18.999 14.9408 19.3594H13.8252ZM17.0942 17.6L18.7598 22.6375H18.8254L20.4879 17.6H21.7629L19.5067 24H18.0754L15.8223 17.6H17.0942Z"
-                          fill="white"
+                          d="M9.10938 19.7594H7.94063C7.90729 19.5677 7.84583 19.3979 7.75625 19.25C7.66667 19.1 7.55521 18.9729 7.42188 18.8687C7.28854 18.7646 7.13646 18.6865 6.96563 18.6344C6.79688 18.5802 6.61458 18.5531 6.41875 18.5531C6.07083 18.5531 5.7625 18.6406 5.49375 18.8156C5.225 18.9885 5.01458 20.226 4.75 22.6375H2.5V5.5H6.25V3.25C6.25 3.05109 6.32902 2.86032 6.46967 2.71967C6.61032 2.57902 6.80109 2.5 7 2.5H13C13.1989 2.5 13.3897 2.57902 13.5303 2.71967C13.671 2.86032 13.75 3.05109 13.75 3.25V5.5ZM14.5 7H5.5V16H14.5V7ZM7.75 9.25H9.25V13.75H7.75V9.25ZM10.75 9.25H12.25V13.75H10.75V9.25ZM7.75 4V5.5H12.25V4H7.75Z"
+                          fill="#525866"
                         />
                       </svg>
                     </div>
@@ -282,10 +303,7 @@ export default function CampaignContactsForm({
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                           telefono_destino
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                          nombre
-                        </th>
-                        {csvData.headers.slice(2).map((header, index) => (
+                        {csvData.headers.slice(1).map((header, index) => (
                           <th
                             key={index}
                             className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
@@ -299,8 +317,7 @@ export default function CampaignContactsForm({
                       {csvData.rows.map((row, rowIndex) => (
                         <tr key={rowIndex} className="hover:bg-gray-50">
                           <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{row[0] || '-'}</td>
-                          <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">{row[1] || '-'}</td>
-                          {row.slice(2).map((cell, cellIndex) => (
+                          {row.slice(1).map((cell, cellIndex) => (
                             <td key={cellIndex} className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
                               {cell || '-'}
                             </td>

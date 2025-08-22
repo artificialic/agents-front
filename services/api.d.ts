@@ -175,7 +175,7 @@ type CreateCampaignPayload = {
 type CreateContactsPayload = {
   contacts: {
     toNumber: string;
-    fullName: string;
+    dynamicVariables: Record<string, string>;
   }[];
 };
 
