@@ -16,15 +16,6 @@ export const navItems: NavItem[] = [
     role: [ROLES.ADMIN, ROLES.USER]
   },
   {
-    title: 'Llamada en Lote',
-    url: '/dashboard/batch-call',
-    icon: 'users',
-    isActive: true,
-    shortcut: ['c', 'l'],
-    items: [],
-    role: [ROLES.USER]
-  },
-  {
     title: 'Campañas',
     url: '/dashboard/campaign',
     icon: 'users',
