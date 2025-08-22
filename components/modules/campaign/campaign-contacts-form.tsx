@@ -4,9 +4,8 @@ import type React from 'react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { UploadCloud } from 'lucide-react';
+import { ChevronLeft, UploadCloud, Loader2 } from 'lucide-react';
 import { apiService } from '@/services';
-import { ChevronLeftIcon, ReloadIcon } from '@radix-ui/react-icons';
 
 interface CampaignContactsFormProps {
   campaignId: string;
@@ -123,7 +122,6 @@ export default function CampaignContactsForm({
         let toNumber = row[0];
         const fullName = row[1] || '';
 
-        // Formatear número de teléfono
         if (!toNumber.startsWith('+')) {
           toNumber = '+' + toNumber;
         }
@@ -154,7 +152,7 @@ export default function CampaignContactsForm({
           <div className="rounded-lg bg-white p-6 shadow-md sm:p-8">
             <div className="mb-6 flex items-center">
               <Button variant="ghost" size="icon" className="mr-2 hover:bg-gray-100" onClick={onBack}>
-                <ChevronLeftIcon className="h-6 w-6" />
+                <ChevronLeft className="h-6 w-6" />
                 <span className="sr-only">Volver</span>
               </Button>
               <div>
@@ -180,7 +178,7 @@ export default function CampaignContactsForm({
               <div>
                 <Label className="mb-1 block text-sm font-medium text-gray-700">Subir contactos</Label>
                 <p className="mb-3 text-sm text-gray-500">
-                  El CSV debe contener: número de teléfono (primera columna) y nombre completo (segunda columna)
+                  El CSV debe contener: telefono_destino (primera columna) y nombre (segunda columna)
                 </p>
 
                 <input
@@ -262,7 +260,7 @@ export default function CampaignContactsForm({
                 <Button type="submit" className="bg-gray-900 text-white hover:bg-gray-800" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>
-                      <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Agregando...
                     </>
                   ) : (
@@ -282,10 +280,10 @@ export default function CampaignContactsForm({
                     <thead className="sticky top-0 bg-gray-50">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                          Número de Teléfono
+                          telefono_destino
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                          Nombre Completo
+                          nombre
                         </th>
                         {csvData.headers.slice(2).map((header, index) => (
                           <th

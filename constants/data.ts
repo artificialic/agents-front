@@ -13,7 +13,7 @@ export const navItems: NavItem[] = [
     isActive: false,
     shortcut: ['p', 'a'],
     items: [],
-    role: [ROLES.ADMIN, ROLES.USER],
+    role: [ROLES.ADMIN, ROLES.USER]
   },
   {
     title: 'Llamada en Lote',

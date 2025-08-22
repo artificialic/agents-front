@@ -35,9 +35,7 @@ export function usePagination<T = any>(options: UsePaginationOptions = {}) {
 
   const initialPage = Math.max(1, Number(searchParams.get(paramName) || 1));
   const limitFromParams = Number(searchParams.get(rowsParamName) || defaultItemsPerPage);
-  const initialItemsPerPage = rowsPerPageOptions.includes(limitFromParams)
-    ? limitFromParams
-    : defaultItemsPerPage;
+  const initialItemsPerPage = rowsPerPageOptions.includes(limitFromParams) ? limitFromParams : defaultItemsPerPage;
 
   const [paginationState, setPaginationState] = useState<PaginationState<T>>({
     items: [],
@@ -54,13 +52,20 @@ export function usePagination<T = any>(options: UsePaginationOptions = {}) {
       page !== paginationState.currentPage ||
       (rowsPerPageOptions.includes(limit) && limit !== paginationState.itemsPerPage)
     ) {
-      setPaginationState(prev => ({
+      setPaginationState((prev) => ({
         ...prev,
         currentPage: page,
         itemsPerPage: rowsPerPageOptions.includes(limit) ? limit : prev.itemsPerPage
       }));
     }
-  }, [searchParams, paramName, rowsParamName, paginationState.currentPage, paginationState.itemsPerPage, rowsPerPageOptions]);
+  }, [
+    searchParams,
+    paramName,
+    rowsParamName,
+    paginationState.currentPage,
+    paginationState.itemsPerPage,
+    rowsPerPageOptions
+  ]);
 
   const createQueryString = (page: number, limit?: number) => {
     const params = new URLSearchParams(preserveParams ? searchParams.toString() : '');
@@ -90,12 +95,10 @@ export function usePagination<T = any>(options: UsePaginationOptions = {}) {
   };
 
   const updatePaginationState = (newState: Partial<PaginationState<T>>) => {
-    setPaginationState(prev => ({ ...prev, ...newState }));
+    setPaginationState((prev) => ({ ...prev, ...newState }));
   };
 
-  const getPaginationProps = (customOptions?: {
-    rowsPerPageOptions?: number[];
-  }) => {
+  const getPaginationProps = (customOptions?: { rowsPerPageOptions?: number[] }) => {
     const options = {
       rowsPerPageOptions,
       ...customOptions

@@ -4,7 +4,7 @@ import UserAuthForm from './user-auth-form';
 export default function SignInViewPage() {
   return (
     <div className="relative h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-      <div className="hidden h-full flex-col bg-muted bg-zinc-900 p-10 lg:flex dark:border-r">
+      <div className="hidden h-full flex-col bg-muted bg-zinc-900 p-10 dark:border-r lg:flex">
         <div className="flex h-full items-center justify-center">
           <img src="./logo.png" className="h-80" alt="Logo" />
         </div>

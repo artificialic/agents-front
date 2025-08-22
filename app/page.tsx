@@ -1,7 +1,18 @@
-export default function Page() {
-  return (
-    <div className="flex h-screen flex-col items-center justify-center">
-      <h1 className="mb-4 text-4xl font-bold">Bienvenido al Panel de Control</h1>
-    </div>
-  );
+import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { auth } from '@/auth';
+
+export const metadata: Metadata = {
+  title: 'Inicio',
+  description: 'Inicio'
+};
+
+export default async function Page() {
+  const session = await auth();
+
+  if (session?.user) {
+    return redirect('/dashboard/overview');
+  }
+
+  return redirect('/login');
 }

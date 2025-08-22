@@ -68,11 +68,7 @@ class ApiService {
    * @param config - Additional axios config
    * @returns API response
    */
-  async get<T = any>(
-    path: string = '',
-    params: QueryParams = {},
-    config: AxiosRequestConfig = {}
-  ): Promise<T> {
+  async get<T = any>(path: string = '', params: QueryParams = {}, config: AxiosRequestConfig = {}): Promise<T> {
     try {
       const response = await apiClient.get<ApiResponse<T>>(this.getUrl(path), {
         params,
@@ -91,14 +87,10 @@ class ApiService {
    * @param config - Additional axios config
    * @returns API response
    */
-  async post<T = any, D = any>(
-    path: string = '',
-    data: D = {} as D,
-    config: AxiosRequestConfig = {}
-  ): Promise<T> {
+  async post<T = any, D = any>(path: string = '', data: D = {} as D, config: AxiosRequestConfig = {}): Promise<T> {
     try {
       const response = await apiClient.post<ApiResponse<T>>(this.getUrl(path), data, config);
-      return response.data
+      return response.data;
     } catch (error) {
       throw this.handleError(error as Error);
     }
@@ -111,17 +103,9 @@ class ApiService {
    * @param config - Additional axios config
    * @returns API response
    */
-  async put<T = any, D = any>(
-    path: string = '',
-    data: D = {} as D,
-    config: AxiosRequestConfig = {}
-  ): Promise<T> {
+  async put<T = any, D = any>(path: string = '', data: D = {} as D, config: AxiosRequestConfig = {}): Promise<T> {
     try {
-      const response = await apiClient.put<ApiResponse<T>>(
-        this.getUrl(path),
-        data,
-        config
-      );
+      const response = await apiClient.put<ApiResponse<T>>(this.getUrl(path), data, config);
       return response.data.data;
     } catch (error) {
       throw this.handleError(error as Error);
@@ -135,17 +119,9 @@ class ApiService {
    * @param config - Additional axios config
    * @returns API response
    */
-  async patch<T = any, D = any>(
-    path: string = '',
-    data: D = {} as D,
-    config: AxiosRequestConfig = {}
-  ): Promise<T> {
+  async patch<T = any, D = any>(path: string = '', data: D = {} as D, config: AxiosRequestConfig = {}): Promise<T> {
     try {
-      const response = await apiClient.patch<ApiResponse<T>>(
-        this.getUrl(path),
-        data,
-        config
-      );
+      const response = await apiClient.patch<ApiResponse<T>>(this.getUrl(path), data, config);
       return response.data.data;
     } catch (error) {
       throw this.handleError(error as Error);
@@ -158,15 +134,9 @@ class ApiService {
    * @param config - Additional axios config
    * @returns API response
    */
-  async delete<T = any>(
-    path: string = '',
-    config: AxiosRequestConfig = {}
-  ): Promise<T> {
+  async delete<T = any>(path: string = '', config: AxiosRequestConfig = {}): Promise<T> {
     try {
-      const response = await apiClient.delete<ApiResponse<T>>(
-        this.getUrl(path),
-        config
-      );
+      const response = await apiClient.delete<ApiResponse<T>>(this.getUrl(path), config);
       return response.data.data;
     } catch (error) {
       throw this.handleError(error as Error);
@@ -189,8 +159,7 @@ class ApiService {
       }
       // Handle standard error format where error is in the response
       else if ((axiosError.response.data as ApiResponse<any>).error) {
-        errorMessage = (axiosError.response.data as ApiResponse<any>)
-          .error as string;
+        errorMessage = (axiosError.response.data as ApiResponse<any>).error as string;
       }
       // Handle any other error message format
       else if ((axiosError.response.data as any).message) {
