@@ -17,7 +17,6 @@ interface ContactByCampaign {
   _id: string;
   campaignId: string;
   toNumber: string;
-  fullName: string;
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -287,9 +286,6 @@ export default function CampaignContactsDashboard({
               <TableHeader>
                 <TableRow>
                   <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Nombre Completo
-                  </TableHead>
-                  <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     Número de Teléfono
                   </TableHead>
                   <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -312,9 +308,6 @@ export default function CampaignContactsDashboard({
               <TableBody>
                 {contacts.map((contact) => (
                   <TableRow key={contact._id} className="hover:bg-gray-50">
-                    <TableCell className="py-4">
-                      <span className="text-sm font-medium text-gray-900">{contact.fullName}</span>
-                    </TableCell>
                     <TableCell className="py-4">
                       <span className="font-mono text-sm text-gray-900">{contact.toNumber}</span>
                     </TableCell>
