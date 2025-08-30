@@ -7,6 +7,7 @@ export type CallLog = {
   call_id: string;
   call_type: string;
   agent_id: string;
+  agent_name: string;
   agent_version?: number;
   call_status: string;
   start_timestamp: number;

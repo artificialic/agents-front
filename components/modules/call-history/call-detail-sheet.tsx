@@ -106,8 +106,8 @@ export default function CallDetailSheet({ call, open, onOpenChange }: CallDetail
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
-        <div className="sticky top-12 border-b bg-white pb-4 pt-2" style={{ zIndex: 10 }}>
+      <SheetContent className="w-full overflow-y-auto p-2 sm:max-w-lg">
+        <div className="sticky top-8 mt-12 border-b bg-white pb-4 pt-2" style={{ zIndex: 10 }}>
           <div className="flex w-full flex-col items-start justify-center bg-white py-1">
             <div className="w-full text-lg font-medium leading-normal text-gray-950">
               <div className="flex w-full flex-row justify-between">
@@ -123,7 +123,7 @@ export default function CallDetailSheet({ call, open, onOpenChange }: CallDetail
                 <div className="text-xs font-normal leading-none text-gray-600">
                   Agente:{' '}
                   <span className="inline-block max-w-[250px] cursor-pointer overflow-hidden truncate align-middle hover:text-blue-600 hover:underline">
-                    Victoria BeCall - Suzuki CBZ
+                    {call.agent_name || 'Desconocido'}
                   </span>
                   (<span className="text-gray-400">age...{call.agent_id.slice(-3)}</span>)
                   <button className="ml-1 cursor-pointer" onClick={() => copyToClipboard(call.agent_id)}>
@@ -132,7 +132,7 @@ export default function CallDetailSheet({ call, open, onOpenChange }: CallDetail
                 </div>
                 <div className="w-2 text-center text-xs font-normal leading-none text-gray-400">∙</div>
                 <div className="text-xs font-normal leading-none text-gray-600">
-                  Versión: <span className="text-gray-400">{call.agent_version || 18}</span>
+                  Versión: <span className="text-gray-400">{call.agent_version}</span>
                 </div>
                 <div className="w-2 text-center text-xs font-normal leading-none text-gray-400">∙</div>
                 <div className="text-xs font-normal leading-none text-gray-600">

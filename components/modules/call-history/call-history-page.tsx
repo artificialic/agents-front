@@ -29,6 +29,21 @@ export default function CallHistoryPage({ batchId, onBack, incomingCallsFilter }
   const [selectedCall, setSelectedCall] = useState<CallLog | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'logs' | 'metrics'>('logs');
+  const [pagination, setPagination] = useState<{
+    page: number;
+    pageSize: number;
+    totalRows: number;
+    pagination_key: string | undefined;
+    hasNextPage: boolean;
+    paginationHistory: string[];
+  }>({
+    page: 1,
+    pageSize: 50,
+    totalRows: 0,
+    pagination_key: undefined,
+    hasNextPage: false,
+    paginationHistory: []
+  });
 
   useEffect(() => {
     if (batchId) {
@@ -38,7 +53,7 @@ export default function CallHistoryPage({ batchId, onBack, incomingCallsFilter }
     }
   }, [batchId]);
 
-  const fetchCallLogs = async (filterCriteria?: any) => {
+  const fetchCallLogs = async (filterCriteria?: any, paginationKey?: string) => {
     if (!batchId) return;
 
     try {
@@ -52,8 +67,12 @@ export default function CallHistoryPage({ batchId, onBack, incomingCallsFilter }
           ...filterCriteria?.filter_criteria
         },
         sort_order: 'descending',
-        limit: 50
+        limit: pagination.pageSize
       };
+
+      if (paginationKey) {
+        requestBody.pagination_key = paginationKey;
+      }
 
       if (dateRange.from || dateRange.to) {
         const startTimestampFilter: any = {};
@@ -78,9 +97,16 @@ export default function CallHistoryPage({ batchId, onBack, incomingCallsFilter }
       }
 
       const response = await apiService.getCalls(requestBody);
-      console.log('API Response (fetchCallLogs):', response);
       const data = Array.isArray(response) ? response : response?.data ?? [];
       setCallLogs(data);
+
+      const hasNextPage = data.length === pagination.pageSize;
+
+      setPagination((prev) => ({
+        ...prev,
+        hasNextPage,
+        totalRows: data.length
+      }));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
       console.error('Error fetching call logs:', err);
@@ -89,7 +115,7 @@ export default function CallHistoryPage({ batchId, onBack, incomingCallsFilter }
     }
   };
 
-  const fetchAllCallLogs = async (filterCriteria?: any) => {
+  const fetchAllCallLogs = async (filterCriteria?: any, paginationKey?: string) => {
     try {
       setLoading(true);
       setError(null);
@@ -99,9 +125,13 @@ export default function CallHistoryPage({ batchId, onBack, incomingCallsFilter }
           ...(incomingCallsFilter ? { direction: ['inbound'] } : {}),
           ...(filterCriteria?.filter_criteria || {})
         },
-        limit: 51,
+        limit: pagination.pageSize,
         sort_order: 'descending'
       };
+
+      if (paginationKey) {
+        requestBody.pagination_key = paginationKey;
+      }
 
       if (dateRange.from || dateRange.to) {
         const startTimestampFilter: any = {};
@@ -126,9 +156,16 @@ export default function CallHistoryPage({ batchId, onBack, incomingCallsFilter }
       }
 
       const response = await apiService.getCalls(requestBody);
-      console.log('API Response (fetchAllCallLogs):', response);
       const data = Array.isArray(response) ? response : response?.data ?? [];
       setCallLogs(data);
+
+      const hasNextPage = data.length === pagination.pageSize;
+
+      setPagination((prev) => ({
+        ...prev,
+        hasNextPage,
+        totalRows: data.length
+      }));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
       console.error('Error fetching all call logs:', err);
@@ -139,12 +176,15 @@ export default function CallHistoryPage({ batchId, onBack, incomingCallsFilter }
 
   const removeBatchFilter = () => {};
 
-  const handleExport = () => {
-    console.log('Exportando registros de llamadas...');
-  };
-
   const handleDateRangeChange = (range: { from: Date | null; to: Date | null }) => {
     setDateRange(range);
+
+    setPagination((prev) => ({
+      ...prev,
+      page: 1,
+      pagination_key: undefined,
+      paginationHistory: []
+    }));
 
     if (batchId) {
       fetchCallLogs();
@@ -154,7 +194,12 @@ export default function CallHistoryPage({ batchId, onBack, incomingCallsFilter }
   };
 
   const handleFilterSelect = (filterCriteria: any) => {
-    console.log('Criterios de filtro recibidos:', filterCriteria);
+    setPagination((prev) => ({
+      ...prev,
+      page: 1,
+      pagination_key: undefined,
+      paginationHistory: []
+    }));
 
     if (batchId) {
       fetchCallLogs(filterCriteria);
@@ -166,6 +211,80 @@ export default function CallHistoryPage({ batchId, onBack, incomingCallsFilter }
   const handleRowClick = (call: CallLog) => {
     setSelectedCall(call);
     setSheetOpen(true);
+  };
+
+  const handlePaginationChange = (page: number, pageSize: number) => {
+    if (pageSize !== pagination.pageSize) {
+      setPagination((prev) => ({
+        ...prev,
+        page: 1,
+        pageSize,
+        pagination_key: undefined,
+        paginationHistory: []
+      }));
+
+      if (batchId) {
+        fetchCallLogs();
+      } else {
+        fetchAllCallLogs();
+      }
+      return;
+    }
+
+    const isNextPage = page > pagination.page;
+    const isPrevPage = page < pagination.page;
+
+    if (isNextPage && callLogs.length > 0) {
+      const lastCall = callLogs[callLogs.length - 1];
+      const newPaginationKey = lastCall.call_id;
+
+      const newHistory = [...pagination.paginationHistory];
+      if (pagination.pagination_key) {
+        newHistory.push(pagination.pagination_key);
+      }
+
+      setPagination((prev) => ({
+        ...prev,
+        page: page,
+        pagination_key: newPaginationKey,
+        paginationHistory: newHistory
+      }));
+
+      if (batchId) {
+        fetchCallLogs(undefined, newPaginationKey);
+      } else {
+        fetchAllCallLogs(undefined, newPaginationKey);
+      }
+    } else if (isPrevPage && pagination.paginationHistory.length > 0) {
+      const newHistory = [...pagination.paginationHistory];
+      const prevPaginationKey = newHistory.pop();
+
+      setPagination((prev) => ({
+        ...prev,
+        page: page,
+        pagination_key: prevPaginationKey,
+        paginationHistory: newHistory
+      }));
+
+      if (batchId) {
+        fetchCallLogs(undefined, prevPaginationKey);
+      } else {
+        fetchAllCallLogs(undefined, prevPaginationKey);
+      }
+    } else if (isPrevPage && pagination.page === 2) {
+      setPagination((prev) => ({
+        ...prev,
+        page: 1,
+        pagination_key: undefined,
+        paginationHistory: []
+      }));
+
+      if (batchId) {
+        fetchCallLogs();
+      } else {
+        fetchAllCallLogs();
+      }
+    }
   };
 
   const enhancedColumns = columns.map((column) => ({
@@ -345,7 +464,21 @@ export default function CallHistoryPage({ batchId, onBack, incomingCallsFilter }
                   : 'No hay registros de llamadas disponibles'}
               </div>
             ) : (
-              <DataTable columns={enhancedColumns} data={callLogs} />
+              <DataTable
+                serverPagination
+                sequentialPagination
+                showPagination
+                columns={enhancedColumns}
+                data={callLogs}
+                paginationInfo={{
+                  page: pagination.page,
+                  pageSize: pagination.pageSize,
+                  totalRows: pagination.totalRows,
+                  totalPages: pagination.hasNextPage ? pagination.page + 1 : pagination.page
+                }}
+                onPaginationChange={handlePaginationChange}
+                loading={loading}
+              />
             )}
           </>
         )}

@@ -37,9 +37,9 @@ import { Icons } from '../icons';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 export const company = {
-  name: 'Agents',
+  name: 'Desarrollando Agentes',
   logo: GalleryVerticalEnd,
-  plan: 'Agents'
+  plan: ''
 };
 
 export default function AppSidebar() {
@@ -59,15 +59,15 @@ export default function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" className="bg-gray-50">
       <SidebarHeader>
         <div className="flex gap-2 py-2 text-sidebar-accent-foreground ">
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-            <company.logo className="size-4" />
+          <div className="flex aspect-square size-12 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+            <img src="/logo-small.png" className="h-12 w-12" alt="Desarrollando" />
           </div>
-          <div className="grid flex-1 text-left text-sm leading-tight">
+          <div className="grid flex-1 items-center text-left text-sm leading-tight">
             <span className="truncate font-semibold">{company.name}</span>
-            <span className="truncate text-xs">{company.plan}</span>
+            {/*<span className="truncate text-xs">{company.plan}</span>*/}
           </div>
         </div>
       </SidebarHeader>

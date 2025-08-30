@@ -38,10 +38,6 @@ class ApiServiceLocal extends ApiService {
     return this.post('/batch-calls', data);
   }
 
-  async getAgents(): Promise<ApiResponse<Agent[]>> {
-    return this.getFullResponse<Agent[]>('/agents');
-  }
-
   async getCalls(data: any): Promise<ApiResponse<Call[]>> {
     return this.post('/calls', data);
   }
@@ -74,12 +70,17 @@ class ApiServiceLocal extends ApiService {
     return this.getFullResponse<TransactionHistory[]>('/transaction-history/by-user');
   }
 
+  /* Retell */
   async getPhoneNumbers(): Promise<ApiResponse<PhoneNumber[]>> {
     return this.getFullResponse<PhoneNumber[]>('/retell/phone-numbers');
   }
 
   async getCallById(callId: string): Promise<ApiResponse<CallDetail>> {
     return this.getFullResponse<CallDetail>(`/retell/call/${callId}`);
+  }
+
+  async getAgents(): Promise<ApiResponse<Agent[]>> {
+    return this.getFullResponse<Agent[]>('/retell/agents');
   }
 
   /* Templates */
@@ -91,6 +92,11 @@ class ApiServiceLocal extends ApiService {
   }
   async updateTemplate(id: string, data: Partial<Template>): Promise<Template> {
     return this.put<Template>(`/templates/${id}`, data);
+  }
+
+  /* Dashboard */
+  async getDashboardStats(): Promise<ApiResponse<DashboardStats>> {
+    return this.getFullResponse<DashboardStats>('/dashboard/stats');
   }
 }
 

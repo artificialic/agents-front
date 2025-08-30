@@ -174,7 +174,7 @@ export default function CampaignForm({ onBack, onSubmit }: CampaignFormProps) {
               >
                 <SelectValue placeholder={loadingAgents ? 'Cargando agentes...' : 'Seleccionar un agente'} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-80 overflow-y-auto">
                 {agents.map((agent) => (
                   <SelectItem key={agent.agent_id} value={agent.agent_id}>
                     {agent.agent_name} ({agent.agent_id.slice(-8)})

@@ -13,12 +13,12 @@ export const navItems: NavItem[] = [
     isActive: false,
     shortcut: ['p', 'a'],
     items: [],
-    role: [ROLES.ADMIN, ROLES.USER]
+    role: [ROLES.USER]
   },
   {
-    title: 'Campañas',
+    title: 'Historial de Campañas',
     url: '/dashboard/campaign',
-    icon: 'users',
+    icon: 'campaigns',
     isActive: true,
     shortcut: ['c', 'l'],
     items: [],
@@ -27,7 +27,7 @@ export const navItems: NavItem[] = [
   {
     title: 'Historial de Llamadas',
     url: '/dashboard/call-history',
-    icon: 'users',
+    icon: 'callHistory',
     isActive: true,
     shortcut: ['c', 'l'],
     items: [],
@@ -36,7 +36,7 @@ export const navItems: NavItem[] = [
   {
     title: 'Llamadas Entrantes',
     url: '/dashboard/incoming-calls',
-    icon: 'users',
+    icon: 'incomingCalls',
     isActive: true,
     shortcut: ['c', 'l'],
     items: [],
@@ -54,7 +54,7 @@ export const navItems: NavItem[] = [
   {
     title: 'Facturación',
     url: '/dashboard/billing',
-    icon: 'users',
+    icon: 'billingAlt',
     isActive: true,
     shortcut: ['c', 'l'],
     items: [],
@@ -63,7 +63,7 @@ export const navItems: NavItem[] = [
   {
     title: 'Plantillas',
     url: '/dashboard/templates',
-    icon: 'users',
+    icon: 'templates',
     isActive: true,
     shortcut: ['c', 'l'],
     items: [],

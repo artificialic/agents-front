@@ -273,3 +273,22 @@ interface CreateTemplatePayload {
   agentId: string;
   filePath: string;
 }
+
+interface DashboardStats {
+  campaignsCount: number;
+  callsCount: number;
+  transactionsSum: number;
+  retellCalls: number;
+  totalCallDuration: string;
+  userSentimentStats: {
+    Negative: number;
+    Unknown: number;
+    Neutral: number;
+    Positive: number;
+  };
+  callDirectionStats: {
+    outbound: number;
+    Unknown: number;
+    inbound: number;
+  };
+}

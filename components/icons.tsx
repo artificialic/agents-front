@@ -38,7 +38,12 @@ import {
   MessageSquareText,
   Utensils,
   ClipboardMinus,
-  BicepsFlexed
+  BicepsFlexed,
+  Megaphone,
+  Phone,
+  PhoneIncoming,
+  Receipt,
+  Copy
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -81,5 +86,11 @@ export const Icons = {
   message: MessageSquareText,
   food: Utensils,
   report: ClipboardMinus,
-  biceps: BicepsFlexed
+  biceps: BicepsFlexed,
+  campaigns: Megaphone,
+  callHistory: Phone,
+  incomingCalls: PhoneIncoming,
+  clients: Users,
+  billingAlt: Receipt,
+  templates: Copy
 };
