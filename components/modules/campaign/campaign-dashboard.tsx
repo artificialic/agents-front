@@ -9,8 +9,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Users } from 'lucide-react';
+import { Users, Pencil } from 'lucide-react';
 import { apiService } from '@/services';
 import { useRouter } from 'next/navigation';
 import { DotsHorizontalIcon, PlusIcon, ReloadIcon } from '@radix-ui/react-icons';
@@ -33,6 +36,10 @@ export default function CampaignDashboard({ onCreateCampaign }: CampaignDashboar
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
+  const [editForm, setEditForm] = useState({ name: '', status: '' });
+  const [isUpdating, setIsUpdating] = useState(false);
   const router = useRouter();
 
   const fetchCampaigns = async () => {
@@ -50,6 +57,39 @@ export default function CampaignDashboard({ onCreateCampaign }: CampaignDashboar
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditCampaign = (campaign: Campaign) => {
+    setEditingCampaign(campaign);
+    setEditForm({ name: campaign.name, status: campaign.status });
+    setShowEditDialog(true);
+  };
+
+  const handleUpdateCampaign = async () => {
+    if (!editingCampaign) return;
+
+    try {
+      setIsUpdating(true);
+      await apiService.updateCampaign(editingCampaign._id, {
+        name: editForm.name,
+        status: editForm.status as Campaign['status']
+      });
+
+      // Actualizar la lista de campañas
+      await fetchCampaigns();
+      handleCloseEditDialog();
+    } catch (err) {
+      console.error('Error updating campaign:', err);
+      // Aquí podrías agregar un toast o alert de error
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCloseEditDialog = () => {
+    setShowEditDialog(false);
+    setEditingCampaign(null);
+    setEditForm({ name: '', status: '' });
   };
 
   useEffect(() => {
@@ -153,9 +193,6 @@ export default function CampaignDashboard({ onCreateCampaign }: CampaignDashboar
                     Nombre
                   </TableHead>
                   <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Propietario
-                  </TableHead>
-                  <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     ID del Agente
                   </TableHead>
                   <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -177,9 +214,6 @@ export default function CampaignDashboard({ onCreateCampaign }: CampaignDashboar
                   <TableRow key={campaign._id} className="hover:bg-gray-50">
                     <TableCell className="py-4">
                       <span className="text-sm text-gray-900">{campaign.name}</span>
-                    </TableCell>
-                    <TableCell className="py-4">
-                      <span className="font-mono text-sm text-xs text-gray-900">{campaign.owner}</span>
                     </TableCell>
                     <TableCell className="py-4">
                       <span className="text-sm text-gray-900">{campaign.agentId}</span>
@@ -215,6 +249,13 @@ export default function CampaignDashboard({ onCreateCampaign }: CampaignDashboar
                             Ver Contactos
                           </DropdownMenuItem>
                           <DropdownMenuItem
+                            onClick={() => handleEditCampaign(campaign)}
+                            className="text-gray-600 focus:text-gray-600"
+                          >
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Editar Campaña
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
                             onClick={() => router.push(`/dashboard/campaign/${campaign._id}/contacts`)}
                             className="text-green-600 focus:text-green-600"
                           >
@@ -231,6 +272,58 @@ export default function CampaignDashboard({ onCreateCampaign }: CampaignDashboar
           </div>
         )}
       </div>
+
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Editar Campaña</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="name" className="text-right text-sm font-medium">
+                Nombre
+              </label>
+              <Input
+                id="name"
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="status" className="text-right text-sm font-medium">
+                Estado
+              </label>
+              <Select value={editForm.status} onValueChange={(value) => setEditForm({ ...editForm, status: value })}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Borrador</SelectItem>
+                  <SelectItem value="active">Activa</SelectItem>
+                  <SelectItem value="paused">Pausada</SelectItem>
+                  <SelectItem value="completed">Completada</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCloseEditDialog}>
+              Cancelar
+            </Button>
+            <Button onClick={handleUpdateCampaign} disabled={isUpdating}>
+              {isUpdating ? (
+                <>
+                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                'Guardar'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

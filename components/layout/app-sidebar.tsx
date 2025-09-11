@@ -62,8 +62,8 @@ export default function AppSidebar() {
     <Sidebar collapsible="icon" className="bg-gray-50">
       <SidebarHeader>
         <div className="flex gap-2 py-2 text-sidebar-accent-foreground ">
-          <div className="flex aspect-square size-12 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-            <img src="/logo-small.png" className="h-12 w-12" alt="Desarrollando" />
+          <div className="flex aspect-square size-12 items-center justify-center rounded-lg bg-sidebar-primary pl-0 text-sidebar-primary-foreground">
+            <img src="/logo-small.png" className="h-8 w-8" alt="Desarrollando" />
           </div>
           <div className="grid flex-1 items-center text-left text-sm leading-tight">
             <span className="truncate font-semibold">{company.name}</span>

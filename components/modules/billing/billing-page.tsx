@@ -21,7 +21,7 @@ interface TransactionHistory {
 }
 
 export default function BillingPage() {
-  const [activeTab, setActiveTab] = useState<'history' | 'payment-methods'>('history');
+  const [activeTab, setActiveTab] = useState<'history' | 'payment-methods'>('payment-methods');
   const [isSubmittingCard, setIsSubmittingCard] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -63,6 +63,12 @@ export default function BillingPage() {
     fetchTransactionHistory();
   }, []);
 
+  useEffect(() => {
+    if (!loadingProfile && userProfile?.paymentSource) {
+      setActiveTab('history');
+    }
+  }, [userProfile?.paymentSource, loadingProfile]);
+
   const handleRechargeClick = () => {
     if (!userProfile?.paymentSource) {
       alert('Debe agregar una tarjeta de pago antes de poder recargar saldo');
@@ -102,6 +108,8 @@ export default function BillingPage() {
     }
   };
 
+  const hasPaymentSource = !loadingProfile && userProfile?.paymentSource;
+
   return (
     <div className="min-h-screen w-full bg-white">
       <div className="border-b border-gray-200 bg-white px-6 py-4">
@@ -119,6 +127,13 @@ export default function BillingPage() {
                 </p>
               )
             )}
+            {!loadingProfile && !userProfile?.paymentSource && (
+              <div className="mt-3 rounded-md border border-yellow-200 bg-yellow-50 p-3">
+                <p className="text-sm text-yellow-800">
+                  Aquí, necesitas agregar un métodos de pago para poder recargar saldo
+                </p>
+              </div>
+            )}
           </div>
           <Button
             onClick={handleRechargeClick}
@@ -132,97 +147,101 @@ export default function BillingPage() {
 
       <div className="p-6">
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'history' | 'payment-methods')}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="history">Historial de Recargas</TabsTrigger>
+          <TabsList className={`grid w-full ${hasPaymentSource ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            {hasPaymentSource && <TabsTrigger value="history">Historial de Recargas</TabsTrigger>}
             <TabsTrigger value="payment-methods">Métodos de Pago</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="history" className="mt-6">
-            <div className="mt-8">
-              <div className="mb-4">
-                <h2 className="inline-block border-b-2 border-green-500 pb-2 text-base font-medium text-gray-900">
-                  Historial de Recargas
-                </h2>
-              </div>
-
-              {loadingTransactions && (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                  <span className="ml-2 text-gray-600">Cargando transacciones...</span>
+          {hasPaymentSource && (
+            <TabsContent value="history" className="mt-6">
+              <div className="mt-8">
+                <div className="mb-4">
+                  <h2 className="inline-block border-b-2 border-green-500 pb-2 text-base font-medium text-gray-900">
+                    Historial de Recargas
+                  </h2>
                 </div>
-              )}
 
-              {!loadingTransactions && (
-                <div className="bg-white">
-                  <div className="grid grid-cols-12 gap-4 border-b border-gray-200 px-4 py-3 text-sm font-medium text-gray-500">
-                    <div className="col-span-2">Fecha</div>
-                    <div className="col-span-2">Monto USD</div>
-                    <div className="col-span-2">Monto COP</div>
-                    <div className="col-span-2">Tasa de Cambio</div>
-                    <div className="col-span-2">Estado</div>
-                    <div className="col-span-2">Método de Pago</div>
+                {loadingTransactions && (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                    <span className="ml-2 text-gray-600">Cargando transacciones...</span>
                   </div>
+                )}
 
-                  <div className="divide-y divide-gray-100">
-                    {!transactionHistory || transactionHistory.length === 0 ? (
-                      <div className="py-8 text-center text-gray-500">No hay transacciones de recarga disponibles</div>
-                    ) : (
-                      transactionHistory.map((transaction) => (
-                        <div key={transaction._id} className="grid grid-cols-12 gap-4 px-4 py-4 hover:bg-gray-50">
-                          <div className="col-span-2 flex items-center">
-                            <span className="text-sm text-gray-900">
-                              {new Date(transaction.createdAt).toLocaleDateString('es-ES', {
-                                year: 'numeric',
-                                month: '2-digit',
-                                day: '2-digit',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </span>
-                          </div>
-                          <div className="col-span-2 flex items-center">
-                            <span className="text-sm font-medium text-gray-900">
-                              ${transaction.amountUSD.toFixed(2)}
-                            </span>
-                          </div>
-                          <div className="col-span-2 flex items-center">
-                            <span className="text-sm text-gray-900">${transaction.amountCOP.toLocaleString()}</span>
-                          </div>
-                          <div className="col-span-2 flex items-center">
-                            <span className="text-sm text-gray-900">{transaction.exchangeRate.toFixed(0)}</span>
-                          </div>
-                          <div className="col-span-2 flex items-center">
-                            <span
-                              className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                                transaction.status === 'APPROVED'
-                                  ? 'bg-green-100 text-green-800'
-                                  : transaction.status === 'PENDING'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-red-100 text-red-800'
-                              }`}
-                            >
-                              {transaction.status === 'APPROVED'
-                                ? 'Aprobado'
-                                : transaction.status === 'PENDING'
-                                ? 'Pendiente'
-                                : transaction.status}
-                            </span>
-                          </div>
-                          <div className="col-span-2 flex items-center">
-                            <span className="text-sm text-gray-900">{transaction.paymentMethod}</span>
-                          </div>
+                {!loadingTransactions && (
+                  <div className="bg-white">
+                    <div className="grid grid-cols-12 gap-4 border-b border-gray-200 px-4 py-3 text-sm font-medium text-gray-500">
+                      <div className="col-span-2">Fecha</div>
+                      <div className="col-span-2">Monto USD</div>
+                      <div className="col-span-2">Monto COP</div>
+                      <div className="col-span-2">Tasa de Cambio</div>
+                      <div className="col-span-2">Estado</div>
+                      <div className="col-span-2">MÃ©todo de Pago</div>
+                    </div>
+
+                    <div className="divide-y divide-gray-100">
+                      {!transactionHistory || transactionHistory.length === 0 ? (
+                        <div className="py-8 text-center text-gray-500">
+                          No hay transacciones de recarga disponibles
                         </div>
-                      ))
-                    )}
+                      ) : (
+                        transactionHistory.map((transaction) => (
+                          <div key={transaction._id} className="grid grid-cols-12 gap-4 px-4 py-4 hover:bg-gray-50">
+                            <div className="col-span-2 flex items-center">
+                              <span className="text-sm text-gray-900">
+                                {new Date(transaction.createdAt).toLocaleDateString('es-ES', {
+                                  year: 'numeric',
+                                  month: '2-digit',
+                                  day: '2-digit',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </div>
+                            <div className="col-span-2 flex items-center">
+                              <span className="text-sm font-medium text-gray-900">
+                                ${transaction.amountUSD.toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="col-span-2 flex items-center">
+                              <span className="text-sm text-gray-900">${transaction.amountCOP.toLocaleString()}</span>
+                            </div>
+                            <div className="col-span-2 flex items-center">
+                              <span className="text-sm text-gray-900">{transaction.exchangeRate.toFixed(0)}</span>
+                            </div>
+                            <div className="col-span-2 flex items-center">
+                              <span
+                                className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                                  transaction.status === 'APPROVED'
+                                    ? 'bg-green-100 text-green-800'
+                                    : transaction.status === 'PENDING'
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : 'bg-red-100 text-red-800'
+                                }`}
+                              >
+                                {transaction.status === 'APPROVED'
+                                  ? 'Aprobado'
+                                  : transaction.status === 'PENDING'
+                                  ? 'Pendiente'
+                                  : transaction.status}
+                              </span>
+                            </div>
+                            <div className="col-span-2 flex items-center">
+                              <span className="text-sm text-gray-900">{transaction.paymentMethod}</span>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </TabsContent>
+                )}
+              </div>
+            </TabsContent>
+          )}
 
           <TabsContent value="payment-methods" className="mt-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Tarjetas de Crédito</h2>
+              <h2 className="text-lg font-semibold">Tarjetas</h2>
               <Button
                 variant="outline"
                 size="sm"

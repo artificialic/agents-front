@@ -18,10 +18,6 @@ class ApiServiceLocal extends ApiService {
     return this.put<Client>(`/users/clients/${id}`, data);
   }
 
-  getBilling(): Promise<Billing> {
-    return this.getFullResponse<Billing>('/billing');
-  }
-
   getProfile(): Promise<ApiResponse<Client>> {
     return this.getFullResponse<Client>('/auth/profile');
   }
@@ -30,24 +26,13 @@ class ApiServiceLocal extends ApiService {
     return this.post('/payments/payment-source', data);
   }
 
-  async getBatchCalls(): Promise<ApiResponse<BatchCall[]>> {
-    return this.getFullResponse<BatchCall[]>('/batch-calls');
-  }
-
-  async createBatchCall(data: CreateBatchCallPayload): Promise<any> {
-    return this.post('/batch-calls', data);
-  }
-
-  async getCalls(data: any): Promise<ApiResponse<Call[]>> {
-    return this.post('/calls', data);
-  }
-
-  async getConcurrency(): Promise<ApiResponse<Concurrency>> {
-    return this.getFullResponse<Concurrency>('/calls/concurrency');
-  }
-
+  /* Module: Campaigns */
   async getCampaignsByUser(): Promise<ApiResponse<Campaign[]>> {
     return this.getFullResponse<Campaign[]>('/campaigns/by-user');
+  }
+
+  async updateCampaign(campaignId: string, data: Partial<Campaign>): Promise<any> {
+    return this.put(`/campaigns/${campaignId}`, data);
   }
 
   async createCampaign(data: CreateCampaignPayload): Promise<any> {
@@ -81,6 +66,14 @@ class ApiServiceLocal extends ApiService {
 
   async getAgents(): Promise<ApiResponse<Agent[]>> {
     return this.getFullResponse<Agent[]>('/retell/agents');
+  }
+
+  async getCalls(data: any): Promise<ApiResponse<Call[]>> {
+    return this.post('/retell/calls', data);
+  }
+
+  async getConcurrency(): Promise<ApiResponse<Concurrency>> {
+    return this.getFullResponse<Concurrency>('/retell/concurrency');
   }
 
   /* Templates */

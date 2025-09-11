@@ -1,4 +1,13 @@
-// TYPE DEFINITIONS FOR USERS
+interface Campaign {
+  _id: string;
+  name: string;
+  owner: string;
+  agentId: string;
+  status: 'draft' | 'active' | 'completed' | 'paused';
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface Client {
   _id: string;
   firstName: string;
@@ -34,35 +43,6 @@ type PaymentSourcePayload = {
   expiryYear: string;
   cvc: string;
   cardHolder: string;
-};
-
-type BatchCall = {
-  batch_call_id: string;
-  name: string;
-  from_number: string;
-  status: string;
-  timezone: string;
-  send_now: boolean;
-  scheduled_timestamp: number;
-  total: number;
-  total_task_count: number;
-  sent: number;
-  picked_up: number;
-  completed: number;
-  last_sent_timestamp: number;
-  tasks_url: string;
-};
-
-type BatchCallTask = {
-  to_number: string;
-  retell_llm_dynamic_variables: Record<string, string>;
-};
-
-type CreateBatchCallPayload = {
-  name: string;
-  trigger_timestamp: number;
-  from_number: string;
-  tasks: BatchCallTask[];
 };
 
 type Agent = {
@@ -154,16 +134,6 @@ type Concurrency = {
   purchased_concurrency: number;
   concurrency_purchase_limit: number;
   remaining_purchase_limit: number;
-};
-
-type Campaign = {
-  _id: string;
-  name: string;
-  owner: string;
-  agentId: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
 };
 
 type CreateCampaignPayload = {
