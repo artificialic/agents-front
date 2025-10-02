@@ -51,7 +51,12 @@ export function ClientTable({ clients, onEditClient, onViewTransactions }: Clien
                 </TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
-                    <Button variant="ghost" size="sm" title="Ver Transacciones" onClick={() => onViewTransactions(client)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      title="Ver Transacciones"
+                      onClick={() => onViewTransactions(client)}
+                    >
                       <Eye className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="sm" title="Editar" onClick={() => onEditClient(client)}>

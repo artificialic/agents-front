@@ -161,11 +161,7 @@ export default function Clients() {
           </Button>
         </div>
 
-        <ClientTable
-          clients={data ?? []}
-          onEditClient={handleOpenModal}
-          onViewTransactions={handleViewTransactions}
-        />
+        <ClientTable clients={data ?? []} onEditClient={handleOpenModal} onViewTransactions={handleViewTransactions} />
 
         <ClientModal
           isOpen={isModalOpen}
