@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CreditCardForm, { type CreditCardFormValues } from '../payments/credit-card-form';
 import { PaymentCard } from '../payments/payment-card';
 import CreditPurchaseModal from '../payments/credit-purchase-modal';
+import TransactionHistoryTable from './transaction-history-table';
 import { apiService } from '@/services';
 
 interface TransactionHistory {
@@ -161,80 +162,11 @@ export default function BillingPage() {
                   </h2>
                 </div>
 
-                {loadingTransactions && (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                    <span className="ml-2 text-gray-600">Cargando transacciones...</span>
-                  </div>
-                )}
-
-                {!loadingTransactions && (
-                  <div className="bg-white">
-                    <div className="grid grid-cols-12 gap-4 border-b border-gray-200 px-4 py-3 text-sm font-medium text-gray-500">
-                      <div className="col-span-2">Fecha</div>
-                      <div className="col-span-2">Monto USD</div>
-                      <div className="col-span-2">Monto COP</div>
-                      <div className="col-span-2">Tasa de Cambio</div>
-                      <div className="col-span-2">Estado</div>
-                      <div className="col-span-2">MÃ©todo de Pago</div>
-                    </div>
-
-                    <div className="divide-y divide-gray-100">
-                      {!transactionHistory || transactionHistory.length === 0 ? (
-                        <div className="py-8 text-center text-gray-500">
-                          No hay transacciones de recarga disponibles
-                        </div>
-                      ) : (
-                        transactionHistory.map((transaction) => (
-                          <div key={transaction._id} className="grid grid-cols-12 gap-4 px-4 py-4 hover:bg-gray-50">
-                            <div className="col-span-2 flex items-center">
-                              <span className="text-sm text-gray-900">
-                                {new Date(transaction.createdAt).toLocaleDateString('es-ES', {
-                                  year: 'numeric',
-                                  month: '2-digit',
-                                  day: '2-digit',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </span>
-                            </div>
-                            <div className="col-span-2 flex items-center">
-                              <span className="text-sm font-medium text-gray-900">
-                                ${transaction.amountUSD.toFixed(2)}
-                              </span>
-                            </div>
-                            <div className="col-span-2 flex items-center">
-                              <span className="text-sm text-gray-900">${transaction.amountCOP.toLocaleString()}</span>
-                            </div>
-                            <div className="col-span-2 flex items-center">
-                              <span className="text-sm text-gray-900">{transaction.exchangeRate.toFixed(0)}</span>
-                            </div>
-                            <div className="col-span-2 flex items-center">
-                              <span
-                                className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                                  transaction.status === 'APPROVED'
-                                    ? 'bg-green-100 text-green-800'
-                                    : transaction.status === 'PENDING'
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : 'bg-red-100 text-red-800'
-                                }`}
-                              >
-                                {transaction.status === 'APPROVED'
-                                  ? 'Aprobado'
-                                  : transaction.status === 'PENDING'
-                                  ? 'Pendiente'
-                                  : transaction.status}
-                              </span>
-                            </div>
-                            <div className="col-span-2 flex items-center">
-                              <span className="text-sm text-gray-900">{transaction.paymentMethod}</span>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
+                <TransactionHistoryTable
+                  transactions={transactionHistory}
+                  isLoading={loadingTransactions}
+                  emptyMessage="No hay transacciones de recarga disponibles"
+                />
               </div>
             </TabsContent>
           )}

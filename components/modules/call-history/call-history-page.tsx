@@ -14,11 +14,12 @@ import { apiService } from '@/services';
 
 interface CallHistoryPageProps {
   batchId?: string;
+  multiplier: number;
   onBack?: () => void;
   incomingCallsFilter?: boolean;
 }
 
-export default function CallHistoryPage({ batchId, onBack, incomingCallsFilter }: CallHistoryPageProps) {
+export default function CallHistoryPage({ batchId, multiplier, onBack, incomingCallsFilter }: CallHistoryPageProps) {
   const [callLogs, setCallLogs] = useState<CallLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +30,7 @@ export default function CallHistoryPage({ batchId, onBack, incomingCallsFilter }
   const [selectedCall, setSelectedCall] = useState<CallLog | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'logs' | 'metrics'>('logs');
+  const [dynamicColumns, setDynamicColumns] = useState<any[]>([]);
   const [pagination, setPagination] = useState<{
     page: number;
     pageSize: number;
@@ -52,6 +54,30 @@ export default function CallHistoryPage({ batchId, onBack, incomingCallsFilter }
       fetchAllCallLogs();
     }
   }, [batchId]);
+
+  const createDynamicColumns = (data: CallLog[]) => {
+    const customFieldsSet = new Set<string>();
+
+    data.forEach((call) => {
+      if (call.call_analysis?.custom_analysis_data) {
+        Object.keys(call.call_analysis.custom_analysis_data).forEach((key) => {
+          customFieldsSet.add(key);
+        });
+      }
+    });
+
+    const newDynamicColumns = Array.from(customFieldsSet).map((fieldName) => ({
+      accessorKey: `custom_${fieldName}`,
+      header: fieldName,
+      cell: ({ row }: any) => {
+        const customData = row.original.call_analysis?.custom_analysis_data;
+        const value = customData?.[fieldName];
+        return <div className="text-sm text-gray-900">{value || '-'}</div>;
+      }
+    }));
+
+    setDynamicColumns(newDynamicColumns);
+  };
 
   const fetchCallLogs = async (filterCriteria?: any, paginationKey?: string) => {
     if (!batchId) return;
@@ -98,7 +124,25 @@ export default function CallHistoryPage({ batchId, onBack, incomingCallsFilter }
 
       const response = await apiService.getCalls(requestBody);
       const data = Array.isArray(response) ? response : response?.data ?? [];
-      setCallLogs(data);
+
+      const mappedData = data.map((call) => {
+        const originalCost = call.call_cost?.combined_cost;
+        const validCost = Number.isFinite(originalCost) ? originalCost : 0;
+        const validMultiplier = Number.isFinite(multiplier) ? multiplier : 1;
+
+        return {
+          ...call,
+          call_cost: call.call_cost
+            ? {
+                ...call.call_cost,
+                combined_cost: validCost * validMultiplier
+              }
+            : call.call_cost
+        };
+      });
+
+      setCallLogs(mappedData);
+      createDynamicColumns(mappedData);
 
       const hasNextPage = data.length === pagination.pageSize;
 
@@ -157,7 +201,25 @@ export default function CallHistoryPage({ batchId, onBack, incomingCallsFilter }
 
       const response = await apiService.getCalls(requestBody);
       const data = Array.isArray(response) ? response : response?.data ?? [];
-      setCallLogs(data);
+
+      const mappedData = data.map((call) => {
+        const originalCost = call.call_cost?.combined_cost;
+        const validCost = Number.isFinite(originalCost) ? originalCost : 0;
+        const validMultiplier = Number.isFinite(multiplier) ? multiplier : 1;
+
+        return {
+          ...call,
+          call_cost: call.call_cost
+            ? {
+                ...call.call_cost,
+                combined_cost: validCost * validMultiplier
+              }
+            : call.call_cost
+        };
+      });
+
+      setCallLogs(mappedData);
+      createDynamicColumns(mappedData);
 
       const hasNextPage = data.length === pagination.pageSize;
 
@@ -287,7 +349,7 @@ export default function CallHistoryPage({ batchId, onBack, incomingCallsFilter }
     }
   };
 
-  const enhancedColumns = columns.map((column) => ({
+  const enhancedColumns = [...columns, ...dynamicColumns].map((column) => ({
     ...column,
     cell: (props: any) => {
       const originalCell = column.cell ? column.cell(props) : null;

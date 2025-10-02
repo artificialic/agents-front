@@ -55,6 +55,10 @@ class ApiServiceLocal extends ApiService {
     return this.getFullResponse<TransactionHistory[]>('/transaction-history/by-user');
   }
 
+  async getTransactionsByUserId(userId: string): Promise<ApiResponse<TransactionHistory[]>> {
+    return this.getFullResponse<TransactionHistory[]>(`/transaction-history/by-user/${userId}`);
+  }
+
   /* Retell */
   async getPhoneNumbers(): Promise<ApiResponse<PhoneNumber[]>> {
     return this.getFullResponse<PhoneNumber[]>('/retell/phone-numbers');

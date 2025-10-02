@@ -5,9 +5,11 @@ import { useState, useEffect } from 'react';
 import { Layout } from '@/components/layout';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
 import { ClientTable } from './ClientTable';
 import { ClientModal } from './ClientModal';
+import TransactionHistoryTable from '@/components/modules/billing/transaction-history-table';
 import { apiService } from '@/services';
 
 type Client = {
@@ -25,11 +27,25 @@ type ClientFormData = {
   password?: string;
 };
 
+type TransactionHistory = {
+  _id: string;
+  amountUSD: number;
+  amountCOP: number;
+  exchangeRate: number;
+  status: string;
+  paymentMethod: string;
+  createdAt: string;
+};
+
 export default function Clients() {
   const [data, setData] = useState<Client[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isTransactionsModalOpen, setIsTransactionsModalOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [clientTransactions, setClientTransactions] = useState<TransactionHistory[]>([]);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
 
   useEffect(() => {
     apiService
@@ -60,6 +76,34 @@ export default function Clients() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingClient(null);
+  };
+
+  const handleViewTransactions = async (client: Client) => {
+    setSelectedClient(client);
+    setIsTransactionsModalOpen(true);
+    setLoadingTransactions(true);
+
+    try {
+      const response = await apiService.getTransactionsByUserId(client._id);
+      const transactions = response?.data || response;
+      setClientTransactions(Array.isArray(transactions) ? transactions : []);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudieron cargar las transacciones del cliente',
+        variant: 'destructive'
+      });
+      setClientTransactions([]);
+    } finally {
+      setLoadingTransactions(false);
+    }
+  };
+
+  const handleCloseTransactionsModal = () => {
+    setIsTransactionsModalOpen(false);
+    setSelectedClient(null);
+    setClientTransactions([]);
   };
 
   const handleSubmitClient = async (formData: ClientFormData, isEditing: boolean) => {
@@ -117,7 +161,11 @@ export default function Clients() {
           </Button>
         </div>
 
-        <ClientTable clients={data ?? []} onEditClient={handleOpenModal} />
+        <ClientTable
+          clients={data ?? []}
+          onEditClient={handleOpenModal}
+          onViewTransactions={handleViewTransactions}
+        />
 
         <ClientModal
           isOpen={isModalOpen}
@@ -126,6 +174,23 @@ export default function Clients() {
           editingClient={editingClient}
           isLoading={isLoading}
         />
+
+        <Dialog open={isTransactionsModalOpen} onOpenChange={handleCloseTransactionsModal}>
+          <DialogContent className="max-w-6xl">
+            <DialogHeader>
+              <DialogTitle>
+                Transacciones de {selectedClient?.firstName || selectedClient?.name || 'Cliente'}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="mt-4">
+              <TransactionHistoryTable
+                transactions={clientTransactions}
+                isLoading={loadingTransactions}
+                emptyMessage="Este cliente no tiene transacciones registradas"
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );

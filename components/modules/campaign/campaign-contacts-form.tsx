@@ -190,7 +190,7 @@ export default function CampaignContactsForm({
                   <p className="text-sm text-gray-500">
                     El CSV debe contener: telefono_destino (primera columna) y variables dinámicas adicionales
                   </p>
-                  <Button
+                  {/*                  <Button
                     type="button"
                     variant="outline"
                     size="sm"
@@ -198,7 +198,7 @@ export default function CampaignContactsForm({
                     className="border-blue-300 bg-transparent text-blue-600 hover:bg-blue-50"
                   >
                     Descargar plantilla
-                  </Button>
+                  </Button>*/}
                 </div>
 
                 <input

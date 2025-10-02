@@ -15,9 +15,10 @@ type Client = {
 interface ClientTableProps {
   clients: Client[];
   onEditClient: (client: Client) => void;
+  onViewTransactions: (client: Client) => void;
 }
 
-export function ClientTable({ clients, onEditClient }: ClientTableProps) {
+export function ClientTable({ clients, onEditClient, onViewTransactions }: ClientTableProps) {
   return (
     <div className="rounded-md border">
       <Table>
@@ -50,6 +51,9 @@ export function ClientTable({ clients, onEditClient }: ClientTableProps) {
                 </TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
+                    <Button variant="ghost" size="sm" title="Ver Transacciones" onClick={() => onViewTransactions(client)}>
+                      <Eye className="h-4 w-4" />
+                    </Button>
                     <Button variant="ghost" size="sm" title="Editar" onClick={() => onEditClient(client)}>
                       <Edit className="h-4 w-4" />
                     </Button>
