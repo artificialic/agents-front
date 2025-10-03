@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ChevronLeft, Users, Loader2, RefreshCw, Phone, Clock, Eye } from 'lucide-react';
+import { ChevronLeft, Users, Loader2, RefreshCw, Phone, Clock, Eye, Download } from 'lucide-react';
 import { apiService } from '@/services';
+import { downloadFile } from '@/lib/utils';
 import CallDetailSheet from '@/components/modules/call-history/call-detail-sheet';
 
 interface CampaignContactsDashboardProps {
@@ -22,6 +23,10 @@ interface ContactByCampaign {
   updatedAt: string;
   callId: string;
   processedAt: string;
+  callAnalysis?: {
+    custom_analysis_data?: Record<string, any>;
+    [key: string]: any;
+  };
 }
 
 export default function CampaignContactsDashboard({
@@ -35,6 +40,22 @@ export default function CampaignContactsDashboard({
   const [selectedCall, setSelectedCall] = useState<any>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [loadingCall, setLoadingCall] = useState(false);
+  const [exportingCSV, setExportingCSV] = useState(false);
+  const [dynamicFields, setDynamicFields] = useState<string[]>([]);
+
+  const createDynamicColumns = (data: ContactByCampaign[]) => {
+    const customFieldsSet = new Set<string>();
+
+    data.forEach((contact) => {
+      if (contact.callAnalysis?.custom_analysis_data) {
+        Object.keys(contact.callAnalysis.custom_analysis_data).forEach((key) => {
+          customFieldsSet.add(key);
+        });
+      }
+    });
+
+    setDynamicFields(Array.from(customFieldsSet));
+  };
 
   const fetchContacts = async () => {
     try {
@@ -45,11 +66,30 @@ export default function CampaignContactsDashboard({
       const contactsData = Array.isArray(response) ? response : response?.data ?? [];
 
       setContacts(contactsData);
+      createDynamicColumns(contactsData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
       console.error('Error fetching campaign contacts:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportCSV = async () => {
+    try {
+      setExportingCSV(true);
+      const response = await apiService.exportCampaignContacts(campaignId);
+
+      if (response.success && response.data) {
+        const url = window.URL.createObjectURL(response.data);
+        downloadFile(url, `campaign-${campaignId}-contacts.csv`);
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error('Error exporting contacts:', err);
+      setError(err instanceof Error ? err.message : 'Error al exportar contactos');
+    } finally {
+      setExportingCSV(false);
     }
   };
 
@@ -160,6 +200,15 @@ export default function CampaignContactsDashboard({
             </div>
           </div>
           <div className="flex items-center space-x-3">
+            <Button
+              onClick={handleExportCSV}
+              variant="outline"
+              size="sm"
+              disabled={exportingCSV || contacts.length === 0}
+            >
+              <Download className={`mr-2 h-4 w-4 ${exportingCSV ? 'animate-pulse' : ''}`} />
+              Exportar CSV
+            </Button>
             <Button onClick={fetchContacts} variant="outline" size="sm" disabled={loading}>
               <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               Actualizar
@@ -300,6 +349,14 @@ export default function CampaignContactsDashboard({
                   <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     Procesado
                   </TableHead>
+                  {dynamicFields.map((fieldName) => (
+                    <TableHead
+                      key={fieldName}
+                      className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500"
+                    >
+                      {fieldName}
+                    </TableHead>
+                  ))}
                   <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     Acciones
                   </TableHead>
@@ -337,6 +394,14 @@ export default function CampaignContactsDashboard({
                         <span className="text-sm text-gray-400">-</span>
                       )}
                     </TableCell>
+                    {dynamicFields.map((fieldName) => {
+                      const value = contact.callAnalysis?.custom_analysis_data?.[fieldName];
+                      return (
+                        <TableCell key={fieldName} className="py-4">
+                          <span className="text-sm text-gray-900">{value || '-'}</span>
+                        </TableCell>
+                      );
+                    })}
                     <TableCell className="py-4">
                       {contact.callId ? (
                         <Button

@@ -179,6 +179,34 @@ class ApiService {
     console.error('API Error:', errorResponse);
     return errorResponse;
   }
+
+  /**
+   * Perform a GET request for file download (blob response)
+   * @param path - Path to append to resource path
+   * @param params - Query parameters
+   * @param config - Additional axios config
+   * @returns Blob response for file download
+   */
+  async getBlob(
+    path: string = '',
+    params: QueryParams = {},
+    config: AxiosRequestConfig = {}
+  ): Promise<ServiceResponse<Blob>> {
+    try {
+      const response = await apiClient.get(this.getUrl(path), {
+        params,
+        responseType: 'blob',
+        ...config
+      });
+
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      throw this.handleError(error as Error);
+    }
+  }
 }
 
 export default ApiService;

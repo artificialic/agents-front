@@ -47,10 +47,15 @@ class ApiServiceLocal extends ApiService {
     return this.getFullResponse<ContactByCampaign[]>(`/campaigns/${campaignId}/contacts`);
   }
 
+  async exportCampaignContacts(campaignId: string) {
+    return this.getBlob(`/campaigns/${campaignId}/contacts/export`);
+  }
+
   async createTransaction(data: CreateTransactionPayload): Promise<any> {
     return this.post('/payments/transaction', data);
   }
 
+  /* Module: Transaction History */
   async getTransactionsByUser(): Promise<ApiResponse<TransactionHistory[]>> {
     return this.getFullResponse<TransactionHistory[]>('/transaction-history/by-user');
   }
