@@ -10,6 +10,7 @@ import { PaymentCard } from '../payments/payment-card';
 import CreditPurchaseModal from '../payments/credit-purchase-modal';
 import TransactionHistoryTable from './transaction-history-table';
 import { apiService } from '@/services';
+import { useUserStore } from '@/stores/useUserStore';
 
 interface TransactionHistory {
   _id: string;
@@ -22,28 +23,14 @@ interface TransactionHistory {
 }
 
 export default function BillingPage() {
+  const { user, loading: loadingProfile, fetchUser } = useUserStore();
   const [activeTab, setActiveTab] = useState<'history' | 'payment-methods'>('payment-methods');
   const [isSubmittingCard, setIsSubmittingCard] = useState(false);
-  const [userProfile, setUserProfile] = useState<any>(null);
-  const [loadingProfile, setLoadingProfile] = useState(true);
   const [showCreditCardForm, setShowCreditCardForm] = useState(false);
   const [showCreditPurchaseModal, setShowCreditPurchaseModal] = useState(false);
   const [paymentResult, setPaymentResult] = useState<{ success: boolean; message: string } | null>(null);
   const [transactionHistory, setTransactionHistory] = useState<TransactionHistory[]>([]);
   const [loadingTransactions, setLoadingTransactions] = useState(true);
-
-  const fetchUserProfile = async () => {
-    try {
-      setLoadingProfile(true);
-      const response = await apiService.getProfile();
-      const profileData = response?.data || response;
-      setUserProfile(profileData);
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-    } finally {
-      setLoadingProfile(false);
-    }
-  };
 
   const fetchTransactionHistory = async () => {
     try {
@@ -60,18 +47,17 @@ export default function BillingPage() {
   };
 
   useEffect(() => {
-    fetchUserProfile();
     fetchTransactionHistory();
   }, []);
 
   useEffect(() => {
-    if (!loadingProfile && userProfile?.paymentSource) {
+    if (!loadingProfile && user?.paymentSource) {
       setActiveTab('history');
     }
-  }, [userProfile?.paymentSource, loadingProfile]);
+  }, [user?.paymentSource, loadingProfile]);
 
   const handleRechargeClick = () => {
-    if (!userProfile?.paymentSource) {
+    if (!user?.paymentSource) {
       alert('Debe agregar una tarjeta de pago antes de poder recargar saldo');
       return;
     }
@@ -100,7 +86,7 @@ export default function BillingPage() {
         setPaymentResult({ success: false, message: 'Error al registrar la tarjeta de pago' });
       }
 
-      await fetchUserProfile();
+      await fetchUser();
     } catch (error) {
       console.error('Error adding payment method:', error);
       setPaymentResult({ success: false, message: 'Error al registrar la tarjeta de pago' });
@@ -109,7 +95,7 @@ export default function BillingPage() {
     }
   };
 
-  const hasPaymentSource = !loadingProfile && userProfile?.paymentSource;
+  const hasPaymentSource = !loadingProfile && user?.paymentSource;
 
   return (
     <div className="min-h-screen w-full bg-white">
@@ -121,14 +107,13 @@ export default function BillingPage() {
             {loadingProfile ? (
               <p className="mt-2 text-gray-600">Cargando saldo...</p>
             ) : (
-              userProfile?.balance !== undefined && (
+              user?.balance !== undefined && (
                 <p className="mt-2 text-gray-600">
-                  Saldo Disponible:{' '}
-                  <span className="font-semibold text-gray-900">${userProfile.balance.toFixed(2)} USD</span>
+                  Saldo Disponible: <span className="font-semibold text-gray-900">${user.balance.toFixed(2)} USD</span>
                 </p>
               )
             )}
-            {!loadingProfile && !userProfile?.paymentSource && (
+            {!loadingProfile && !user?.paymentSource && (
               <div className="mt-3 rounded-md border border-yellow-200 bg-yellow-50 p-3">
                 <p className="text-sm text-yellow-800">
                   Aquí, necesitas agregar un métodos de pago para poder recargar saldo
@@ -138,7 +123,7 @@ export default function BillingPage() {
           </div>
           <Button
             onClick={handleRechargeClick}
-            disabled={!userProfile?.paymentSource}
+            disabled={!user?.paymentSource}
             className="bg-green-600 hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
           >
             Recargar Saldo
@@ -196,7 +181,7 @@ export default function BillingPage() {
             </div>
 
             <div className="grid gap-4">
-              {userProfile?.paymentSource && <PaymentCard publicData={userProfile.paymentSource.public_data} />}
+              {user?.paymentSource && <PaymentCard publicData={user.paymentSource.public_data} />}
             </div>
 
             {showCreditCardForm && (
@@ -231,7 +216,7 @@ export default function BillingPage() {
         open={showCreditPurchaseModal}
         onOpenChange={setShowCreditPurchaseModal}
         onPurchaseSuccess={() => {
-          fetchUserProfile();
+          fetchUser();
           fetchTransactionHistory();
         }}
       />

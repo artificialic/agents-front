@@ -120,7 +120,7 @@ export default function DashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div className="flex items-center space-x-2">
               <Clock className="h-4 w-4 text-gray-400" />
-              <CardTitle className="text-sm font-medium text-gray-900">Llamadas Retell</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-900">Llamadas</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="pt-2">

@@ -11,6 +11,7 @@ import CallDetailSheet from './call-detail-sheet';
 import CallHistoryFilters from './call-history-filters';
 import { MetricsDashboard } from '@/components/metrics-dashboard';
 import { apiService } from '@/services';
+import { applyCostMultiplier } from '@/utils';
 
 interface CallHistoryPageProps {
   batchId?: string;
@@ -126,17 +127,13 @@ export default function CallHistoryPage({ batchId, multiplier, onBack, incomingC
       const data = Array.isArray(response) ? response : response?.data ?? [];
 
       const mappedData = data.map((call) => {
-        const originalCost = call.call_cost?.combined_cost;
-        const validCost = Number.isFinite(originalCost) ? originalCost : 0;
-        const validMultiplier = Number.isFinite(multiplier) ? multiplier : 1;
-
         return {
           ...call,
           call_cost: call.call_cost
             ? {
-                ...call.call_cost,
-                combined_cost: validCost * validMultiplier
-              }
+              ...call.call_cost,
+              combined_cost: applyCostMultiplier(call.call_cost.combined_cost, multiplier)
+            }
             : call.call_cost
         };
       });
@@ -499,24 +496,26 @@ export default function CallHistoryPage({ batchId, multiplier, onBack, incomingC
         ) : (
           <>
             {loading ? (
-              <div className="rounded-md border">
-                <div className="border-b border-gray-200 bg-gray-50">
-                  <div className="grid grid-cols-12 gap-4 px-6 py-3 text-xs font-medium uppercase tracking-wider text-gray-500">
-                    <div className="col-span-2">Hora</div>
-                    <div className="col-span-1">Duración</div>
-                    <div className="col-span-1">Tipo de Canal</div>
-                    <div className="col-span-1">Costo</div>
-                    <div className="col-span-2">ID de Sesión</div>
-                    <div className="col-span-2">Razón de Finalización</div>
-                    <div className="col-span-1">Estado de Sesión</div>
-                    <div className="col-span-1">Sentimiento del Usuario</div>
-                    <div className="col-span-1">De</div>
+              <div className="overflow-x-auto">
+                <div className="min-w-max rounded-md border">
+                  <div className="border-b border-gray-200 bg-gray-50">
+                    <div className="grid grid-cols-12 gap-4 px-6 py-3 text-xs font-medium uppercase tracking-wider text-gray-500">
+                      <div className="col-span-2">Hora</div>
+                      <div className="col-span-1">Duración</div>
+                      <div className="col-span-1">Tipo de Canal</div>
+                      <div className="col-span-1">Costo</div>
+                      <div className="col-span-2">ID de Sesión</div>
+                      <div className="col-span-2">Razón de Finalización</div>
+                      <div className="col-span-1">Estado de Sesión</div>
+                      <div className="col-span-1">Sentimiento del Usuario</div>
+                      <div className="col-span-1">De</div>
+                    </div>
                   </div>
-                </div>
-                <div className="bg-white">
-                  {Array.from({ length: 8 }).map((_, index) => (
-                    <SkeletonRow key={index} />
-                  ))}
+                  <div className="bg-white">
+                    {Array.from({ length: 8 }).map((_, index) => (
+                      <SkeletonRow key={index} />
+                    ))}
+                  </div>
                 </div>
               </div>
             ) : callLogs.length === 0 ? (
@@ -526,21 +525,25 @@ export default function CallHistoryPage({ batchId, multiplier, onBack, incomingC
                   : 'No hay registros de llamadas disponibles'}
               </div>
             ) : (
-              <DataTable
-                serverPagination
-                sequentialPagination
-                showPagination
-                columns={enhancedColumns}
-                data={callLogs}
-                paginationInfo={{
-                  page: pagination.page,
-                  pageSize: pagination.pageSize,
-                  totalRows: pagination.totalRows,
-                  totalPages: pagination.hasNextPage ? pagination.page + 1 : pagination.page
-                }}
-                onPaginationChange={handlePaginationChange}
-                loading={loading}
-              />
+              <div className="w-full overflow-x-auto">
+                <div className="min-w-max">
+                  <DataTable
+                    serverPagination
+                    sequentialPagination
+                    showPagination
+                    columns={enhancedColumns}
+                    data={callLogs}
+                    paginationInfo={{
+                      page: pagination.page,
+                      pageSize: pagination.pageSize,
+                      totalRows: pagination.totalRows,
+                      totalPages: pagination.hasNextPage ? pagination.page + 1 : pagination.page
+                    }}
+                    onPaginationChange={handlePaginationChange}
+                    loading={loading}
+                  />
+                </div>
+              </div>
             )}
           </>
         )}

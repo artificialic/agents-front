@@ -35,6 +35,9 @@ import { usePathname } from 'next/navigation';
 import * as React from 'react';
 import { Icons } from '../icons';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { SidebarInfoCard } from '@/components/sidebar-info-card';
+import { useEffect } from 'react';
+import { useUserStore } from '@/stores/useUserStore';
 
 export const company = {
   name: 'Desarrollando Agentes',
@@ -48,6 +51,7 @@ export default function AppSidebar() {
   const { setOpenMobile } = useSidebar();
   const isMobile = useIsMobile();
   const roleUser = session?.user?.role || 'user';
+  const isUser = roleUser === 'user';
   const newMenuItems = navItems.filter((item) =>
     Array.isArray(item.role) ? item.role.includes(roleUser) : item.role === roleUser
   );
@@ -57,6 +61,13 @@ export default function AppSidebar() {
       setOpenMobile(false);
     }
   };
+
+  const { fetchUser } = useUserStore();
+
+  useEffect(() => {
+    console.log('Fetching user profile...');
+    fetchUser();
+  }, []);
 
   return (
     <Sidebar collapsible="icon" className="bg-gray-50">
@@ -117,6 +128,7 @@ export default function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
+        {isUser && <SidebarInfoCard />}
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>

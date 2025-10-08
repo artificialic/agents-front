@@ -1,10 +1,37 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Info, ArrowUpCircle } from 'lucide-react';
 import { apiService } from '@/services';
+import { useUserStore } from '@/stores/useUserStore';
+
+interface InfoRowProps {
+  label: string;
+  value: string | React.ReactNode;
+  loading?: boolean;
+  icon?: React.ReactNode;
+}
+
+function InfoRow({ label, value, loading = false, icon }: InfoRowProps) {
+  return (
+    <div className="flex items-center justify-between">
+      <div className="text-xs text-gray-600">{label}</div>
+      <div className="flex items-center">
+        {loading ? (
+          <div className="animate-pulse text-xs font-medium text-gray-400">...</div>
+        ) : (
+          <>
+            <div className="text-xs font-medium text-gray-950">{value}</div>
+            {icon && <div className="ml-1">{icon}</div>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export function SidebarInfoCard() {
+  const { user, loading: loadingProfile } = useUserStore();
   const [concurrency, setConcurrency] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,27 +67,19 @@ export function SidebarInfoCard() {
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="text-xs text-gray-600">Próxima Factura:</div>
-            <div className="flex items-center">
-              <div className="text-xs font-medium text-gray-950">$10.53</div>
-              <Info className="ml-1 h-3 w-3 text-gray-600" />
-            </div>
-          </div>
+          <InfoRow
+            label="Próxima Factura:"
+            value={`$${user?.balance?.toFixed(2) ?? '0.00'}`}
+            loading={loadingProfile}
+            icon={<Info className="h-3 w-3 text-gray-600" />}
+          />
 
-          <div className="flex items-center justify-between">
-            <div className="text-xs text-gray-600">Concurrencia Usada:</div>
-            <div className="flex items-center">
-              <div className="text-xs font-medium text-gray-950">
-                {loading
-                  ? '...'
-                  : error
-                  ? 'Error'
-                  : `${concurrency?.current_concurrency || 0}/${concurrency?.concurrency_limit || 0}`}
-              </div>
-              <ArrowUpCircle className="ml-1 h-3 w-3 text-gray-400" />
-            </div>
-          </div>
+          <InfoRow
+            label="Concurrencia Usada:"
+            value={error ? 'Error' : `${concurrency?.current_concurrency || 0}/${concurrency?.concurrency_limit || 0}`}
+            loading={loading}
+            icon={<ArrowUpCircle className="h-3 w-3 text-gray-400" />}
+          />
         </div>
       </div>
     </div>

@@ -202,30 +202,52 @@ export const columns: ColumnDef<CallLog>[] = [
   {
     accessorKey: 'start_timestamp',
     header: 'Hora',
+    size: 180,
+    minSize: 180,
+    enableResizing: false,
     cell: ({ row }) => {
-      return <div className="text-sm text-gray-900">{formatTime(row.getValue('start_timestamp'))}</div>;
+      return (
+        <div className="min-w-32 whitespace-nowrap text-sm text-gray-900">
+          {formatTime(row.getValue('start_timestamp'))}
+        </div>
+      );
     }
   },
   {
     accessorKey: 'duration_ms',
     header: 'Duración',
+    size: 100,
+    minSize: 100,
+    enableResizing: false,
     cell: ({ row }) => {
-      return <div className="text-sm text-gray-900">{formatDuration(row.getValue('duration_ms'))}</div>;
+      return (
+        <div className="min-w-32 whitespace-nowrap text-sm text-gray-900">
+          {formatDuration(row.getValue('duration_ms'))}
+        </div>
+      );
     }
   },
   {
     accessorKey: 'call_type',
     header: 'Tipo de Canal',
+    size: 150,
+    minSize: 150,
+    enableResizing: false,
     cell: ({ row }) => {
       const callType = row.getValue('call_type') as string;
       return (
-        <div className="text-sm text-gray-900">{callType === 'phone_call' ? 'Llamada telefónica' : 'Llamada web'}</div>
+        <div className="min-w-32 whitespace-nowrap text-sm text-gray-900">
+          {callType === 'phone_call' ? 'Llamada telefónica' : 'Llamada web'}
+        </div>
       );
     }
   },
   {
     accessorKey: 'call_cost',
     header: 'Costo',
+    size: 100,
+    minSize: 100,
+    enableResizing: false,
     cell: ({ row }) => {
       const callData = row.original;
       let costValue = 0;
@@ -240,74 +262,128 @@ export const columns: ColumnDef<CallLog>[] = [
         }
       }
 
-      return <div className="text-sm text-gray-900">{formatCost(costValue)}</div>;
+      return <div className="min-w-32 whitespace-nowrap text-sm text-gray-900">{formatCost(costValue)}</div>;
     }
   },
   {
     accessorKey: 'call_id',
     header: 'ID de Sesión',
+    size: 250,
+    minSize: 250,
+    enableResizing: false,
     cell: ({ row }) => {
-      return <div className="font-mono text-sm text-xs text-gray-900">{row.getValue('call_id')}</div>;
+      return (
+        <div className="min-w-32 whitespace-nowrap font-mono text-sm text-xs text-gray-900">
+          {row.getValue('call_id')}
+        </div>
+      );
     }
   },
   {
     accessorKey: 'disconnection_reason',
     header: 'Razón de Finalización',
+    size: 180,
+    minSize: 180,
+    enableResizing: false,
     cell: ({ row }) => {
       const reason = row.getValue('disconnection_reason') as string;
-      return <StatusIndicator status={reason || 'dial_no_answer'} type="error" />;
+      return (
+        <div className="min-w-32 whitespace-nowrap">
+          <StatusIndicator status={reason || 'dial_no_answer'} type="error" />
+        </div>
+      );
     }
   },
   {
     accessorKey: 'call_status',
     header: 'Estado de Sesión',
+    size: 150,
+    minSize: 150,
+    enableResizing: false,
     cell: ({ row }) => {
       const status = row.getValue('call_status') as string;
-      return <StatusIndicator status={status || 'error'} type={status === 'completed' ? 'success' : 'error'} />;
+      return (
+        <div className="min-w-32 whitespace-nowrap">
+          <StatusIndicator status={status || 'error'} type={status === 'completed' ? 'success' : 'error'} />
+        </div>
+      );
     }
   },
   {
     accessorKey: 'call_analysis',
     header: 'Sentimiento del Usuario',
+    size: 180,
+    minSize: 180,
+    enableResizing: false,
     cell: ({ row }) => {
       const analysis = row.getValue('call_analysis') as CallLog['call_analysis'];
-      return <StatusIndicator status={analysis?.user_sentiment || 'Unknown'} type="neutral" />;
+      return (
+        <div className="min-w-32 whitespace-nowrap">
+          <StatusIndicator status={analysis?.user_sentiment || 'Unknown'} type="neutral" />
+        </div>
+      );
     }
   },
   {
     accessorKey: 'from_number',
     header: 'De',
+    size: 130,
+    minSize: 130,
+    enableResizing: false,
     cell: ({ row }) => {
-      return <div className="text-sm text-gray-900">{row.getValue('from_number') || 'Desconocido'}</div>;
+      return (
+        <div className="min-w-32 whitespace-nowrap text-sm text-gray-900">
+          {row.getValue('from_number') || 'Desconocido'}
+        </div>
+      );
     }
   },
   {
     accessorKey: 'to_number',
     header: 'Para',
+    size: 130,
+    minSize: 130,
+    enableResizing: false,
     cell: ({ row }) => {
-      return <div className="text-sm text-gray-900">{row.getValue('to_number') || 'Desconocido'}</div>;
+      return (
+        <div className="min-w-32 whitespace-nowrap text-sm text-gray-900">
+          {row.getValue('to_number') || 'Desconocido'}
+        </div>
+      );
     }
   },
   {
     id: 'session_outcome',
     header: 'Resultado de Sesión',
+    size: 180,
+    minSize: 180,
+    enableResizing: false,
     cell: ({ row }) => {
       const analysis = row.original.call_analysis;
       return (
-        <StatusIndicator
-          status={analysis?.call_successful ? 'Successful' : 'Unsuccessful'}
-          type={analysis?.call_successful ? 'success' : 'error'}
-        />
+        <div className="min-w-32 whitespace-nowrap">
+          <StatusIndicator
+            status={analysis?.call_successful ? 'Successful' : 'Unsuccessful'}
+            type={analysis?.call_successful ? 'success' : 'error'}
+          />
+        </div>
       );
     }
   },
   {
     id: 'latency',
     header: 'Latencia de Extremo a Extremo',
+    size: 200,
+    minSize: 200,
+    enableResizing: false,
     cell: ({ row }) => {
       const latency = row.original.latency;
       const latencyValue = latency?.e2e?.p50;
-      return <div className="text-sm text-gray-900">{latencyValue ? `${latencyValue}ms` : '-'}</div>;
+      return (
+        <div className="min-w-32 whitespace-nowrap text-sm text-gray-900">
+          {latencyValue ? `${latencyValue}ms` : '-'}
+        </div>
+      );
     }
   }
 ];

@@ -24,6 +24,7 @@ interface Campaign {
   owner: string;
   agentId: string;
   status: 'draft' | 'active' | 'completed' | 'paused';
+  agentName?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -75,12 +76,10 @@ export default function CampaignDashboard({ onCreateCampaign }: CampaignDashboar
         status: editForm.status as Campaign['status']
       });
 
-      // Actualizar la lista de campañas
       await fetchCampaigns();
       handleCloseEditDialog();
     } catch (err) {
       console.error('Error updating campaign:', err);
-      // Aquí podrías agregar un toast o alert de error
     } finally {
       setIsUpdating(false);
     }
@@ -193,7 +192,7 @@ export default function CampaignDashboard({ onCreateCampaign }: CampaignDashboar
                     Nombre
                   </TableHead>
                   <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
-                    ID del Agente
+                    Agente
                   </TableHead>
                   <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     Estado
@@ -216,7 +215,7 @@ export default function CampaignDashboard({ onCreateCampaign }: CampaignDashboar
                       <span className="text-sm text-gray-900">{campaign.name}</span>
                     </TableCell>
                     <TableCell className="py-4">
-                      <span className="text-sm text-gray-900">{campaign.agentId}</span>
+                      <span className="text-sm text-gray-900">{campaign.agentName ?? campaign.agentId}</span>
                     </TableCell>
                     <TableCell className="py-4">
                       <span

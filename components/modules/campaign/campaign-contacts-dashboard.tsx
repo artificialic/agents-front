@@ -7,6 +7,8 @@ import { ChevronLeft, Users, Loader2, RefreshCw, Phone, Clock, Eye, Download } f
 import { apiService } from '@/services';
 import { downloadFile } from '@/lib/utils';
 import CallDetailSheet from '@/components/modules/call-history/call-detail-sheet';
+import { useUserStore } from '@/stores/useUserStore';
+import { applyCostMultiplier } from '@/utils';
 
 interface CampaignContactsDashboardProps {
   campaignId: string;
@@ -19,6 +21,7 @@ interface ContactByCampaign {
   campaignId: string;
   toNumber: string;
   status: string;
+  cost?: number;
   createdAt: string;
   updatedAt: string;
   callId: string;
@@ -29,11 +32,37 @@ interface ContactByCampaign {
   };
 }
 
+interface StatCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  valueColor?: string;
+}
+
+function StatCard({ icon, label, value, valueColor = 'text-gray-900' }: StatCardProps) {
+  return (
+    <div className="overflow-hidden rounded-lg bg-white shadow">
+      <div className="p-5">
+        <div className="flex items-center">
+          <div className="flex-shrink-0">{icon}</div>
+          <div className="ml-5 w-0 flex-1">
+            <dl>
+              <dt className="truncate text-sm font-medium text-gray-500">{label}</dt>
+              <dd className={`text-lg font-medium ${valueColor}`}>{value}</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CampaignContactsDashboard({
   campaignId,
   campaignName,
   onBack
 }: CampaignContactsDashboardProps) {
+  const getMultiplier = useUserStore((state) => state.getMultiplier);
   const [contacts, setContacts] = useState<ContactByCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -143,6 +172,8 @@ export default function CampaignContactsDashboard({
   };
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return '-'
+    
     return new Date(dateString).toLocaleString('es-ES', {
       month: '2-digit',
       day: '2-digit',
@@ -220,87 +251,40 @@ export default function CampaignContactsDashboard({
       {/* Stats Cards */}
       <div className="border-b border-gray-200 bg-gray-50 p-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <div className="overflow-hidden rounded-lg bg-white shadow">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <Users className="h-6 w-6 text-gray-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="truncate text-sm font-medium text-gray-500">Total</dt>
-                    <dd className="text-lg font-medium text-gray-900">{stats.total}</dd>
-                  </dl>
-                </div>
+          <StatCard
+            icon={<Users className="h-6 w-6 text-gray-400" />}
+            label="Total"
+            value={stats.total}
+            valueColor="text-gray-900"
+          />
+          <StatCard
+            icon={<Phone className="h-6 w-6 text-green-400" />}
+            label="Completados"
+            value={stats.completed}
+            valueColor="text-green-600"
+          />
+          <StatCard
+            icon={<Clock className="h-6 w-6 text-yellow-400" />}
+            label="Pendientes"
+            value={stats.pending}
+            valueColor="text-yellow-600"
+          />
+          <StatCard
+            icon={<Loader2 className="h-6 w-6 text-blue-400" />}
+            label="Procesando"
+            value={stats.processing}
+            valueColor="text-blue-600"
+          />
+          <StatCard
+            icon={
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-400">
+                <span className="text-xs font-bold text-white">!</span>
               </div>
-            </div>
-          </div>
-
-          <div className="overflow-hidden rounded-lg bg-white shadow">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <Phone className="h-6 w-6 text-green-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="truncate text-sm font-medium text-gray-500">Completados</dt>
-                    <dd className="text-lg font-medium text-green-600">{stats.completed}</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="overflow-hidden rounded-lg bg-white shadow">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <Clock className="h-6 w-6 text-yellow-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="truncate text-sm font-medium text-gray-500">Pendientes</dt>
-                    <dd className="text-lg font-medium text-yellow-600">{stats.pending}</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="overflow-hidden rounded-lg bg-white shadow">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <Loader2 className="h-6 w-6 text-blue-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="truncate text-sm font-medium text-gray-500">Procesando</dt>
-                    <dd className="text-lg font-medium text-blue-600">{stats.processing}</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="overflow-hidden rounded-lg bg-white shadow">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-400">
-                    <span className="text-xs font-bold text-white">!</span>
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="truncate text-sm font-medium text-gray-500">Fallidos</dt>
-                    <dd className="text-lg font-medium text-red-600">{stats.failed}</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
+            }
+            label="Fallidos"
+            value={stats.failed}
+            valueColor="text-red-600"
+          />
         </div>
       </div>
 
@@ -344,6 +328,9 @@ export default function CampaignContactsDashboard({
                     ID de Llamada
                   </TableHead>
                   <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
+                    Coste
+                  </TableHead>
+                  <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     Fecha de Creación
                   </TableHead>
                   <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -379,10 +366,15 @@ export default function CampaignContactsDashboard({
                     </TableCell>
                     <TableCell className="py-4">
                       {contact.callId ? (
-                        <span className="font-mono text-sm text-xs text-gray-900">{contact.callId}</span>
+                        <span className="font-mono text-sm text-gray-900">{contact.callId}</span>
                       ) : (
                         <span className="text-sm text-gray-400">-</span>
                       )}
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <span className="text-sm text-gray-900">
+                        ${applyCostMultiplier(contact.cost, getMultiplier()).toFixed(4)}
+                      </span>
                     </TableCell>
                     <TableCell className="py-4">
                       <span className="text-sm text-gray-900">{formatDate(contact.createdAt)}</span>
