@@ -114,7 +114,8 @@ export default function Clients() {
         const updateData = {
           firstName: formData.firstName,
           email: formData.email,
-          workspaceId: formData.workspaceId
+          workspaceId: formData.workspaceId,
+          ...(formData.billingConfig ? { billingConfig: formData.billingConfig } : {})
         };
         const updatedClient = await apiService.updateClient(editingClient._id, updateData);
 
