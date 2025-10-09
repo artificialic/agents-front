@@ -2,6 +2,39 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
+import { callStatusColorMap, disconnectionReasonColorMap, sentimentColorMap, translatedStatus } from '@/utils';
+
+type user_sentiment = 'Negative' | 'Positive' | 'Neutral' | 'Unknown';
+type call_status = 'registered' | 'not_connected' | 'ongoing' | 'ended' | 'error';
+type disconnection_reason =
+  | 'user_hangup'
+  | 'agent_hangup'
+  | 'call_transfer'
+  | 'voicemail_reached'
+  | 'inactivity'
+  | 'max_duration_reached'
+  | 'concurrency_limit_reached'
+  | 'no_valid_payment'
+  | 'scam_detected'
+  | 'dial_busy'
+  | 'dial_failed'
+  | 'dial_no_answer'
+  | 'invalid_destination'
+  | 'telephony_provider_permission_denied'
+  | 'telephony_provider_unavailable'
+  | 'sip_routing_error'
+  | 'marked_as_spam'
+  | 'user_declined'
+  | 'error_llm_websocket_open'
+  | 'error_llm_websocket_lost_connection'
+  | 'error_llm_websocket_runtime'
+  | 'error_llm_websocket_corrupt_payload'
+  | 'error_no_audio_received'
+  | 'error_asr'
+  | 'error_retell'
+  | 'error_unknown'
+  | 'error_user_not_joined'
+  | 'registered_call_timeout';
 
 export type CallLog = {
   call_id: string;
@@ -156,43 +189,13 @@ const formatCost = (cost: number) => {
   return `$${(cost / 100).toFixed(3)}`;
 };
 
-const StatusIndicator = ({ status, type }: { status: string; type: 'success' | 'error' | 'neutral' }) => {
-  const colorMap = {
-    success: 'bg-green-400',
-    error: 'bg-red-400',
-    neutral: 'bg-gray-400'
-  };
-
-  const translatedStatus = (status: string) => {
-    switch (status) {
-      case 'Successful':
-        return 'Exitosa';
-      case 'Unsuccessful':
-        return 'Fallida';
-      case 'completed':
-        return 'Completada';
-      case 'registered':
-        return 'Registrada';
-      case 'error':
-        return 'Error';
-      case 'Unknown':
-        return 'Desconocido';
-      case 'dial_no_answer':
-        return 'No contestada';
-      case 'agent_hangup':
-        return 'Agente colgó';
-      case 'user_hangup':
-        return 'Usuario colgó';
-      case 'call_failed':
-        return 'Llamada fallida';
-      default:
-        return status;
-    }
-  };
+const StatusIndicator = ({ status }: { status: string }) => {
+  const colorClass = sentimentColorMap[status] || disconnectionReasonColorMap[status] || callStatusColorMap[status];
+  const bgColorClass = colorClass ? `bg-[${colorClass}]` : 'bg-gray-400';
 
   return (
     <div className="flex items-center">
-      <div className={`mr-2 h-2 w-2 rounded-full ${colorMap[type]}`}></div>
+      <div className={`mr-2 h-2 w-2 rounded-full ${bgColorClass}`}></div>
       <span className="text-sm text-gray-900">{translatedStatus(status)}</span>
     </div>
   );
@@ -289,7 +292,7 @@ export const columns: ColumnDef<CallLog>[] = [
       const reason = row.getValue('disconnection_reason') as string;
       return (
         <div className="min-w-32 whitespace-nowrap">
-          <StatusIndicator status={reason || 'dial_no_answer'} type="error" />
+          <StatusIndicator status={reason || 'dial_no_answer'} />
         </div>
       );
     }
@@ -304,7 +307,7 @@ export const columns: ColumnDef<CallLog>[] = [
       const status = row.getValue('call_status') as string;
       return (
         <div className="min-w-32 whitespace-nowrap">
-          <StatusIndicator status={status || 'error'} type={status === 'completed' ? 'success' : 'error'} />
+          <StatusIndicator status={status || 'error'} />
         </div>
       );
     }
@@ -319,7 +322,7 @@ export const columns: ColumnDef<CallLog>[] = [
       const analysis = row.getValue('call_analysis') as CallLog['call_analysis'];
       return (
         <div className="min-w-32 whitespace-nowrap">
-          <StatusIndicator status={analysis?.user_sentiment || 'Unknown'} type="neutral" />
+          <StatusIndicator status={analysis?.user_sentiment || 'Unknown'} />
         </div>
       );
     }
@@ -362,10 +365,7 @@ export const columns: ColumnDef<CallLog>[] = [
       const analysis = row.original.call_analysis;
       return (
         <div className="min-w-32 whitespace-nowrap">
-          <StatusIndicator
-            status={analysis?.call_successful ? 'Successful' : 'Unsuccessful'}
-            type={analysis?.call_successful ? 'success' : 'error'}
-          />
+          <StatusIndicator status={analysis?.call_successful ? 'Successful' : 'Unsuccessful'} />
         </div>
       );
     }
