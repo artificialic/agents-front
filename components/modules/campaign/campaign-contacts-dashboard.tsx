@@ -21,6 +21,7 @@ interface ContactByCampaign {
   campaignId: string;
   toNumber: string;
   status: string;
+  callStatus?: string;
   cost?: number;
   createdAt: string;
   updatedAt: string;
@@ -361,7 +362,7 @@ export default function CampaignContactsDashboard({
                           contact.status
                         )}`}
                       >
-                        {getStatusText(contact.status)}
+                        {getStatusText(contact.callStatus || contact.status)}
                       </span>
                     </TableCell>
                     <TableCell className="py-4">
