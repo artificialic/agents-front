@@ -131,9 +131,9 @@ export default function CallHistoryPage({ batchId, multiplier, onBack, incomingC
           ...call,
           call_cost: call.call_cost
             ? {
-              ...call.call_cost,
-              combined_cost: applyCostMultiplier(call.call_cost.combined_cost, multiplier)
-            }
+                ...call.call_cost,
+                combined_cost: applyCostMultiplier(call.call_cost.combined_cost, multiplier)
+              }
             : call.call_cost
         };
       });
@@ -490,7 +490,7 @@ export default function CallHistoryPage({ batchId, multiplier, onBack, incomingC
         </div>
       )}
 
-      <div className="p-6">
+      <div className="bg-bg-white-0 z-10 h-full rounded-md p-4 md:px-4 md:py-4">
         {batchId && activeTab === 'metrics' ? (
           <MetricsDashboard callLogs={callLogs} />
         ) : (
@@ -525,24 +525,22 @@ export default function CallHistoryPage({ batchId, multiplier, onBack, incomingC
                   : 'No hay registros de llamadas disponibles'}
               </div>
             ) : (
-              <div className="w-full overflow-x-auto">
-                <div className="min-w-max">
-                  <DataTable
-                    serverPagination
-                    sequentialPagination
-                    showPagination
-                    columns={enhancedColumns}
-                    data={callLogs}
-                    paginationInfo={{
-                      page: pagination.page,
-                      pageSize: pagination.pageSize,
-                      totalRows: pagination.totalRows,
-                      totalPages: pagination.hasNextPage ? pagination.page + 1 : pagination.page
-                    }}
-                    onPaginationChange={handlePaginationChange}
-                    loading={loading}
-                  />
-                </div>
+              <div className="h-full">
+                <DataTable
+                  serverPagination
+                  sequentialPagination
+                  showPagination
+                  columns={enhancedColumns}
+                  data={callLogs}
+                  paginationInfo={{
+                    page: pagination.page,
+                    pageSize: pagination.pageSize,
+                    totalRows: pagination.totalRows,
+                    totalPages: pagination.hasNextPage ? pagination.page + 1 : pagination.page
+                  }}
+                  onPaginationChange={handlePaginationChange}
+                  loading={loading}
+                />
               </div>
             )}
           </>

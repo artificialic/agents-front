@@ -172,8 +172,8 @@ export default function CampaignContactsDashboard({
   };
 
   const formatDate = (dateString: string) => {
-    if (!dateString) return '-'
-    
+    if (!dateString) return '-';
+
     return new Date(dateString).toLocaleString('es-ES', {
       month: '2-digit',
       day: '2-digit',
