@@ -127,7 +127,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="flex h-full flex-grow flex-col gap-4 pt-8">
       <div className="relative flex-grow">
-        <div className="absolute bottom-0 left-0 right-0 top-0 max-h-[900px] min-h-[700px] overflow-x-auto">
+        <div className="absolute bottom-0 left-0 right-0 top-0 max-h-[700px] min-h-[700px] overflow-x-auto">
           <Table className="w-full caption-bottom p-8 text-sm">
             <TableHeader className="sticky top-0 z-30 bg-gray-50 shadow-sm">
               {table.getHeaderGroups().map((headerGroup) => (
@@ -176,7 +176,7 @@ export function DataTable<TData, TValue>({
             </TableBody>
           </Table>
         </div>
-        <div className="absolute bottom-[200px] left-0 right-0 z-50 mt-4 w-full">
+        <div className="absolute top-[700px] left-0 right-0 z-50 mt-4 w-full">
           {showPagination && (
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
