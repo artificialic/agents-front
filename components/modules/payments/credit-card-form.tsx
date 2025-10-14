@@ -56,8 +56,8 @@ export default function CreditCardForm({ onSubmit, isSubmitting = false, classNa
   const years = Array.from({ length: 10 }, (_, i) => {
     const fullYear = currentYear + i;
     return {
-      value: String(fullYear % 100).padStart(2, '0'),
-      label: String(fullYear % 100).padStart(2, '0')
+      value: String(fullYear % 100)?.padStart(2, '0'),
+      label: String(fullYear % 100)?.padStart(2, '0')
     };
   });
 
@@ -132,8 +132,8 @@ export default function CreditCardForm({ onSubmit, isSubmitting = false, classNa
                               {Array.from({ length: 12 }, (_, i) => {
                                 const month = i + 1;
                                 return (
-                                  <SelectItem key={month} value={month.toString().padStart(2, '0')}>
-                                    {month.toString().padStart(2, '0')}
+                                  <SelectItem key={month} value={month.toString()?.padStart(2, '0')}>
+                                    {month.toString()?.padStart(2, '0')}
                                   </SelectItem>
                                 );
                               })}

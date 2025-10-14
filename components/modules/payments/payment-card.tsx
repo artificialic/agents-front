@@ -11,7 +11,7 @@ interface PaymentCardProps {
 
 export const PaymentCard = ({ publicData }: PaymentCardProps) => {
   const { last_four, exp_month, exp_year, card_holder } = publicData;
-  const expirationDate = `${exp_month.padStart(2, '0')}/${exp_year.slice(-2)}`;
+  const expirationDate = `${exp_month?.padStart(2, '0')}/${exp_year.slice(-2)}`;
 
   return (
     <div className="w-full max-w-80">

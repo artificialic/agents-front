@@ -182,7 +182,7 @@ const formatDuration = (durationMs: number | null) => {
   const seconds = Math.floor(durationMs / 1000);
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
+  return `${mins}:${secs.toString()?.padStart(2, '0')}`;
 };
 
 const formatCost = (cost: number) => {
