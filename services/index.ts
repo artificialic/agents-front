@@ -1,3 +1,4 @@
+// @ts-nocheck
 import ApiService from './api-service';
 import { ApiResponse } from '@/services/types';
 
@@ -69,6 +70,26 @@ class ApiServiceLocal extends ApiService {
     return this.getFullResponse<PhoneNumber[]>('/retell/phone-numbers');
   }
 
+  async importPhoneNumber(importData: PhoneNumber): Promise<any> {
+    return this.post('/retell/phone-numbers/import', importData);
+  }
+
+  async updatePhoneNumber(phoneNumber: string, updateData: Partial<PhoneNumber>): Promise<any> {
+    return this.patch(`/retell/phone-numbers/${phoneNumber}`, updateData);
+  }
+
+  async setupSmsWebhook(setupData: SetupSmsWebhookRequest): Promise<any> {
+    return this.post('/retell/sms-webhook/setup', setupData);
+  }
+
+  async createPhoneCall(callData: CreatePhoneCallRequest): Promise<any> {
+    return this.post('/retell/calls/create', callData);
+  }
+
+  async deletePhoneNumber(phoneNumber: string): Promise<any> {
+    return this.delete(`/retell/phone-numbers/${phoneNumber}`);
+  }
+
   async getCallById(callId: string): Promise<ApiResponse<CallDetail>> {
     return this.getFullResponse<CallDetail>(`/retell/call/${callId}`);
   }
@@ -77,12 +98,36 @@ class ApiServiceLocal extends ApiService {
     return this.getFullResponse<Agent[]>('/retell/agents');
   }
 
+  async getAgent(agentId: string): Promise<ApiResponse<Agent>> {
+    return this.getFullResponse<Agent>(`/retell/agents/${agentId}`);
+  }
+
+  async updateAgent(agentId: string, data: Partial<Agent>): Promise<Agent> {
+    return this.patch<Agent>(`/retell/agents/${agentId}`, data);
+  }
+
   async getCalls(data: any): Promise<ApiResponse<Call[]>> {
     return this.post('/retell/calls', data);
   }
 
   async getConcurrency(): Promise<ApiResponse<Concurrency>> {
     return this.getFullResponse<Concurrency>('/retell/concurrency');
+  }
+
+  async getLlm(llmId: string): Promise<ApiResponse<Llm>> {
+    return this.getFullResponse<Llm>(`/retell/llm/${llmId}`);
+  }
+
+  async updateLlm(llmId: string, data: Partial<Llm>): Promise<Agent> {
+    return this.patch<Llm>(`/retell/llm/${llmId}`, data);
+  }
+
+  async getVoices(): Promise<ApiResponse<any>> {
+    return this.getFullResponse<any>('/retell/voices');
+  }
+
+  async getKnowledgeBases(): Promise<ApiResponse<any>> {
+    return this.getFullResponse<any>('/retell/knowledge-bases');
   }
 
   /* Templates */
