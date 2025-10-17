@@ -13,7 +13,11 @@ export default function CreateCampaignPage() {
 
   const handleFormSubmit = async (formData: any) => {
     try {
-      await apiService.createCampaign(formData);
+      const response = await apiService.createCampaign(formData);
+      if (response?._id) {
+        router.push(`/dashboard/campaign/${response._id}`);
+        return;
+      }
       router.push('/dashboard/campaign');
     } catch (err) {
       console.error('Error creating campaign:', err);

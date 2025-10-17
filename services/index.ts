@@ -44,6 +44,10 @@ class ApiServiceLocal extends ApiService {
     return this.post(`/campaigns/${campaignId}/contacts`, data);
   }
 
+  async getCampaignByUserAndId(id: string): Promise<Campaign> {
+    return this.getFullResponse<Campaign>(`/campaigns/by-user/${id}`);
+  }
+
   async getContactsByCampaign(campaignId: string): Promise<ApiResponse<ContactByCampaign[]>> {
     return this.getFullResponse<ContactByCampaign[]>(`/campaigns/${campaignId}/contacts`);
   }
@@ -114,7 +118,7 @@ class ApiServiceLocal extends ApiService {
     return this.getFullResponse<Concurrency>('/retell/concurrency');
   }
 
-  async getLlm(llmId: string): Promise<ApiResponse<Llm>> {
+  async getLlm(llmId: string): Promise<Llm> {
     return this.getFullResponse<Llm>(`/retell/llm/${llmId}`);
   }
 
@@ -122,7 +126,7 @@ class ApiServiceLocal extends ApiService {
     return this.patch<Llm>(`/retell/llm/${llmId}`, data);
   }
 
-  async getVoices(): Promise<Voice> {
+  async getVoices(): Promise<Voice[]> {
     return this.getFullResponse<any>('/retell/voices');
   }
 

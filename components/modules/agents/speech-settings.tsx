@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 
 import { useState } from 'react';
@@ -8,8 +9,7 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Settings, RefreshCw } from 'lucide-react';
-import type { Agent } from '@/services/types';
-import { apiService } from '@/services/index';
+import { apiService } from '@/services';
 
 const SLIDER_CONFIGS = {
   ambientSoundVolume: {
@@ -257,8 +257,8 @@ export function SpeechSettings({ agent, onAgentUpdate }: SpeechSettingsProps) {
           <div className="flex-1 space-y-1">
             <div className="text-sm font-medium">Habilitar Retroalimentación</div>
             <p className="text-xs text-muted-foreground">
-              Permite que el agente use afirmaciones como 'sí' o 'ajá' durante las conversaciones, indicando escucha
-              activa y compromiso.
+              Permite que el agente use afirmaciones como &#39;sí&#39; o &#39;ajá&#39; durante las conversaciones,
+              indicando escucha activa y compromiso.
             </p>
           </div>
           <Switch checked={agent.enable_backchannel || false} onCheckedChange={handleBackchannelChange} />

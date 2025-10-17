@@ -13,8 +13,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
-import type { Agent } from '@/services/types';
-import { apiService } from '@/services/index';
 
 interface PostCallAnalysisProps {
   agent: Agent;
