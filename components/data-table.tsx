@@ -176,7 +176,7 @@ export function DataTable<TData, TValue>({
             </TableBody>
           </Table>
         </div>
-        <div className="absolute top-[700px] left-0 right-0 z-50 mt-4 w-full">
+        <div className="absolute left-0 right-0 top-[700px] z-50 mt-4 w-full">
           {showPagination && (
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">

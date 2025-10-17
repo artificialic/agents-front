@@ -72,7 +72,6 @@ export default function CallHistoryFilters({ onFilterSelect, hideTypeFilter = fa
     }
   };
 
-  // Filtrar las opciones disponibles basándose en hideTypeFilter
   const availableFilterOptions = filterOptions.filter((option) => {
     if (hideTypeFilter && option.id === 'type') {
       return false;

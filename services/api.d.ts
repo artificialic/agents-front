@@ -4,6 +4,7 @@ interface Campaign {
   owner: string;
   agentId: string;
   status: 'draft' | 'active' | 'completed' | 'paused';
+  agentName?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -149,17 +150,22 @@ type CreateContactsPayload = {
   }[];
 };
 
-type ContactByCampaign = {
+interface ContactByCampaign {
   _id: string;
   campaignId: string;
   toNumber: string;
-  fullName: string;
   status: string;
+  callStatus?: string;
+  cost?: number;
   createdAt: string;
   updatedAt: string;
   callId: string;
   processedAt: string;
-};
+  callAnalysis?: {
+    custom_analysis_data?: Record<string, any>;
+    [key: string]: any;
+  };
+}
 
 type CreateTransactionPayload = {
   amount: number;
@@ -261,4 +267,15 @@ interface DashboardStats {
     Unknown: number;
     inbound: number;
   };
+}
+
+/* RETELL */
+interface Voice {
+  voice_id: string;
+  voice_name: string;
+  provider: string;
+  accent: string;
+  gender: string;
+  age: string;
+  preview_audio_url: string;
 }

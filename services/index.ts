@@ -66,7 +66,7 @@ class ApiServiceLocal extends ApiService {
   }
 
   /* Retell */
-  async getPhoneNumbers(): Promise<ApiResponse<PhoneNumber[]>> {
+  async getPhoneNumbers(): Promise<PhoneNumber[]> {
     return this.getFullResponse<PhoneNumber[]>('/retell/phone-numbers');
   }
 
@@ -94,7 +94,7 @@ class ApiServiceLocal extends ApiService {
     return this.getFullResponse<CallDetail>(`/retell/call/${callId}`);
   }
 
-  async getAgents(): Promise<ApiResponse<Agent[]>> {
+  async getAgents(): Promise<Agent[]> {
     return this.getFullResponse<Agent[]>('/retell/agents');
   }
 
@@ -122,7 +122,7 @@ class ApiServiceLocal extends ApiService {
     return this.patch<Llm>(`/retell/llm/${llmId}`, data);
   }
 
-  async getVoices(): Promise<ApiResponse<any>> {
+  async getVoices(): Promise<Voice> {
     return this.getFullResponse<any>('/retell/voices');
   }
 

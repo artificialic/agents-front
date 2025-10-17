@@ -1,19 +1,30 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ChevronLeft, Users, Loader2, RefreshCw, Phone, Clock, Eye, Download } from 'lucide-react';
+import { ChevronLeft, Users, Loader2, RefreshCw, Phone, Clock, Eye, Download, Pencil, PlusIcon } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ReloadIcon } from '@radix-ui/react-icons';
 import { apiService } from '@/services';
-import { downloadFile } from '@/lib/utils';
 import CallDetailSheet from '@/components/modules/call-history/call-detail-sheet';
 import { useUserStore } from '@/stores/useUserStore';
 import { applyCostMultiplier } from '@/utils';
+import { formatDate } from '@/lib/utils';
 
 interface CampaignContactsDashboardProps {
-  campaignId: string;
-  campaignName: string;
+  campaign: Campaign | null;
+  contacts: ContactByCampaign[];
+  loading: boolean;
+  error: string | null;
+  exportingCSV: boolean;
   onBack?: () => void;
+  onRefresh: () => void;
+  onUpdateCampaign: (data: { name: string; status: Campaign['status'] }) => Promise<void>;
+  onExportCSV: () => void;
 }
 
 interface ContactByCampaign {
@@ -59,23 +70,29 @@ function StatCard({ icon, label, value, valueColor = 'text-gray-900' }: StatCard
 }
 
 export default function CampaignContactsDashboard({
-  campaignId,
-  campaignName,
-  onBack
+  campaign,
+  contacts,
+  loading,
+  error,
+  exportingCSV,
+  onBack,
+  onRefresh,
+  onUpdateCampaign,
+  onExportCSV
 }: CampaignContactsDashboardProps) {
+  const router = useRouter();
   const getMultiplier = useUserStore((state) => state.getMultiplier);
-  const [contacts, setContacts] = useState<ContactByCampaign[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedCall, setSelectedCall] = useState<any>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [loadingCall, setLoadingCall] = useState(false);
-  const [exportingCSV, setExportingCSV] = useState(false);
   const [dynamicFields, setDynamicFields] = useState<string[]>([]);
+
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editForm, setEditForm] = useState({ name: '', status: '' });
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const createDynamicColumns = (data: ContactByCampaign[]) => {
     const customFieldsSet = new Set<string>();
-
     data.forEach((contact) => {
       if (contact.callAnalysis?.custom_analysis_data) {
         Object.keys(contact.callAnalysis.custom_analysis_data).forEach((key) => {
@@ -83,49 +100,17 @@ export default function CampaignContactsDashboard({
         });
       }
     });
-
     setDynamicFields(Array.from(customFieldsSet));
   };
 
-  const fetchContacts = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await apiService.getContactsByCampaign(campaignId);
-      const contactsData = Array.isArray(response) ? response : response?.data ?? [];
-
-      setContacts(contactsData);
-      createDynamicColumns(contactsData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido');
-      console.error('Error fetching campaign contacts:', err);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (contacts) {
+      createDynamicColumns(contacts);
     }
-  };
-
-  const handleExportCSV = async () => {
-    try {
-      setExportingCSV(true);
-      const response = await apiService.exportCampaignContacts(campaignId);
-
-      if (response.success && response.data) {
-        const url = window.URL.createObjectURL(response.data);
-        downloadFile(url, `campaign-${campaignId}-contacts.csv`);
-        window.URL.revokeObjectURL(url);
-      }
-    } catch (err) {
-      console.error('Error exporting contacts:', err);
-      setError(err instanceof Error ? err.message : 'Error al exportar contactos');
-    } finally {
-      setExportingCSV(false);
-    }
-  };
+  }, [contacts]);
 
   const handleViewContact = async (contact: ContactByCampaign) => {
     if (!contact.callId) return;
-
     try {
       setLoadingCall(true);
       const callData = await apiService.getCallById(contact.callId);
@@ -138,9 +123,27 @@ export default function CampaignContactsDashboard({
     }
   };
 
-  useEffect(() => {
-    fetchContacts();
-  }, [campaignId]);
+  const handleEditCampaign = () => {
+    if (!campaign) return;
+    setEditForm({ name: campaign.name, status: campaign.status });
+    setShowEditDialog(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setShowEditDialog(false);
+  };
+
+  const handleUpdateCampaign = async () => {
+    try {
+      setIsUpdating(true);
+      await onUpdateCampaign(editForm as { name: string; status: Campaign['status'] });
+      handleCloseEditDialog();
+    } catch (err) {
+      console.error('Error updating campaign:', err);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -172,21 +175,8 @@ export default function CampaignContactsDashboard({
     }
   };
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return '-';
-
-    return new Date(dateString).toLocaleString('es-ES', {
-      month: '2-digit',
-      day: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
-  };
-
   const getStatusStats = () => {
-    const stats = contacts.reduce(
+    return (contacts || []).reduce(
       (acc, contact) => {
         acc.total++;
         switch (contact.status) {
@@ -207,11 +197,13 @@ export default function CampaignContactsDashboard({
       },
       { total: 0, completed: 0, pending: 0, failed: 0, processing: 0 }
     );
-
-    return stats;
   };
 
   const stats = getStatusStats();
+
+  if (!campaign) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen w-full bg-white">
@@ -227,21 +219,33 @@ export default function CampaignContactsDashboard({
               <Users className="mr-2 h-5 w-5 text-gray-600" />
               <div>
                 <h1 className="text-lg font-medium text-gray-900">Contactos de Campaña</h1>
-                <p className="text-sm text-gray-500">{campaignName}</p>
+                <p className="text-sm text-gray-500">{campaign.name}</p>
               </div>
             </div>
           </div>
           <div className="flex items-center space-x-3">
+            <Button onClick={handleEditCampaign} variant="outline" size="sm" disabled={!campaign}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Editar Campaña
+            </Button>
             <Button
-              onClick={handleExportCSV}
+              onClick={() => router.push(`/dashboard/campaign/${campaign._id}/contacts`)}
               variant="outline"
               size="sm"
-              disabled={exportingCSV || contacts.length === 0}
+            >
+              <PlusIcon className="mr-2 h-4 w-4" />
+              Agregar Contactos
+            </Button>
+            <Button
+              onClick={onExportCSV}
+              variant="outline"
+              size="sm"
+              disabled={exportingCSV || (contacts || []).length === 0}
             >
               <Download className={`mr-2 h-4 w-4 ${exportingCSV ? 'animate-pulse' : ''}`} />
               Exportar CSV
             </Button>
-            <Button onClick={fetchContacts} variant="outline" size="sm" disabled={loading}>
+            <Button onClick={onRefresh} variant="outline" size="sm" disabled={loading}>
               <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               Actualizar
             </Button>
@@ -249,15 +253,9 @@ export default function CampaignContactsDashboard({
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="border-b border-gray-200 bg-gray-50 p-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <StatCard
-            icon={<Users className="h-6 w-6 text-gray-400" />}
-            label="Total"
-            value={stats.total}
-            valueColor="text-gray-900"
-          />
+          <StatCard icon={<Users className="h-6 w-6 text-gray-400" />} label="Total" value={stats.total} />
           <StatCard
             icon={<Phone className="h-6 w-6 text-green-400" />}
             label="Completados"
@@ -293,20 +291,20 @@ export default function CampaignContactsDashboard({
         {loading && (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-            <span className="ml-2 text-gray-600">Cargando contactos...</span>
+            <span className="ml-2 text-gray-600">Actualizando...</span>
           </div>
         )}
 
         {error && !loading && (
           <div className="py-12 text-center">
             <div className="mb-4 text-red-600">{error}</div>
-            <Button onClick={fetchContacts} variant="outline">
+            <Button onClick={onRefresh} variant="outline">
               Reintentar
             </Button>
           </div>
         )}
 
-        {!loading && !error && contacts.length === 0 && (
+        {!loading && !error && (contacts || []).length === 0 && (
           <div className="py-12 text-center">
             <Users className="mx-auto mb-4 h-12 w-12 text-gray-400" />
             <h3 className="mb-2 text-lg font-medium text-gray-900">No hay contactos</h3>
@@ -314,7 +312,7 @@ export default function CampaignContactsDashboard({
           </div>
         )}
 
-        {!loading && !error && contacts.length > 0 && (
+        {!loading && !error && (contacts || []).length > 0 && (
           <div className="rounded-md border">
             <Table>
               <TableHeader>
@@ -420,6 +418,58 @@ export default function CampaignContactsDashboard({
       </div>
 
       <CallDetailSheet call={selectedCall} open={isSheetOpen} onOpenChange={setIsSheetOpen} />
+
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Editar Campaña</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="name" className="text-right text-sm font-medium">
+                Nombre
+              </label>
+              <Input
+                id="name"
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="status" className="text-right text-sm font-medium">
+                Estado
+              </label>
+              <Select value={editForm.status} onValueChange={(value) => setEditForm({ ...editForm, status: value })}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Borrador</SelectItem>
+                  <SelectItem value="active">Activa</SelectItem>
+                  <SelectItem value="paused">Pausada</SelectItem>
+                  <SelectItem value="completed">Completada</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCloseEditDialog}>
+              Cancelar
+            </Button>
+            <Button onClick={handleUpdateCampaign} disabled={isUpdating}>
+              {isUpdating ? (
+                <>
+                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                'Guardar'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

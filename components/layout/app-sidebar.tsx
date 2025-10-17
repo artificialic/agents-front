@@ -41,8 +41,7 @@ import { useUserStore } from '@/stores/useUserStore';
 
 export const company = {
   name: 'Desarrollando Agentes',
-  logo: GalleryVerticalEnd,
-  plan: ''
+  logo: GalleryVerticalEnd
 };
 
 export default function AppSidebar() {
@@ -78,7 +77,6 @@ export default function AppSidebar() {
           </div>
           <div className="grid flex-1 items-center text-left text-sm leading-tight">
             <span className="truncate font-semibold">{company.name}</span>
-            {/*<span className="truncate text-xs">{company.plan}</span>*/}
           </div>
         </div>
       </SidebarHeader>
