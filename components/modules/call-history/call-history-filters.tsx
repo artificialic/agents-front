@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, FileType, ChevronLeft, Users, Loader2 } from 'lucide-react';
+import { Plus, FileType, ChevronLeft, Users, Loader2, CheckCircle, Smile } from 'lucide-react';
 import { apiService } from '@/services';
 
 interface FilterOption {
@@ -37,6 +37,16 @@ const filterOptions: FilterOption[] = [
     id: 'agent',
     label: 'Agente',
     icon: Users
+  },
+  {
+    id: 'status',
+    label: 'Estado de Llamada',
+    icon: CheckCircle
+  },
+  {
+    id: 'sentiment',
+    label: 'Sentimiento del Usuario',
+    icon: Smile
   }
 ];
 
@@ -56,6 +66,10 @@ export default function CallHistoryFilters({ onFilterSelect, hideTypeFilter = fa
   const [availableAgents, setAvailableAgents] = useState<Agent[]>([]);
   const [loadingAgents, setLoadingAgents] = useState(false);
   const [agentsError, setAgentsError] = useState<string | null>(null);
+  const [showStatusFilter, setShowStatusFilter] = useState(false);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [showSentimentFilter, setShowSentimentFilter] = useState(false);
+  const [selectedSentiments, setSelectedSentiments] = useState<string[]>([]);
 
   const fetchAgents = async () => {
     try {
@@ -88,8 +102,11 @@ export default function CallHistoryFilters({ onFilterSelect, hideTypeFilter = fa
       if (availableAgents.length === 0) {
         fetchAgents();
       }
+    } else if (filterId === 'status') {
+      setShowStatusFilter(true);
+    } else if (filterId === 'sentiment') {
+      setShowSentimentFilter(true);
     } else {
-      console.log('Filtro seleccionado:', filterId);
       onFilterSelect?.(filterId);
       setIsOpen(false);
     }
@@ -98,11 +115,15 @@ export default function CallHistoryFilters({ onFilterSelect, hideTypeFilter = fa
   const handleBack = () => {
     setShowTypeFilter(false);
     setShowAgentFilter(false);
+    setShowStatusFilter(false);
+    setShowSentimentFilter(false);
   };
 
   const handleCancel = () => {
     setShowTypeFilter(false);
     setShowAgentFilter(false);
+    setShowStatusFilter(false);
+    setShowSentimentFilter(false);
     setIsOpen(false);
   };
 
@@ -125,7 +146,17 @@ export default function CallHistoryFilters({ onFilterSelect, hideTypeFilter = fa
 
     const finalCriteria = { filter_criteria: filterCriteria };
 
-    console.log('Guardando filtro de tipo:', finalCriteria);
+    onFilterSelect?.(finalCriteria);
+    setShowTypeFilter(false);
+    setIsOpen(false);
+  };
+
+  const handleTypeClear = () => {
+    setSelectedType('phone');
+    setOutboundChecked(false);
+    setInboundChecked(false);
+
+    const finalCriteria = { filter_criteria: {} };
     onFilterSelect?.(finalCriteria);
     setShowTypeFilter(false);
     setIsOpen(false);
@@ -140,14 +171,92 @@ export default function CallHistoryFilters({ onFilterSelect, hideTypeFilter = fa
 
     const finalCriteria = { filter_criteria: filterCriteria };
 
-    console.log('Guardando filtro de agente:', finalCriteria);
     onFilterSelect?.(finalCriteria);
     setShowAgentFilter(false);
     setIsOpen(false);
   };
 
+  const handleAgentClear = () => {
+    setSelectedAgents([]);
+
+    const finalCriteria = { filter_criteria: {} };
+    onFilterSelect?.(finalCriteria);
+    setShowAgentFilter(false);
+    setIsOpen(false);
+  };
+
+  const handleStatusSave = () => {
+    const filterCriteria: any = {};
+
+    if (selectedStatuses.length > 0) {
+      filterCriteria.call_status = selectedStatuses;
+    }
+
+    const finalCriteria = { filter_criteria: filterCriteria };
+
+    onFilterSelect?.(finalCriteria);
+    setShowStatusFilter(false);
+    setIsOpen(false);
+  };
+
+  const handleStatusClear = () => {
+    setSelectedStatuses([]);
+
+    const finalCriteria = { filter_criteria: {} };
+    onFilterSelect?.(finalCriteria);
+    setShowStatusFilter(false);
+    setIsOpen(false);
+  };
+
   const handleAgentToggle = (agentId: string) => {
     setSelectedAgents((prev) => (prev.includes(agentId) ? prev.filter((id) => id !== agentId) : [...prev, agentId]));
+  };
+
+  const handleStatusToggle = (status: string) => {
+    setSelectedStatuses((prev) => (prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status]));
+  };
+
+  const handleSentimentToggle = (sentiment: string) => {
+    setSelectedSentiments((prev) =>
+      prev.includes(sentiment) ? prev.filter((s) => s !== sentiment) : [...prev, sentiment]
+    );
+  };
+
+  const callStatuses = [
+    { value: 'ended', label: 'Finalizado' },
+    { value: 'error', label: 'Error' },
+    { value: 'not_connected', label: 'No Conectado' },
+    { value: 'ongoing', label: 'En Curso' }
+  ];
+
+  const userSentiments = [
+    { value: 'Negative', label: 'Negativo' },
+    { value: 'Positive', label: 'Positivo' },
+    { value: 'Neutral', label: 'Neutral' },
+    { value: 'Unknown', label: 'Desconocido' }
+  ];
+
+  const handleSentimentSave = () => {
+    const filterCriteria: any = {};
+
+    if (selectedSentiments.length > 0) {
+      filterCriteria.user_sentiment = selectedSentiments;
+    }
+
+    const finalCriteria = { filter_criteria: filterCriteria };
+
+    onFilterSelect?.(finalCriteria);
+    setShowSentimentFilter(false);
+    setIsOpen(false);
+  };
+
+  const handleSentimentClear = () => {
+    setSelectedSentiments([]);
+
+    const finalCriteria = { filter_criteria: {} };
+    onFilterSelect?.(finalCriteria);
+    setShowSentimentFilter(false);
+    setIsOpen(false);
   };
 
   return (
@@ -159,7 +268,7 @@ export default function CallHistoryFilters({ onFilterSelect, hideTypeFilter = fa
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="start">
-        {!showTypeFilter && !showAgentFilter ? (
+        {!showTypeFilter && !showAgentFilter && !showStatusFilter && !showSentimentFilter ? (
           <div className="p-2">
             <div className="space-y-1">
               {availableFilterOptions.map((option) => {
@@ -239,13 +348,23 @@ export default function CallHistoryFilters({ onFilterSelect, hideTypeFilter = fa
               </RadioGroup>
             </div>
 
-            <div className="mt-6 flex justify-end space-x-2">
-              <Button variant="outline" size="sm" onClick={handleCancel}>
-                Cancelar
+            <div className="mt-6 flex justify-between">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleTypeClear}
+                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                Limpiar
               </Button>
-              <Button size="sm" onClick={handleSave} className="bg-gray-900 text-white hover:bg-gray-800">
-                Guardar
-              </Button>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm" onClick={handleCancel}>
+                  Cancelar
+                </Button>
+                <Button size="sm" onClick={handleSave} className="bg-gray-900 text-white hover:bg-gray-800">
+                  Guardar
+                </Button>
+              </div>
             </div>
           </div>
         ) : showAgentFilter ? (
@@ -298,21 +417,127 @@ export default function CallHistoryFilters({ onFilterSelect, hideTypeFilter = fa
                   )}
                 </div>
 
-                <div className="mt-6 flex justify-end space-x-2">
-                  <Button variant="outline" size="sm" onClick={handleCancel}>
-                    Cancelar
-                  </Button>
+                <div className="mt-6 flex justify-between">
                   <Button
+                    variant="outline"
                     size="sm"
-                    onClick={handleAgentSave}
-                    className="bg-gray-900 text-white hover:bg-gray-800"
-                    disabled={selectedAgents.length === 0}
+                    onClick={handleAgentClear}
+                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
                   >
-                    Guardar ({selectedAgents.length})
+                    Limpiar
                   </Button>
+                  <div className="flex space-x-2">
+                    <Button variant="outline" size="sm" onClick={handleCancel}>
+                      Cancelar
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleAgentSave}
+                      className="bg-gray-900 text-white hover:bg-gray-800"
+                      disabled={selectedAgents.length === 0}
+                    >
+                      Guardar ({selectedAgents.length})
+                    </Button>
+                  </div>
                 </div>
               </>
             )}
+          </div>
+        ) : showStatusFilter ? (
+          <div className="p-4">
+            <div className="mb-4 flex items-center">
+              <Button variant="ghost" size="icon" className="mr-2 h-6 w-6" onClick={handleBack}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <h3 className="text-sm font-medium text-gray-900">Filtrar por Estado de Llamada</h3>
+            </div>
+
+            <div className="space-y-3">
+              {callStatuses.map((status) => (
+                <div key={status.value} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={status.value}
+                    checked={selectedStatuses.includes(status.value)}
+                    onCheckedChange={() => handleStatusToggle(status.value)}
+                  />
+                  <Label htmlFor={status.value} className="text-sm text-gray-900">
+                    {status.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 flex justify-between">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleStatusClear}
+                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                Limpiar
+              </Button>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm" onClick={handleCancel}>
+                  Cancelar
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleStatusSave}
+                  className="bg-gray-900 text-white hover:bg-gray-800"
+                  disabled={selectedStatuses.length === 0}
+                >
+                  Guardar ({selectedStatuses.length})
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : showSentimentFilter ? (
+          <div className="p-4">
+            <div className="mb-4 flex items-center">
+              <Button variant="ghost" size="icon" className="mr-2 h-6 w-6" onClick={handleBack}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <h3 className="text-sm font-medium text-gray-900">Filtrar por Sentimiento del Usuario</h3>
+            </div>
+
+            <div className="space-y-3">
+              {userSentiments.map((sentiment) => (
+                <div key={sentiment.value} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={sentiment.value}
+                    checked={selectedSentiments.includes(sentiment.value)}
+                    onCheckedChange={() => handleSentimentToggle(sentiment.value)}
+                  />
+                  <Label htmlFor={sentiment.value} className="text-sm text-gray-900">
+                    {sentiment.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 flex justify-between">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSentimentClear}
+                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                Limpiar
+              </Button>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm" onClick={handleCancel}>
+                  Cancelar
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSentimentSave}
+                  className="bg-gray-900 text-white hover:bg-gray-800"
+                  disabled={selectedSentiments.length === 0}
+                >
+                  Guardar ({selectedSentiments.length})
+                </Button>
+              </div>
+            </div>
           </div>
         ) : null}
       </PopoverContent>

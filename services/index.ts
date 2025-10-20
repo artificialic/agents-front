@@ -48,8 +48,9 @@ class ApiServiceLocal extends ApiService {
     return this.getFullResponse<Campaign>(`/campaigns/by-user/${id}`);
   }
 
-  async getContactsByCampaign(campaignId: string): Promise<ApiResponse<ContactByCampaign[]>> {
-    return this.getFullResponse<ContactByCampaign[]>(`/campaigns/${campaignId}/contacts`);
+  async getContactsByCampaign(campaignId: string, callStatus?: string): Promise<ApiResponse<ContactByCampaign[]>> {
+    const params = callStatus && callStatus !== 'all' ? `?callStatus=${callStatus}` : '';
+    return this.getFullResponse<ContactByCampaign[]>(`/campaigns/${campaignId}/contacts${params}`);
   }
 
   async exportCampaignContacts(campaignId: string) {
@@ -98,6 +99,10 @@ class ApiServiceLocal extends ApiService {
     return this.getFullResponse<CallDetail>(`/retell/call/${callId}`);
   }
 
+  async createAgent(agentData: CreateAgentRequest): Promise<Agent> {
+    return this.post<Agent>('/retell/agents', agentData);
+  }
+
   async getAgents(): Promise<Agent[]> {
     return this.getFullResponse<Agent[]>('/retell/agents');
   }
@@ -120,6 +125,10 @@ class ApiServiceLocal extends ApiService {
 
   async getLlm(llmId: string): Promise<Llm> {
     return this.getFullResponse<Llm>(`/retell/llm/${llmId}`);
+  }
+
+  async getLlms(): Promise<Llm[]> {
+    return this.getFullResponse<Llm[]>(`/retell/llms`);
   }
 
   async updateLlm(llmId: string, data: Partial<Llm>): Promise<Agent> {

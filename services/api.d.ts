@@ -84,6 +84,16 @@ type Agent = {
   denoising_mode: string;
 };
 
+type CreateAgentPayload = {
+  agent_name: string;
+  voice_id: string;
+  response_engine: {
+    type: string;
+    llm_id: string;
+    version: number;
+  };
+};
+
 type Call = {
   call_id: string;
   call_type: string;

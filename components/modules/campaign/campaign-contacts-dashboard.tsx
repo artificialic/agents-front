@@ -4,7 +4,19 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ChevronLeft, Users, Loader2, RefreshCw, Phone, Clock, Eye, Download, Pencil, PlusIcon } from 'lucide-react';
+import {
+  ChevronLeft,
+  Users,
+  Loader2,
+  RefreshCw,
+  Phone,
+  Clock,
+  Eye,
+  Download,
+  Pencil,
+  PlusIcon,
+  Filter
+} from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -21,10 +33,12 @@ interface CampaignContactsDashboardProps {
   loading: boolean;
   error: string | null;
   exportingCSV: boolean;
+  callStatusFilter?: string;
   onBack?: () => void;
   onRefresh: () => void;
   onUpdateCampaign: (data: { name: string; status: Campaign['status'] }) => Promise<void>;
   onExportCSV: () => void;
+  onCallStatusFilterChange?: (status: string) => void;
 }
 
 interface ContactByCampaign {
@@ -75,10 +89,12 @@ export default function CampaignContactsDashboard({
   loading,
   error,
   exportingCSV,
+  callStatusFilter = 'all',
   onBack,
   onRefresh,
   onUpdateCampaign,
-  onExportCSV
+  onExportCSV,
+  onCallStatusFilterChange
 }: CampaignContactsDashboardProps) {
   const router = useRouter();
   const getMultiplier = useUserStore((state) => state.getMultiplier);
@@ -145,6 +161,12 @@ export default function CampaignContactsDashboard({
     }
   };
 
+  const handleCallStatusFilterChange = (value: string) => {
+    if (onCallStatusFilterChange) {
+      onCallStatusFilterChange(value);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'done':
@@ -172,6 +194,40 @@ export default function CampaignContactsDashboard({
         return 'Procesando';
       default:
         return status;
+    }
+  };
+
+  const getCallStatusBadge = (callStatus: string) => {
+    switch (callStatus) {
+      case 'registered':
+        return 'bg-purple-100 text-purple-800';
+      case 'not_connected':
+        return 'bg-orange-100 text-orange-800';
+      case 'ongoing':
+        return 'bg-blue-100 text-blue-800';
+      case 'ended':
+        return 'bg-green-100 text-green-800';
+      case 'error':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getCallStatusText = (callStatus: string) => {
+    switch (callStatus) {
+      case 'registered':
+        return 'Registrada';
+      case 'not_connected':
+        return 'No Conectada';
+      case 'ongoing':
+        return 'En Curso';
+      case 'ended':
+        return 'Finalizada';
+      case 'error':
+        return 'Error';
+      default:
+        return callStatus;
     }
   };
 
@@ -288,6 +344,24 @@ export default function CampaignContactsDashboard({
       </div>
 
       <div className="p-6">
+        <div className="mb-4 flex items-center space-x-2">
+          <Filter className="h-4 w-4 text-gray-500" />
+          <span className="text-sm font-medium text-gray-700">Filtrar por estado de llamada:</span>
+          <Select value={callStatusFilter} onValueChange={handleCallStatusFilterChange}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="registered">Registrada</SelectItem>
+              <SelectItem value="not_connected">No Conectada</SelectItem>
+              <SelectItem value="ongoing">En Curso</SelectItem>
+              <SelectItem value="ended">Finalizada</SelectItem>
+              <SelectItem value="error">Error</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         {loading && (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
@@ -308,42 +382,51 @@ export default function CampaignContactsDashboard({
           <div className="py-12 text-center">
             <Users className="mx-auto mb-4 h-12 w-12 text-gray-400" />
             <h3 className="mb-2 text-lg font-medium text-gray-900">No hay contactos</h3>
-            <p className="mb-6 text-gray-500">Esta campaña aún no tiene contactos agregados</p>
+            <p className="mb-6 text-gray-500">
+              {callStatusFilter !== 'all'
+                ? 'No se encontraron contactos con este estado de llamada'
+                : 'Esta campaña aún no tiene contactos agregados'}
+            </p>
+            {callStatusFilter !== 'all' && (
+              <Button onClick={() => handleCallStatusFilterChange('all')} variant="outline">
+                Ver todos los contactos
+              </Button>
+            )}
           </div>
         )}
 
         {!loading && !error && (contacts || []).length > 0 && (
-          <div className="rounded-md border">
+          <div className="h-[calc(100vh-400px)] overflow-auto rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <TableHead className="sticky top-0 z-10 bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     Número de Teléfono
                   </TableHead>
-                  <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <TableHead className="sticky top-0 z-10 bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     Estado
                   </TableHead>
-                  <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <TableHead className="sticky top-0 z-10 bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     ID de Llamada
                   </TableHead>
-                  <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <TableHead className="sticky top-0 z-10 bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     Coste
                   </TableHead>
-                  <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <TableHead className="sticky top-0 z-10 bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     Fecha de Creación
                   </TableHead>
-                  <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <TableHead className="sticky top-0 z-10 bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     Procesado
                   </TableHead>
                   {dynamicFields.map((fieldName) => (
                     <TableHead
                       key={fieldName}
-                      className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500"
+                      className="sticky top-0 z-10 bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500"
                     >
                       {fieldName}
                     </TableHead>
                   ))}
-                  <TableHead className="bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <TableHead className="sticky top-0 z-10 bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     Acciones
                   </TableHead>
                 </TableRow>
@@ -356,11 +439,11 @@ export default function CampaignContactsDashboard({
                     </TableCell>
                     <TableCell className="py-4">
                       <span
-                        className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusBadge(
-                          contact.status
-                        )}`}
+                        className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                          contact.callStatus ? getCallStatusBadge(contact.callStatus) : getStatusBadge(contact.status)
+                        }`}
                       >
-                        {getStatusText(contact.callStatus || contact.status)}
+                        {contact.callStatus ? getCallStatusText(contact.callStatus) : getStatusText(contact.status)}
                       </span>
                     </TableCell>
                     <TableCell className="py-4">
