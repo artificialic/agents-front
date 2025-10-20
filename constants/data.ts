@@ -43,6 +43,15 @@ export const navItems: NavItem[] = [
     role: [ROLES.USER]
   },
   {
+    title: 'Agentes',
+    url: '/dashboard/agents',
+    icon: 'incomingCalls',
+    isActive: true,
+    shortcut: ['c', 'l'],
+    items: [],
+    role: [ROLES.USER]
+  },
+  {
     title: 'Clientes',
     url: '/dashboard/clients',
     icon: 'users',
