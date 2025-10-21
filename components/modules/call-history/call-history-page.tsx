@@ -20,6 +20,15 @@ interface CallHistoryPageProps {
   incomingCallsFilter?: boolean;
 }
 
+interface Agent {
+  agent_id: string;
+  agent_name: string;
+  version: number;
+  is_published: boolean;
+  language: string;
+  voice_id: string;
+}
+
 export default function CallHistoryPage({ batchId, multiplier, onBack, incomingCallsFilter }: CallHistoryPageProps) {
   const [callLogs, setCallLogs] = useState<CallLog[]>([]);
   const [loading, setLoading] = useState(false);
@@ -48,6 +57,14 @@ export default function CallHistoryPage({ batchId, multiplier, onBack, incomingC
     paginationHistory: []
   });
 
+  const [availableAgents, setAvailableAgents] = useState<Agent[]>([]);
+  const [loadingAgents, setLoadingAgents] = useState(false);
+  const [agentsError, setAgentsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchAgents();
+  }, []);
+
   useEffect(() => {
     if (batchId) {
       fetchCallLogs();
@@ -55,6 +72,33 @@ export default function CallHistoryPage({ batchId, multiplier, onBack, incomingC
       fetchAllCallLogs();
     }
   }, [batchId]);
+
+  const fetchAgents = async () => {
+    try {
+      setLoadingAgents(true);
+      setAgentsError(null);
+
+      const response = await apiService.getAgents();
+      const agents = Array.isArray(response) ? response : response?.data ?? [];
+
+      const agentMap = new Map<string, Agent>();
+
+      agents.forEach((agent: Agent) => {
+        const existingAgent = agentMap.get(agent.agent_id);
+        if (!existingAgent || agent.version > existingAgent.version) {
+          agentMap.set(agent.agent_id, agent);
+        }
+      });
+
+      const latestVersionAgents = Array.from(agentMap.values());
+      setAvailableAgents(latestVersionAgents);
+    } catch (error) {
+      console.error('Error fetching agents:', error);
+      setAgentsError(error instanceof Error ? error.message : 'Error desconocido');
+    } finally {
+      setLoadingAgents(false);
+    }
+  };
 
   const createDynamicColumns = (data: CallLog[]) => {
     const customFieldsSet = new Set<string>();
@@ -459,7 +503,14 @@ export default function CallHistoryPage({ batchId, multiplier, onBack, incomingC
             </div>
           )}
 
-          <CallHistoryFilters onFilterSelect={handleFilterSelect} hideTypeFilter={incomingCallsFilter} />
+          <CallHistoryFilters
+            onFilterSelect={handleFilterSelect}
+            hideTypeFilter={incomingCallsFilter}
+            availableAgents={availableAgents}
+            loadingAgents={loadingAgents}
+            agentsError={agentsError}
+            onRetryAgents={fetchAgents}
+          />
         </div>
       </div>
 

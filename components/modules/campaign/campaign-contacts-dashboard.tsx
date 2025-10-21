@@ -209,6 +209,10 @@ export default function CampaignContactsDashboard({
         return 'bg-green-100 text-green-800';
       case 'error':
         return 'bg-red-100 text-red-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'working':
+        return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -226,6 +230,10 @@ export default function CampaignContactsDashboard({
         return 'Finalizada';
       case 'error':
         return 'Error';
+      case 'pending':
+        return 'Pendiente';
+      case 'working':
+        return 'Trabajando';
       default:
         return callStatus;
     }
@@ -358,6 +366,8 @@ export default function CampaignContactsDashboard({
               <SelectItem value="ongoing">En Curso</SelectItem>
               <SelectItem value="ended">Finalizada</SelectItem>
               <SelectItem value="error">Error</SelectItem>
+              <SelectItem value="pending">Pendiente</SelectItem>
+              <SelectItem value="working">Trabajando</SelectItem>
             </SelectContent>
           </Select>
         </div>

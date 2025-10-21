@@ -2,6 +2,7 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
+import { Copy } from 'lucide-react';
 import { callStatusColorMap, disconnectionReasonColorMap, sentimentColorMap, translatedStatus } from '@/utils';
 
 type user_sentiment = 'Negative' | 'Positive' | 'Neutral' | 'Unknown';
@@ -189,6 +190,10 @@ const formatCost = (cost: number) => {
   return `$${(cost / 100).toFixed(3)}`;
 };
 
+const copyToClipboard = (text: string) => {
+  navigator.clipboard.writeText(text);
+};
+
 const StatusIndicator = ({ status }: { status: string }) => {
   const colorClass = sentimentColorMap[status] || disconnectionReasonColorMap[status] || callStatusColorMap[status];
   const bgColorClass = colorClass ? `bg-[${colorClass}]` : 'bg-gray-400';
@@ -275,9 +280,20 @@ export const columns: ColumnDef<CallLog>[] = [
     minSize: 250,
     enableResizing: false,
     cell: ({ row }) => {
+      const callId = row.getValue('call_id') as string;
       return (
-        <div className="min-w-32 whitespace-nowrap font-mono text-sm text-xs text-gray-900">
-          {row.getValue('call_id')}
+        <div className="group flex min-w-32 items-center whitespace-nowrap font-mono text-sm text-xs text-gray-900">
+          <span className="mr-1">{callId}</span>
+          <button
+            className="cursor-pointer opacity-0 transition-opacity group-hover:opacity-100"
+            onClick={(e) => {
+              e.stopPropagation();
+              copyToClipboard(callId);
+            }}
+            title="Copiar ID"
+          >
+            <Copy className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600" />
+          </button>
         </div>
       );
     }
