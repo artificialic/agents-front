@@ -67,11 +67,38 @@ export function AgentConfiguration({ agent, llmId }: AgentConfigurationProps) {
   const [saving, setSaving] = useState(false);
   const [savingVoice, setSavingVoice] = useState(false);
   const [llm, setLlm] = useState<Llm | null>(null);
+  const [llms, setLlms] = useState<Llm[]>([]);
+  const [loadingLlms, setLoadingLlms] = useState(true);
   const [selectedLanguage, setSelectedLanguage] = useState('en-US');
   const [voicePopoverOpen, setVoicePopoverOpen] = useState(false);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>('');
   const [selectedVoiceName, setSelectedVoiceName] = useState<string>('Seleccionar Voz');
+
+  useEffect(() => {
+    const fetchLlms = async () => {
+      try {
+        setLoadingLlms(true);
+        const llmsResponse = await apiService.getLlms();
+
+        const llmMap = new Map<string, Llm>();
+        llmsResponse.forEach((llm: Llm) => {
+          const existing = llmMap.get(llm.llm_id);
+          if (!existing) {
+            llmMap.set(llm.llm_id, llm);
+          }
+        });
+
+        setLlms(Array.from(llmMap.values()));
+      } catch (error) {
+        console.error('Error fetching LLMs:', error);
+      } finally {
+        setLoadingLlms(false);
+      }
+    };
+
+    fetchLlms();
+  }, []);
 
   useEffect(() => {
     const fetchLlm = async () => {
@@ -307,7 +334,7 @@ export function AgentConfiguration({ agent, llmId }: AgentConfigurationProps) {
     <div className="h-full min-h-screen flex-1 space-y-6 rounded-lg bg-white p-6">
       <div className="flex items-center gap-3">
         <div className="flex-1">
-          <Select defaultValue="gpt-4.1">
+          <Select value={llmId}>
             <SelectTrigger className="w-full">
               <div className="flex items-center gap-2">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-foreground">
@@ -318,9 +345,17 @@ export function AgentConfiguration({ agent, llmId }: AgentConfigurationProps) {
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="gpt-4.1">GPT 4.1</SelectItem>
-              <SelectItem value="gpt-4">GPT 4</SelectItem>
-              <SelectItem value="gpt-3.5">GPT 3.5</SelectItem>
+              {loadingLlms ? (
+                <SelectItem value="loading" disabled>
+                  Cargando...
+                </SelectItem>
+              ) : (
+                llms.map((llm) => (
+                  <SelectItem key={llm.llm_id} value={llm.llm_id}>
+                    {llm.model}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>
