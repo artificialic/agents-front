@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -21,12 +22,24 @@ export function SecuritySettings({ agent, onAgentUpdate }: SecuritySettingsProps
   const [optInSecureUrls, setOptInSecureUrls] = useState(agent.opt_in_secure_urls || false);
   const [isPiiDialogOpen, setIsPiiDialogOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [isDynamicVarsDialogOpen, setIsDynamicVarsDialogOpen] = useState(false);
+  const [dynamicVariables, setDynamicVariables] = useState<Array<{ key: string; value: string }>>([]);
 
   useEffect(() => {
     if (agent.pii_config?.categories) {
       setSelectedCategories(agent.pii_config.categories);
     }
   }, [agent.pii_config]);
+
+  useEffect(() => {
+    if (agent.default_dynamic_variables) {
+      const vars = Object.entries(agent.default_dynamic_variables).map(([key, value]) => ({
+        key,
+        value: String(value)
+      }));
+      setDynamicVariables(vars);
+    }
+  }, [agent.default_dynamic_variables]);
 
   const handleDataStorageChange = async (value: string) => {
     try {
@@ -69,58 +82,94 @@ export function SecuritySettings({ agent, onAgentUpdate }: SecuritySettingsProps
     }
   };
 
+  const handleAddDynamicVariable = () => {
+    setDynamicVariables([...dynamicVariables, { key: '', value: '' }]);
+  };
+
+  const handleRemoveDynamicVariable = (index: number) => {
+    setDynamicVariables(dynamicVariables.filter((_, i) => i !== index));
+  };
+
+  const handleDynamicVariableChange = (index: number, field: 'key' | 'value', value: string) => {
+    const newVars = [...dynamicVariables];
+    newVars[index][field] = value;
+    setDynamicVariables(newVars);
+  };
+
+  const handleSaveDynamicVariables = async () => {
+    try {
+      const varsObject = dynamicVariables.reduce(
+        (acc, { key, value }) => {
+          if (key.trim()) {
+            acc[key.trim()] = value;
+          }
+          return acc;
+        },
+        {} as Record<string, string>
+      );
+
+      await apiService.updateAgent(agent.agent_id, {
+        default_dynamic_variables: Object.keys(varsObject).length > 0 ? varsObject : undefined
+      });
+      await onAgentUpdate();
+      setIsDynamicVarsDialogOpen(false);
+    } catch (error) {
+      console.error('Error updating dynamic variables:', error);
+    }
+  };
+
   const piiCategories = {
-    'Identity Information': [
-      { id: 'person_name', label: 'Person Name' },
-      { id: 'date_of_birth', label: 'Date Of Birth' },
-      { id: 'customer_account_number', label: 'Customer Account Number' }
+    'Información de Identidad': [
+      { id: 'person_name', label: 'Nombre de Persona' },
+      { id: 'date_of_birth', label: 'Fecha de Nacimiento' },
+      { id: 'customer_account_number', label: 'Número de Cuenta del Cliente' }
     ],
-    'Contact Information': [
-      { id: 'address', label: 'Address' },
-      { id: 'email', label: 'Email' },
-      { id: 'phone_number', label: 'Phone Number' }
+    'Información de Contacto': [
+      { id: 'address', label: 'Dirección' },
+      { id: 'email', label: 'Correo Electrónico' },
+      { id: 'phone_number', label: 'Número de Teléfono' }
     ],
-    'Government Identifiers': [
-      { id: 'ssn', label: 'SSN' },
-      { id: 'passport', label: 'Passport' },
-      { id: 'driver_license', label: 'Driver License' }
+    'Identificadores Gubernamentales': [
+      { id: 'ssn', label: 'NSS' },
+      { id: 'passport', label: 'Pasaporte' },
+      { id: 'driver_license', label: 'Licencia de Conducir' }
     ],
-    'Financial Information': [
-      { id: 'credit_card', label: 'Credit Card' },
-      { id: 'bank_account', label: 'Bank Account' }
+    'Información Financiera': [
+      { id: 'credit_card', label: 'Tarjeta de Crédito' },
+      { id: 'bank_account', label: 'Cuenta Bancaria' }
     ],
-    'Security Credentials': [
-      { id: 'password', label: 'Password' },
-      { id: 'pin', label: 'Pin' }
+    'Credenciales de Seguridad': [
+      { id: 'password', label: 'Contraseña' },
+      { id: 'pin', label: 'PIN' }
     ],
-    'Health Information': [{ id: 'medical_id', label: 'Medical Id' }]
+    'Información de Salud': [{ id: 'medical_id', label: 'ID Médico' }]
   };
 
   return (
     <div className="space-y-6 py-2 pl-7 pr-3">
       <div className="space-y-3">
         <div className="space-y-1">
-          <div className="text-sm font-medium">Data Storage Settings</div>
-          <p className="text-xs text-muted-foreground">Choose how Retell stores sensitive data (Learn more)</p>
+          <div className="text-sm font-medium">Configuración de Almacenamiento de Datos</div>
+          <p className="text-xs text-muted-foreground">Elige cómo Retell almacena datos sensibles (Más información)</p>
         </div>
 
         <RadioGroup value={dataStorage} onValueChange={handleDataStorageChange}>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="everything" id="everything" />
             <Label htmlFor="everything" className="cursor-pointer text-sm font-normal">
-              Everything
+              Todo
             </Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="everything_except_pii" id="everything_except_pii" />
             <Label htmlFor="everything_except_pii" className="cursor-pointer text-sm font-normal">
-              Everything except PII
+              Todo excepto PII
             </Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="basic_attributes_only" id="basic_attributes_only" />
             <Label htmlFor="basic_attributes_only" className="cursor-pointer text-sm font-normal">
-              Basic Attributes Only
+              Solo Atributos Básicos
             </Label>
           </div>
         </RadioGroup>
@@ -128,24 +177,24 @@ export function SecuritySettings({ agent, onAgentUpdate }: SecuritySettingsProps
 
       <div className="space-y-3">
         <div className="space-y-1">
-          <div className="text-sm font-medium">Personal Info Redaction (PII)</div>
+          <div className="text-sm font-medium">Redacción de Información Personal (PII)</div>
           <p className="text-xs text-muted-foreground">
-            Only redact the specific categories of sensitive data you choose, while preserving other call recordings,
-            transcripts, and analytics.
+            Solo redacta las categorías específicas de datos sensibles que elijas, mientras preservas otras grabaciones
+            de llamadas, transcripciones y análisis.
           </p>
         </div>
         <Button variant="outline" size="sm" className="gap-2" onClick={() => setIsPiiDialogOpen(true)}>
           <Settings className="h-4 w-4" />
-          {selectedCategories.length > 0 ? `Set Up (${selectedCategories.length})` : 'Set Up'}
+          {selectedCategories.length > 0 ? `Configurar (${selectedCategories.length})` : 'Configurar'}
         </Button>
       </div>
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <div className="text-sm font-medium">Opt In Secure URLs</div>
+            <div className="text-sm font-medium">URLs Seguras</div>
             <p className="text-xs text-muted-foreground">
-              Add security signatures to URLs. The URLs expire after 24 hours. (Learn more)
+              Agrega firmas de seguridad a las URLs. Las URLs expiran después de 24 horas. (Más información)
             </p>
           </div>
           <Switch checked={optInSecureUrls} onCheckedChange={handleOptInSecureUrlsChange} />
@@ -154,33 +203,33 @@ export function SecuritySettings({ agent, onAgentUpdate }: SecuritySettingsProps
 
       <div className="space-y-3">
         <div className="space-y-1">
-          <div className="text-sm font-medium">Fallback Voice ID</div>
+          <div className="text-sm font-medium">ID de Voz de Respaldo</div>
           <p className="text-xs text-muted-foreground">
-            If the current voice provider fails, assign a fallback voice to continue the call.
+            Si el proveedor de voz actual falla, asigna una voz de respaldo para continuar la llamada.
           </p>
         </div>
         <Button variant="outline" size="sm" className="gap-2">
-          + Add
+          + Agregar
         </Button>
       </div>
 
       <div className="space-y-3">
         <div className="space-y-1">
-          <div className="text-sm font-medium">Default Dynamic Variables</div>
+          <div className="text-sm font-medium">Variables Dinámicas Predeterminadas</div>
           <p className="text-xs text-muted-foreground">
-            Set fallback values for dynamic variables across all endpoints if they are not provided.
+            Establece valores de respaldo para variables dinámicas en todos los puntos finales si no se proporcionan.
           </p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" size="sm" className="gap-2" onClick={() => setIsDynamicVarsDialogOpen(true)}>
           <Settings className="h-4 w-4" />
-          Set Up
+          {dynamicVariables.length > 0 ? `Configurar (${dynamicVariables.length})` : 'Configurar'}
         </Button>
       </div>
 
       <Dialog open={isPiiDialogOpen} onOpenChange={setIsPiiDialogOpen}>
         <DialogContent className="max-h-[80vh] max-w-md overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Knowledge Base</DialogTitle>
+            <DialogTitle>Redacción de Información Personal</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {Object.entries(piiCategories).map(([section, categories]) => (
@@ -205,9 +254,86 @@ export function SecuritySettings({ agent, onAgentUpdate }: SecuritySettingsProps
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsPiiDialogOpen(false)}>
-              Cancel
+              Cancelar
             </Button>
-            <Button onClick={handleSavePiiConfig}>Save</Button>
+            <Button onClick={handleSavePiiConfig}>Guardar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDynamicVarsDialogOpen} onOpenChange={setIsDynamicVarsDialogOpen}>
+        <DialogContent className="max-h-[80vh] max-w-md overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Variables Dinámicas Predeterminadas</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              Establece valores de respaldo para variables dinámicas en todos los puntos finales si no se proporcionan.
+            </p>
+
+            {dynamicVariables.length > 0 && (
+              <div className="overflow-hidden rounded-lg border border-gray-200">
+                <div className="grid grid-cols-2 gap-4 border-b border-gray-200 bg-gray-50 p-3">
+                  <div className="text-sm font-medium text-gray-700">Nombre de Variable</div>
+                  <div className="text-sm font-medium text-gray-700">Valor Predeterminado</div>
+                </div>
+                <div className="space-y-3 p-3">
+                  {dynamicVariables.map((variable, index) => (
+                    <div key={index} className="grid grid-cols-[1fr_1fr_auto] items-center gap-2">
+                      <Input
+                        value={variable.key}
+                        onChange={(e) => handleDynamicVariableChange(index, 'key', e.target.value)}
+                        placeholder="nombre"
+                      />
+                      <Input
+                        value={variable.value}
+                        onChange={(e) => handleDynamicVariableChange(index, 'value', e.target.value)}
+                        placeholder="valor"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveDynamicVariable(index)}
+                        className="h-9 w-9"
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <Button variant="outline" size="sm" onClick={handleAddDynamicVariable} className="w-full">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="mr-2"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Agregar
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDynamicVarsDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveDynamicVariables}>Guardar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
