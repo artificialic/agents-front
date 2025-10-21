@@ -194,6 +194,8 @@ export default function CampaignContactsDashboard({
         return 'Fallido';
       case 'processing':
         return 'Procesando';
+      case 'working':
+        return 'Trabajando';
       default:
         return status;
     }
