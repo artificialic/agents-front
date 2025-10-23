@@ -3,6 +3,7 @@ interface Campaign {
   name: string;
   owner: string;
   agentId: string;
+  fromNumber: string;
   status: 'draft' | 'active' | 'completed' | 'paused';
   agentName?: string;
   createdAt: string;

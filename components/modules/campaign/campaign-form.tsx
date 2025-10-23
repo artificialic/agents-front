@@ -96,7 +96,8 @@ export default function CampaignForm({ onBack, onSubmit }: CampaignFormProps) {
     try {
       let formattedFromNumber = formData.fromNumber;
       if (!formattedFromNumber.startsWith('+')) {
-        formattedFromNumber = '+' + formattedFromNumber;
+        // TODO: improve this validation
+        // formattedFromNumber = '+' + formattedFromNumber;
       }
 
       const submitData = {
