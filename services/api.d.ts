@@ -46,44 +46,6 @@ type PaymentSourcePayload = {
   cardHolder: string;
 };
 
-type Agent = {
-  agent_id: string;
-  channel: string;
-  last_modification_timestamp: number;
-  agent_name: string;
-  response_engine: {
-    type: string;
-    llm_id: string;
-    version: number;
-  };
-  language: string;
-  opt_out_sensitive_data_storage: boolean;
-  opt_in_signed_url: boolean;
-  end_call_after_silence_ms: number;
-  version: number;
-  is_published: boolean;
-  post_call_analysis_model: string;
-  voice_id: string;
-  enable_backchannel: boolean;
-  reminder_trigger_ms: number;
-  reminder_max_count: number;
-  max_call_duration_ms: number;
-  interruption_sensitivity: number;
-  responsiveness: number;
-  normalize_for_speech: boolean;
-  begin_message_delay_ms: number;
-  enable_voicemail_detection: boolean;
-  voicemail_message: string;
-  voicemail_option: {
-    action: {
-      type: string;
-    };
-  };
-  allow_user_dtmf: boolean;
-  user_dtmf_options: Record<string, unknown>;
-  denoising_mode: string;
-};
-
 type CreateAgentPayload = {
   agent_name: string;
   voice_id: string;
@@ -303,19 +265,42 @@ interface Agent {
   agent_id: string;
   agent_name?: string;
   language?: string;
+  version?: number;
+  is_published?: boolean;
 
   // Response Engine
   response_engine: {
+    type?: 'retell-llm' | string;
     llm_id: string;
-    denoising_mode?: 'noise-cancellation' | 'noise-and-background-speech-cancellation';
-    stt_mode?: 'fast' | 'accurate';
-    boosted_keywords?: string[];
+    version?: number;
   };
+
+  // Voice Settings
+  voice_id?: string;
+  voice_model?: string;
+  fallback_voice_ids?: string[];
+  voice_temperature?: number;
+  voice_speed?: number;
+  volume?: number;
+
+  // Conversation Settings
+  responsiveness?: number;
+  interruption_sensitivity?: number;
+  enable_backchannel?: boolean;
+  backchannel_frequency?: number;
+  backchannel_words?: string[];
+  reminder_trigger_ms?: number;
+  reminder_max_count?: number;
+
+  // Ambient Sound
+  ambient_sound?: string | null;
+  ambient_sound_volume?: number;
 
   // Call Settings
   end_call_after_silence_ms?: number;
   max_call_duration_ms?: number;
   ring_duration_ms?: number;
+  begin_message_delay_ms?: number;
 
   // Voicemail Options
   voicemail_option?: {
@@ -333,13 +318,45 @@ interface Agent {
     digit_limit?: number | null;
   };
 
+  // STT & Denoising
+  stt_mode?: 'fast' | 'accurate';
+  denoising_mode?: 'noise-cancellation' | 'noise-and-background-speech-cancellation';
+  boosted_keywords?: string[];
+  vocab_specialization?: string;
+
+  // Pronunciation
+  pronunciation_dictionary?: Array<{
+    word: string;
+    alphabet: 'ipa' | 'cmu';
+    phoneme: string;
+  }>;
+  normalize_for_speech?: boolean;
+
   // Webhook
   webhook_url?: string;
   webhook_timeout_ms?: number;
 
+  // Data & Analysis
+  data_storage_setting?: string;
+  opt_in_signed_url?: boolean;
+  post_call_analysis_data?: Array<{
+    type: string;
+    name: string;
+    description: string;
+    examples?: string[];
+  }>;
+  post_call_analysis_model?: string;
+
+  // PII Config
+  pii_config?: {
+    mode: string;
+    categories: string[];
+  };
+
   // Timestamps
   created_at?: string;
   updated_at?: string;
+  last_modification_timestamp?: number;
 }
 
 interface Llm {
@@ -402,4 +419,18 @@ interface Llm {
   // Timestamps
   created_at?: string;
   updated_at?: string;
+}
+
+interface KnowledgeBase {
+  knowledge_base_id: string;
+  knowledge_base_name: string;
+  status: string;
+  knowledge_base_sources: {
+    type: string;
+    source_id: string;
+    filename: string;
+    file_url: string;
+  }[];
+  enable_auto_refresh: boolean;
+  last_refreshed_timestamp: number;
 }

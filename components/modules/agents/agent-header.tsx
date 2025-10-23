@@ -1,18 +1,22 @@
-// @ts-nocheck
 'use client';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronLeft, Clock, Zap, Pencil, MoreHorizontal, RotateCcw } from 'lucide-react';
+import { ChevronLeft, Clock, Zap, Pencil, MoreHorizontal, RotateCcw, Copy } from 'lucide-react';
 import { apiService } from '@/services';
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { copyToClipboard } from '@/utils';
 
 interface AgentHeaderProps {
   agent: Agent;
+  agentId: string;
+  llmId: string;
   onAgentUpdate: () => Promise<void>;
 }
 
-export function AgentHeader({ agent, onAgentUpdate }: AgentHeaderProps) {
+export function AgentHeader({ agent, agentId, llmId, onAgentUpdate }: AgentHeaderProps) {
+  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(agent.agent_name || '');
 
@@ -40,11 +44,19 @@ export function AgentHeader({ agent, onAgentUpdate }: AgentHeaderProps) {
     }
   };
 
+  const handleBackClick = () => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/dashboard/agents/');
+    }
+  };
+
   return (
     <header className="border-b border-border bg-card">
       <div className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleBackClick}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <div>
@@ -71,9 +83,19 @@ export function AgentHeader({ agent, onAgentUpdate }: AgentHeaderProps) {
               </button>
             </div>
             <div className="mt-1 flex items-center gap-4 text-xs text-muted-foreground">
-              <span>ID de Agente: ag_51a</span>
+              <span className="flex items-center gap-1">
+                ID de Agente: {agentId}
+                <button onClick={() => copyToClipboard(agentId)} className="hover:text-foreground" title="Copiar ID">
+                  <Copy className="h-3 w-3" />
+                </button>
+              </span>
               <span>•</span>
-              <span>ID de LLM: llm_94d</span>
+              <span className="flex items-center gap-1">
+                ID de LLM: {llmId}
+                <button onClick={() => copyToClipboard(llmId)} className="hover:text-foreground" title="Copiar ID">
+                  <Copy className="h-3 w-3" />
+                </button>
+              </span>
               <span>•</span>
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />

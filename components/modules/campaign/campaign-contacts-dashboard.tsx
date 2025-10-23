@@ -247,18 +247,31 @@ export default function CampaignContactsDashboard({
     return (contacts || []).reduce(
       (acc, contact) => {
         acc.total++;
-        switch (contact.status) {
-          case 'done':
+
+        const effectiveStatus = contact.callStatus || contact.status;
+
+        switch (effectiveStatus) {
+          case 'ended':
             acc.completed++;
             break;
+          case 'registered':
           case 'pending':
             acc.pending++;
             break;
-          case 'failed':
+          case 'not_connected':
+          case 'error':
             acc.failed++;
             break;
+          case 'ongoing':
+          case 'working':
           case 'processing':
             acc.processing++;
+            break;
+          case 'done':
+            acc.completed++;
+            break;
+          case 'failed':
+            acc.failed++;
             break;
         }
         return acc;

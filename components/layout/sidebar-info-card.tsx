@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Info, ArrowUpCircle } from 'lucide-react';
-import { apiService } from '@/services';
 import { useUserStore } from '@/stores/useUserStore';
 
 interface InfoRowProps {
@@ -30,45 +29,26 @@ function InfoRow({ label, value, loading = false, icon }: InfoRowProps) {
   );
 }
 
-export function SidebarInfoCard() {
+interface SidebarInfoCardProps {
+  concurrency: any | null;
+  loading: boolean;
+  error: string | null;
+}
+
+export function SidebarInfoCard({ concurrency, loading, error }: SidebarInfoCardProps) {
   const { user, loading: loadingProfile } = useUserStore();
-  const [concurrency, setConcurrency] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchConcurrency = async () => {
-      try {
-        setLoading(true);
-        const response = await apiService.getConcurrency();
-
-        if (response) {
-          setConcurrency(response);
-        } else {
-          setError('No se pudieron cargar los datos de concurrencia.');
-        }
-      } catch (err) {
-        console.error('Error al obtener la concurrencia:', err);
-        setError('Error al cargar los datos de concurrencia.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchConcurrency();
-  }, []);
 
   return (
-    <div className="w-full rounded-lg border border-gray-200 bg-white shadow-sm">
+    <div className="w-full rounded-lg border border-gray-200 bg-white shadow-sm delay-150 duration-300 animate-in fade-in zoom-in-95">
       <div className="p-3">
         <div className="mb-3 inline-flex h-6 items-center justify-center gap-1 rounded-md bg-blue-100 py-1 pl-1 pr-2">
           <Info className="h-4 w-4 text-blue-600" />
-          <div className="text-xs font-medium text-blue-600">Pago por Uso</div>
+          <div className="text-xs font-medium text-blue-600">Pago por minuto</div>
         </div>
 
         <div className="space-y-2">
           <InfoRow
-            label="Próxima Factura:"
+            label="Saldo disponible:"
             value={`$${user?.balance?.toFixed(2) ?? '0.00'}`}
             loading={loadingProfile}
             icon={<Info className="h-3 w-3 text-gray-600" />}

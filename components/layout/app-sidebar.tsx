@@ -35,9 +35,10 @@ import { usePathname } from 'next/navigation';
 import * as React from 'react';
 import { Icons } from '../icons';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { SidebarInfoCard } from '@/components/sidebar-info-card';
-import { useEffect } from 'react';
+import { SidebarInfoCard } from '@/components/layout/sidebar-info-card';
+import { useEffect, useState } from 'react';
 import { useUserStore } from '@/stores/useUserStore';
+import { apiService } from '@/services';
 
 export const company = {
   name: 'Desarrollando Agentes',
@@ -47,7 +48,7 @@ export const company = {
 export default function AppSidebar() {
   const { data: session } = useSession();
   const pathname = usePathname();
-  const { setOpenMobile } = useSidebar();
+  const { open, setOpenMobile } = useSidebar();
   const isMobile = useIsMobile();
   const roleUser = session?.user?.role || 'user';
   const isUser = roleUser === 'user';
@@ -63,9 +64,35 @@ export default function AppSidebar() {
 
   const { fetchUser } = useUserStore();
 
+  const [concurrency, setConcurrency] = useState<any | null>(null);
+  const [loadingConcurrency, setLoadingConcurrency] = useState(true);
+  const [errorConcurrency, setErrorConcurrency] = useState<string | null>(null);
+
   useEffect(() => {
     console.log('Fetching user profile...');
     fetchUser();
+  }, []);
+
+  useEffect(() => {
+    const fetchConcurrency = async () => {
+      try {
+        setLoadingConcurrency(true);
+        const response = await apiService.getConcurrency();
+
+        if (response) {
+          setConcurrency(response);
+        } else {
+          setErrorConcurrency('No se pudieron cargar los datos de concurrencia.');
+        }
+      } catch (err) {
+        console.error('Error al obtener la concurrencia:', err);
+        setErrorConcurrency('Error al cargar los datos de concurrencia.');
+      } finally {
+        setLoadingConcurrency(false);
+      }
+    };
+
+    fetchConcurrency();
   }, []);
 
   return (
@@ -126,7 +153,9 @@ export default function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        {isUser && <SidebarInfoCard />}
+        {isUser && open && (
+          <SidebarInfoCard concurrency={concurrency} loading={loadingConcurrency} error={errorConcurrency} />
+        )}
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>

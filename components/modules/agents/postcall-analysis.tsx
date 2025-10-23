@@ -13,10 +13,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
+import { FIELD_TYPE_ICONS } from '@/components/modules/agents/constants';
+import { apiService } from '@/services';
 
 interface PostCallAnalysisProps {
   agent: Agent;
   onAgentUpdate: () => void;
+  llms: Llm[];
+  loadingLlms: boolean;
 }
 
 interface PostCallDataField {
@@ -24,52 +28,13 @@ interface PostCallDataField {
   type: string;
 }
 
-const FIELD_TYPE_ICONS: Record<string, JSX.Element> = {
-  string: (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path
-        d="M10 3.25037V4.75037H3.25V3.25037H10ZM13 15.2504V16.7504H3.25V15.2504H13ZM17.5 9.25037V10.7504H3.25V9.25037H17.5Z"
-        fill="currentColor"
-        className="text-muted-foreground"
-      />
-    </svg>
-  ),
-  boolean: (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path
-        d="M10 17.5004C5.85775 17.5004 2.5 14.1426 2.5 10.0004C2.5 5.85812 5.85775 2.50037 10 2.50037C14.1423 2.50037 17.5 5.85812 17.5 10.0004C17.5 14.1426 14.1423 17.5004 10 17.5004ZM10 16.0004C11.5913 16.0004 13.1174 15.3682 14.2426 14.243C15.3679 13.1178 16 11.5917 16 10.0004C16 8.40907 15.3679 6.88294 14.2426 5.75773C13.1174 4.63251 11.5913 4.00037 10 4.00037C8.4087 4.00037 6.88258 4.63251 5.75736 5.75773C4.63214 6.88294 4 8.40907 4 10.0004C4 11.5917 4.63214 13.1178 5.75736 14.243C6.88258 15.3682 8.4087 16.0004 10 16.0004ZM13.6683 7.39262L7.39225 13.6686C6.98228 13.3765 6.62387 13.0181 6.33175 12.6081L12.6077 6.33212C13.0177 6.62424 13.3761 6.98265 13.6683 7.39262Z"
-        fill="currentColor"
-        className="text-muted-foreground"
-      />
-    </svg>
-  ),
-  number: (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path
-        d="M10.0001 2.12537C10.8574 2.12518 11.6996 2.35107 12.4417 2.78026C13.1838 3.20945 13.7997 3.82675 14.2271 4.56991C14.6545 5.31307 14.8784 6.1558 14.8761 7.0131C14.8739 7.8704 14.6456 8.71195 14.2143 9.45287L9.56733 17.4996H7.83558L11.1648 11.7351C10.4953 11.8993 9.79852 11.9196 9.12055 11.7947C8.44258 11.6697 7.79881 11.4025 7.23173 11.0104C6.66466 10.6184 6.18718 10.1106 5.83081 9.52045C5.47443 8.93033 5.24728 8.27132 5.16433 7.58695C5.08138 6.90257 5.14452 6.20838 5.34959 5.5502C5.55466 4.89203 5.897 4.28483 6.354 3.76868C6.811 3.25254 7.37227 2.83919 8.00077 2.55592C8.62927 2.27265 9.3107 2.12591 10.0001 2.12537ZM10.0001 3.62537C9.10498 3.62537 8.24653 3.98095 7.6136 4.61388C6.98066 5.24682 6.62508 6.10526 6.62508 7.00037C6.62508 7.89547 6.98066 8.75392 7.6136 9.38685C8.24653 10.0198 9.10498 10.3754 10.0001 10.3754C10.8952 10.3754 11.7536 10.0198 12.3866 9.38685C13.0195 8.75392 13.3751 7.89547 13.3751 7.00037C13.3751 6.10526 13.0195 5.24682 12.3866 4.61388C11.7536 3.98095 10.8952 3.62537 10.0001 3.62537Z"
-        fill="currentColor"
-        className="text-muted-foreground"
-      />
-    </svg>
-  ),
-  array: (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path
-        d="M7.8125 6.87537C7.8125 6.18501 7.25286 5.62537 6.5625 5.62537C5.87214 5.62537 5.3125 6.18501 5.3125 6.87537C5.3125 7.56572 5.87214 8.12537 6.5625 8.12537C7.25286 8.12537 7.8125 7.56572 7.8125 6.87537ZM9.0625 6.87537C9.0625 8.25608 7.94321 9.37537 6.5625 9.37537C5.18179 9.37537 4.0625 8.25608 4.0625 6.87537C4.0625 5.49465 5.18179 4.37537 6.5625 4.37537C7.94321 4.37537 9.0625 5.49465 9.0625 6.87537ZM15.625 5.00037H10.625V6.25037H15.625V5.00037ZM15.625 9.37537H10.625V10.6254H15.625V9.37537ZM15.625 13.7504H10.625V15.0004H15.625V13.7504ZM6.5625 14.3754C5.87214 14.3754 5.3125 13.8157 5.3125 13.1254C5.3125 12.435 5.87214 11.8754 6.5625 11.8754C7.25286 11.8754 7.8125 12.435 7.8125 13.1254C7.8125 13.8157 7.25286 14.3754 6.5625 14.3754ZM6.5625 15.6254C7.94321 15.6254 9.0625 14.5061 9.0625 13.1254C9.0625 11.7447 7.94321 10.6254 6.5625 10.6254C5.18179 10.6254 4.0625 11.7447 4.0625 13.1254C4.0625 14.5061 5.18179 15.6254 6.5625 15.6254ZM6.5625 7.50037C6.90768 7.50037 7.1875 7.22054 7.1875 6.87537C7.1875 6.53019 6.90768 6.25037 6.5625 6.25037C6.21732 6.25037 5.9375 6.53019 5.9375 6.87537C5.9375 7.22054 6.21732 7.50037 6.5625 7.50037Z"
-        fill="currentColor"
-        className="text-muted-foreground"
-      />
-    </svg>
-  )
-};
-
-export function PostCallAnalysis({ agent, onAgentUpdate }: PostCallAnalysisProps) {
+export function PostCallAnalysis({ agent, onAgentUpdate, llms, loadingLlms }: PostCallAnalysisProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingField, setEditingField] = useState<PostCallDataField | null>(null);
   const [fieldName, setFieldName] = useState('');
   const [fieldType, setFieldType] = useState('string');
   const [deletingField, setDeletingField] = useState<string | null>(null);
-  const [selectedModel, setSelectedModel] = useState('GPT-5');
+  const [selectedModel, setSelectedModel] = useState(agent.post_call_analysis_model || '');
 
   const handleAddField = () => {
     setEditingField(null);
@@ -95,10 +60,8 @@ export function PostCallAnalysis({ agent, onAgentUpdate }: PostCallAnalysisProps
   const handleDeleteField = async (fieldName: string) => {
     setDeletingField(fieldName);
     try {
-      // API call to delete field
       await onAgentUpdate();
     } catch (error) {
-      console.error('Error deleting field:', error);
     } finally {
       setDeletingField(null);
     }
@@ -106,36 +69,33 @@ export function PostCallAnalysis({ agent, onAgentUpdate }: PostCallAnalysisProps
 
   const handleSaveField = async () => {
     try {
-      // API call to save field
       await onAgentUpdate();
       setIsDialogOpen(false);
-    } catch (error) {
-      console.error('Error saving field:', error);
-    }
+    } catch (error) {}
   };
 
-  // Mock data - replace with actual agent data
-  const fields: PostCallDataField[] = [
-    { name: 'test', type: 'string' },
-    { name: 'finish_2', type: 'boolean' },
-    { name: 's', type: 'number' },
-    { name: 's1', type: 'array' }
-  ];
+  const handleModelChange = async (value: string) => {
+    try {
+      setSelectedModel(value);
+      await apiService.updateAgent(agent.agent_id, {
+        post_call_analysis_model: value
+      });
+      await onAgentUpdate();
+    } catch (error) {}
+  };
+
+  const fields: PostCallDataField[] =
+    agent.post_call_analysis_data?.map((field) => ({
+      name: field.name,
+      type: field.type
+    })) || [];
 
   return (
     <div className="flex flex-col px-4 pb-4 pt-0">
       <div className="flex flex-col rounded-lg p-4">
-        <div className="text-xs font-medium leading-normal">Post Call Data Retrieval</div>
+        <div className="text-xs font-medium leading-normal">Recuperación de Datos Post-Llamada</div>
         <div className="text-xs font-normal leading-none text-muted-foreground">
-          Define the information that you need to extract from the voice.{' '}
-          <a
-            href="https://docs.retellai.com/features/post-call-analysis-overview"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:underline"
-          >
-            (Learn more)
-          </a>
+          Define la información que necesitas extraer de la voz.
         </div>
         <div className="mt-2 flex flex-col gap-1">
           {fields.map((field) => (
@@ -196,7 +156,7 @@ export function PostCallAnalysis({ agent, onAgentUpdate }: PostCallAnalysisProps
                       className="text-muted-foreground"
                     />
                   </svg>
-                  <div className="px-1 text-sm font-medium leading-normal">Add</div>
+                  <div className="px-1 text-sm font-medium leading-normal">Agregar</div>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="flex flex-col items-start gap-1 rounded-lg bg-white p-2">
@@ -205,15 +165,8 @@ export function PostCallAnalysis({ agent, onAgentUpdate }: PostCallAnalysisProps
                   onClick={() => handleAddFieldWithType('string')}
                 >
                   <div className="flex flex-row items-center gap-2">
-                    <div>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path
-                          d="M10 3.25037V4.75037H3.25V3.25037H10ZM13 15.2504V16.7504H3.25V15.2504H13ZM17.5 9.25037V10.7504H3.25V9.25037H17.5Z"
-                          fill="var(--icon-sub-600)"
-                        />
-                      </svg>
-                    </div>
-                    <div className="text-sm font-normal leading-tight">Text</div>
+                    {FIELD_TYPE_ICONS['string']}
+                    <div className="text-sm font-normal leading-tight">Texto</div>
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -221,15 +174,8 @@ export function PostCallAnalysis({ agent, onAgentUpdate }: PostCallAnalysisProps
                   onClick={() => handleAddFieldWithType('array')}
                 >
                   <div className="flex flex-row items-center gap-2">
-                    <div>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path
-                          d="M7.8125 6.87537C7.8125 6.18501 7.25286 5.62537 6.5625 5.62537C5.87214 5.62537 5.3125 6.18501 5.3125 6.87537C5.3125 7.56572 5.87214 8.12537 6.5625 8.12537C7.25286 8.12537 7.8125 7.56572 7.8125 6.87537ZM9.0625 6.87537C9.0625 8.25608 7.94321 9.37537 6.5625 9.37537C5.18179 9.37537 4.0625 8.25608 4.0625 6.87537C4.0625 5.49465 5.18179 4.37537 6.5625 4.37537C7.94321 4.37537 9.0625 5.49465 9.0625 6.87537ZM15.625 5.00037H10.625V6.25037H15.625V5.00037ZM15.625 9.37537H10.625V10.6254H15.625V9.37537ZM15.625 13.7504H10.625V15.0004H15.625V13.7504ZM6.5625 14.3754C5.87214 14.3754 5.3125 13.8157 5.3125 13.1254C5.3125 12.435 5.87214 11.8754 6.5625 11.8754C7.25286 11.8754 7.8125 12.435 7.8125 13.1254C7.8125 13.8157 7.25286 14.3754 6.5625 14.3754ZM6.5625 15.6254C7.94321 15.6254 9.0625 14.5061 9.0625 13.1254C9.0625 11.7447 7.94321 10.6254 6.5625 10.6254C5.18179 10.6254 4.0625 11.7447 4.0625 13.1254C4.0625 14.5061 5.18179 15.6254 6.5625 15.6254ZM6.5625 7.50037C6.90768 7.50037 7.1875 7.22054 7.1875 6.87537C7.1875 6.53019 6.90768 6.25037 6.5625 6.25037C6.21732 6.25037 5.9375 6.53019 5.9375 6.87537C5.9375 7.22054 6.21732 7.50037 6.5625 7.50037Z"
-                          fill="var(--icon-sub-600)"
-                        />
-                      </svg>
-                    </div>
-                    <div className="text-sm font-normal leading-tight">Selector</div>
+                    {FIELD_TYPE_ICONS['array']}
+                    <div className="text-sm font-normal leading-tight">Lista</div>
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -237,15 +183,8 @@ export function PostCallAnalysis({ agent, onAgentUpdate }: PostCallAnalysisProps
                   onClick={() => handleAddFieldWithType('boolean')}
                 >
                   <div className="flex flex-row items-center gap-2">
-                    <div>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path
-                          d="M10 17.5004C5.85775 17.5004 2.5 14.1426 2.5 10.0004C2.5 5.85812 5.85775 2.50037 10 2.50037C14.1423 2.50037 17.5 5.85812 17.5 10.0004C17.5 14.1426 14.1423 17.5004 10 17.5004ZM10 16.0004C11.5913 16.0004 13.1174 15.3682 14.2426 14.243C15.3679 13.1178 16 11.5917 16 10.0004C16 8.40907 15.3679 6.88294 14.2426 5.75773C13.1174 4.63251 11.5913 4.00037 10 4.00037C8.4087 4.00037 6.88258 4.63251 5.75736 5.75773C4.63214 6.88294 4 8.40907 4 10.0004C4 11.5917 4.63214 13.1178 5.75736 14.243C6.88258 15.3682 8.4087 16.0004 10 16.0004ZM13.6683 7.39262L7.39225 13.6686C6.98228 13.3765 6.62387 13.0181 6.33175 12.6081L12.6077 6.33212C13.0177 6.62424 13.3761 6.98265 13.6683 7.39262Z"
-                          fill="var(--icon-sub-600)"
-                        />
-                      </svg>
-                    </div>
-                    <div className="text-sm font-normal leading-tight">Boolean</div>
+                    {FIELD_TYPE_ICONS['boolean']}
+                    <div className="text-sm font-normal leading-tight">Booleano</div>
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -253,22 +192,15 @@ export function PostCallAnalysis({ agent, onAgentUpdate }: PostCallAnalysisProps
                   onClick={() => handleAddFieldWithType('number')}
                 >
                   <div className="flex flex-row items-center gap-2">
-                    <div>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path
-                          d="M10.0001 2.12537C10.8574 2.12518 11.6996 2.35107 12.4417 2.78026C13.1838 3.20945 13.7997 3.82675 14.2271 4.56991C14.6545 5.31307 14.8784 6.1558 14.8761 7.0131C14.8739 7.8704 14.6456 8.71195 14.2143 9.45287L9.56733 17.4996H7.83558L11.1648 11.7351C10.4953 11.8993 9.79852 11.9196 9.12055 11.7947C8.44258 11.6697 7.79881 11.4025 7.23173 11.0104C6.66466 10.6184 6.18718 10.1106 5.83081 9.52045C5.47443 8.93033 5.24728 8.27132 5.16433 7.58695C5.08138 6.90257 5.14452 6.20838 5.34959 5.5502C5.55466 4.89203 5.897 4.28483 6.354 3.76868C6.811 3.25254 7.37227 2.83919 8.00077 2.55592C8.62927 2.27265 9.3107 2.12591 10.0001 2.12537ZM10.0001 3.62537C9.10498 3.62537 8.24653 3.98095 7.6136 4.61388C6.98066 5.24682 6.62508 6.10526 6.62508 7.00037C6.62508 7.89547 6.98066 8.75392 7.6136 9.38685C8.24653 10.0198 9.10498 10.3754 10.0001 10.3754C10.8952 10.3754 11.7536 10.0198 12.3866 9.38685C13.0195 8.75392 13.3751 7.89547 13.3751 7.00037C13.3751 6.10526 13.0195 5.24682 12.3866 4.61388C11.7536 3.98095 10.8952 3.62537 10.0001 3.62537Z"
-                          fill="var(--icon-sub-600)"
-                        />
-                      </svg>
-                    </div>
-                    <div className="text-sm font-normal leading-tight">Number</div>
+                    {FIELD_TYPE_ICONS['number']}
+                    <div className="text-sm font-normal leading-tight">Número</div>
                   </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
           <div>
-            <Select value={selectedModel} onValueChange={setSelectedModel}>
+            <Select value={selectedModel} onValueChange={handleModelChange} disabled={loadingLlms}>
               <SelectTrigger className="inline-flex h-9 w-full items-center justify-between gap-2 rounded-lg border border-border bg-white pl-3 pr-2.5">
                 <div className="flex items-center gap-2">
                   <div>
@@ -280,51 +212,52 @@ export function PostCallAnalysis({ agent, onAgentUpdate }: PostCallAnalysisProps
                     </svg>
                   </div>
                   <div className="overflow-hidden text-ellipsis whitespace-nowrap text-sm font-normal leading-tight">
-                    {selectedModel}
+                    {loadingLlms ? 'Cargando...' : selectedModel || 'Seleccionar modelo'}
                   </div>
                 </div>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="GPT-5">GPT-5</SelectItem>
-                <SelectItem value="GPT-4">GPT-4</SelectItem>
-                <SelectItem value="GPT-3.5">GPT-3.5</SelectItem>
+                {llms.map((llm) => (
+                  <SelectItem key={llm.llm_id} value={llm.llm_id}>
+                    {llm.model}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
         </div>
       </div>
 
-      {/* Field Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingField ? 'Edit Field' : 'Add Field'}</DialogTitle>
+            <DialogTitle>{editingField ? 'Editar Campo' : 'Agregar Campo'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="fieldName">Field Name</Label>
+              <Label htmlFor="fieldName">Nombre del Campo</Label>
               <Input id="fieldName" value={fieldName} onChange={(e) => setFieldName(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="fieldType">Field Type</Label>
+              <Label htmlFor="fieldType">Tipo de Campo</Label>
               <Select value={fieldType} onValueChange={setFieldType}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="string">String</SelectItem>
-                  <SelectItem value="boolean">Boolean</SelectItem>
-                  <SelectItem value="number">Number</SelectItem>
-                  <SelectItem value="array">Array</SelectItem>
+                  <SelectItem value="string">Texto</SelectItem>
+                  <SelectItem value="boolean">Booleano</SelectItem>
+                  <SelectItem value="number">Número</SelectItem>
+                  <SelectItem value="array">Lista</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Cancel
+              Cancelar
             </Button>
-            <Button onClick={handleSaveField}>{editingField ? 'Update' : 'Create'}</Button>
+            <Button onClick={handleSaveField}>{editingField ? 'Actualizar' : 'Crear'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

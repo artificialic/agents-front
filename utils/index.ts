@@ -80,3 +80,7 @@ export const translatedStatus = (status: string) => {
       return status;
   }
 };
+
+export const copyToClipboard = (text: string) => {
+  navigator.clipboard.writeText(text);
+};

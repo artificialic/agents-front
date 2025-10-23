@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client';
 
 import { AgentHeader } from '@/components/modules/agents/agent-header';
@@ -14,6 +13,52 @@ export default function AgentConfigPage() {
   const [agent, setAgent] = useState<Agent | null>(null);
   const [llm, setLlm] = useState<Llm | null>(null);
   const [loading, setLoading] = useState(true);
+  const [llms, setLlms] = useState<Llm[]>([]);
+  const [loadingLlms, setLoadingLlms] = useState(true);
+  const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([]);
+  const [loadingKnowledgeBases, setLoadingKnowledgeBases] = useState(true);
+
+  useEffect(() => {
+    const fetchLlms = async () => {
+      try {
+        setLoadingLlms(true);
+        const llmsResponse = await apiService.getLlms();
+
+        const llmMap = new Map<string, Llm>();
+        llmsResponse.forEach((llm: Llm) => {
+          const existing = llmMap.get(llm.llm_id);
+          if (!existing) {
+            llmMap.set(llm.llm_id, llm);
+          }
+        });
+
+        setLlms(Array.from(llmMap.values()));
+      } catch (error) {
+        console.error('Error fetching LLMs:', error);
+      } finally {
+        setLoadingLlms(false);
+      }
+    };
+
+    fetchLlms();
+  }, []);
+
+  useEffect(() => {
+    const fetchKnowledgeBases = async () => {
+      try {
+        setLoadingKnowledgeBases(true);
+        const response = await apiService.getKnowledgeBases();
+        setKnowledgeBases(response || []);
+      } catch (error) {
+        console.error('Error fetching knowledge bases:', error);
+        setKnowledgeBases([]);
+      } finally {
+        setLoadingKnowledgeBases(false);
+      }
+    };
+
+    fetchKnowledgeBases();
+  }, []);
 
   useEffect(() => {
     const fetchAgent = async () => {
@@ -57,6 +102,16 @@ export default function AgentConfigPage() {
     }
   };
 
+  const refreshKnowledgeBases = async () => {
+    try {
+      const response = await apiService.getKnowledgeBases();
+      setKnowledgeBases(response || []);
+    } catch (error) {
+      console.error('Error refreshing knowledge bases:', error);
+      setKnowledgeBases([]);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -75,13 +130,33 @@ export default function AgentConfigPage() {
 
   return (
     <div className="flex h-full w-full flex-col gap-2">
-      <AgentHeader agent={agent} onAgentUpdate={refreshAgent} />
+      <AgentHeader
+        agent={agent}
+        agentId={agent.agent_id}
+        llmId={agent.response_engine.llm_id}
+        onAgentUpdate={refreshAgent}
+      />
       <div className="flex h-full w-full flex-row gap-2">
         <div className="h-full w-1/2 overflow-y-auto">
-          <AgentConfiguration agent={agent} llmId={agent.response_engine.llm_id} />
+          <AgentConfiguration
+            agent={agent}
+            llmId={agent.response_engine.llm_id}
+            llms={llms}
+            loadingLlms={loadingLlms}
+          />
         </div>
         <div className="w-1/4">
-          <SettingsPanel agent={agent} llm={llm} onLlmUpdate={refreshLlm} onAgentUpdate={refreshAgent} />
+          <SettingsPanel
+            agent={agent}
+            llm={llm}
+            onLlmUpdate={refreshLlm}
+            onAgentUpdate={refreshAgent}
+            knowledgeBases={knowledgeBases}
+            loadingKnowledgeBases={loadingKnowledgeBases}
+            onKnowledgeBasesUpdate={refreshKnowledgeBases}
+            llms={llms}
+            loadingLlms={loadingLlms}
+          />
         </div>
         <div className="w-1/4">
           <div className="flex h-full w-full flex-col items-center justify-center space-y-4 rounded-lg bg-white p-6">

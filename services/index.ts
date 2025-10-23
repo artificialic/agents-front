@@ -107,7 +107,7 @@ class ApiServiceLocal extends ApiService {
     return this.getFullResponse<Agent[]>('/retell/agents');
   }
 
-  async getAgent(agentId: string): Promise<ApiResponse<Agent>> {
+  async getAgent(agentId: string): Promise<Agent> {
     return this.getFullResponse<Agent>(`/retell/agents/${agentId}`);
   }
 

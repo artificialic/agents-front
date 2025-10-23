@@ -45,7 +45,16 @@ export const navItems: NavItem[] = [
   {
     title: 'Agentes',
     url: '/dashboard/agents',
-    icon: 'incomingCalls',
+    icon: 'user2',
+    isActive: true,
+    shortcut: ['c', 'l'],
+    items: [],
+    role: [ROLES.USER]
+  },
+  {
+    title: 'Números de teléfonos',
+    url: '/dashboard/phone-numbers',
+    icon: 'phoneNumbers',
     isActive: true,
     shortcut: ['c', 'l'],
     items: [],

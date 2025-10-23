@@ -17,6 +17,8 @@ import { LANGUAGES } from '@/components/modules/agents/constants';
 interface AgentConfigurationProps {
   agent: Agent;
   llmId: string;
+  llms: Llm[];
+  loadingLlms: boolean;
 }
 
 const VOICE_MODELS = [
@@ -37,7 +39,7 @@ const VOICE_MODELS = [
   }
 ];
 
-export function AgentConfiguration({ agent, llmId }: AgentConfigurationProps) {
+export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentConfigurationProps) {
   const [formData, setFormData] = useState({
     prompt: '',
     customMessage: '',
@@ -67,38 +69,11 @@ export function AgentConfiguration({ agent, llmId }: AgentConfigurationProps) {
   const [saving, setSaving] = useState(false);
   const [savingVoice, setSavingVoice] = useState(false);
   const [llm, setLlm] = useState<Llm | null>(null);
-  const [llms, setLlms] = useState<Llm[]>([]);
-  const [loadingLlms, setLoadingLlms] = useState(true);
   const [selectedLanguage, setSelectedLanguage] = useState('en-US');
   const [voicePopoverOpen, setVoicePopoverOpen] = useState(false);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>('');
   const [selectedVoiceName, setSelectedVoiceName] = useState<string>('Seleccionar Voz');
-
-  useEffect(() => {
-    const fetchLlms = async () => {
-      try {
-        setLoadingLlms(true);
-        const llmsResponse = await apiService.getLlms();
-
-        const llmMap = new Map<string, Llm>();
-        llmsResponse.forEach((llm: Llm) => {
-          const existing = llmMap.get(llm.llm_id);
-          if (!existing) {
-            llmMap.set(llm.llm_id, llm);
-          }
-        });
-
-        setLlms(Array.from(llmMap.values()));
-      } catch (error) {
-        console.error('Error fetching LLMs:', error);
-      } finally {
-        setLoadingLlms(false);
-      }
-    };
-
-    fetchLlms();
-  }, []);
 
   useEffect(() => {
     const fetchLlm = async () => {

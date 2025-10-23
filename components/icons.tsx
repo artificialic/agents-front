@@ -43,7 +43,8 @@ import {
   Phone,
   PhoneIncoming,
   Receipt,
-  Copy
+  Copy,
+  Hash
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -92,5 +93,6 @@ export const Icons = {
   incomingCalls: PhoneIncoming,
   clients: Users,
   billingAlt: Receipt,
-  templates: Copy
+  templates: Copy,
+  phoneNumbers: Hash
 };

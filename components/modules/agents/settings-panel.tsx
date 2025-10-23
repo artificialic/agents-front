@@ -49,11 +49,26 @@ const SLIDER_CONFIGS = {
 interface SettingsPanelProps {
   agent: Agent;
   llm: Llm;
+  llms: Llm[];
+  loadingLlms: boolean;
   onLlmUpdate: () => Promise<void>;
   onAgentUpdate: () => Promise<void>;
+  knowledgeBases: KnowledgeBase[];
+  loadingKnowledgeBases: boolean;
+  onKnowledgeBasesUpdate: () => Promise<void>;
 }
 
-export function SettingsPanel({ agent, llm, onLlmUpdate, onAgentUpdate }: SettingsPanelProps) {
+export function SettingsPanel({
+  agent,
+  llm,
+  llms,
+  onLlmUpdate,
+  onAgentUpdate,
+  knowledgeBases,
+  loadingKnowledgeBases,
+  loadingLlms,
+  onKnowledgeBasesUpdate
+}: SettingsPanelProps) {
   const [openSections, setOpenSections] = useState<string[]>([]);
   const [voicemailMessage, setVoicemailMessage] = useState('');
   const [originalVoicemailMessage, setOriginalVoicemailMessage] = useState('');
@@ -294,13 +309,25 @@ export function SettingsPanel({ agent, llm, onLlmUpdate, onAgentUpdate }: Settin
                   {section.id === 'functions' ? (
                     <FunctionsSettings llm={llm} onLlmUpdate={onLlmUpdate} />
                   ) : section.id === 'knowledge' ? (
-                    <KnowledgeSettings agent={agent} onAgentUpdate={onAgentUpdate} />
+                    <KnowledgeSettings
+                      llm={llm}
+                      llmId={llm.llm_id}
+                      onLlmUpdate={onLlmUpdate}
+                      knowledgeBases={knowledgeBases}
+                      loadingKnowledgeBases={loadingKnowledgeBases}
+                      onKnowledgeBasesUpdate={onKnowledgeBasesUpdate}
+                    />
                   ) : section.id === 'speech' ? (
                     <SpeechSettings agent={agent} onAgentUpdate={onAgentUpdate} />
                   ) : section.id === 'webhook' ? (
                     <WebhookSettings agent={agent} onAgentUpdate={onAgentUpdate} />
                   ) : section.id === 'analysis' ? (
-                    <PostCallAnalysis agent={agent} onAgentUpdate={onAgentUpdate} />
+                    <PostCallAnalysis
+                      agent={agent}
+                      llms={llms}
+                      loadingLlms={loadingLlms}
+                      onAgentUpdate={onAgentUpdate}
+                    />
                   ) : section.id === 'transcription' ? (
                     <TranscriptionSettings agent={agent} onAgentUpdate={onAgentUpdate} />
                   ) : section.id === 'security' ? (

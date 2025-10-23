@@ -716,7 +716,7 @@ export default function PhoneNumbersManagement() {
             </div>
 
             <div className="mb-8">
-              <label className="mb-3 block text-sm font-semibold text-gray-900">Agente de llamadas entrantes</label>
+              <Label className="mb-3 block text-sm font-semibold text-gray-900">Agente de llamadas entrantes</Label>
               <Select value={inboundAgent || undefined} onValueChange={handleUpdateInboundAgent}>
                 <SelectTrigger className="w-full font-normal text-gray-900">
                   <SelectValue placeholder="Ninguno (deshabilitar entrantes)" className="text-gray-900" />
@@ -737,12 +737,9 @@ export default function PhoneNumbersManagement() {
                   onChange={(e) => handleWebhookToggle(e.target.checked)}
                   className="mt-0.5"
                 />
-                <label htmlFor="webhook" className="text-sm text-gray-600">
+                <Label htmlFor="webhook" className="text-sm text-gray-600">
                   Agregar un webhook de entrada.{' '}
-                  <a href="#" className="text-blue-600 hover:underline">
-                    (Más información)
-                  </a>
-                </label>
+                </Label>
               </div>
               {webhookEnabled && (
                 <div className="mt-3">
@@ -760,7 +757,7 @@ export default function PhoneNumbersManagement() {
 
             <div className="mb-8">
               <div className="mb-3 flex items-center justify-between">
-                <label className="block text-sm font-semibold text-gray-900">Agente de llamadas salientes</label>
+                <Label className="block text-sm font-semibold text-gray-900">Agente de llamadas salientes</Label>
                 <button className="text-gray-400 hover:text-gray-600">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
