@@ -1,6 +1,3 @@
-// @ts-nocheck
-'use client';
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -9,17 +6,20 @@ import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Settings } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Settings, Info } from 'lucide-react';
 import { apiService } from '@/services';
 
 interface SecuritySettingsProps {
+  llm: Llm;
   agent: Agent;
   onAgentUpdate: () => Promise<void>;
+  onLlmUpdate: () => Promise<void>;
 }
 
-export function SecuritySettings({ agent, onAgentUpdate }: SecuritySettingsProps) {
+export function SecuritySettings({ llm, agent, onAgentUpdate, onLlmUpdate }: SecuritySettingsProps) {
   const [dataStorage, setDataStorage] = useState(agent.data_storage_setting || 'everything');
-  const [optInSecureUrls, setOptInSecureUrls] = useState(agent.opt_in_secure_urls || false);
+  const [optInSecureUrls, setOptInSecureUrls] = useState(agent.opt_in_signed_url || false);
   const [isPiiDialogOpen, setIsPiiDialogOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isDynamicVarsDialogOpen, setIsDynamicVarsDialogOpen] = useState(false);
@@ -32,14 +32,14 @@ export function SecuritySettings({ agent, onAgentUpdate }: SecuritySettingsProps
   }, [agent.pii_config]);
 
   useEffect(() => {
-    if (agent.default_dynamic_variables) {
-      const vars = Object.entries(agent.default_dynamic_variables).map(([key, value]) => ({
+    if (llm.default_dynamic_variables) {
+      const vars = Object.entries(llm.default_dynamic_variables).map(([key, value]) => ({
         key,
         value: String(value)
       }));
       setDynamicVariables(vars);
     }
-  }, [agent.default_dynamic_variables]);
+  }, [llm.default_dynamic_variables]);
 
   const handleDataStorageChange = async (value: string) => {
     try {
@@ -54,7 +54,7 @@ export function SecuritySettings({ agent, onAgentUpdate }: SecuritySettingsProps
   const handleOptInSecureUrlsChange = async (checked: boolean) => {
     try {
       setOptInSecureUrls(checked);
-      await apiService.updateAgent(agent.agent_id, { opt_in_secure_urls: checked });
+      await apiService.updateAgent(agent.agent_id, { opt_in_signed_url: checked });
       await onAgentUpdate();
     } catch (error) {
       console.error('Error updating opt in secure URLs:', error);
@@ -108,10 +108,10 @@ export function SecuritySettings({ agent, onAgentUpdate }: SecuritySettingsProps
         {} as Record<string, string>
       );
 
-      await apiService.updateAgent(agent.agent_id, {
+      await apiService.updateLlm(llm.llm_id, {
         default_dynamic_variables: Object.keys(varsObject).length > 0 ? varsObject : undefined
       });
-      await onAgentUpdate();
+      await onLlmUpdate();
       setIsDynamicVarsDialogOpen(false);
     } catch (error) {
       console.error('Error updating dynamic variables:', error);
@@ -171,6 +171,20 @@ export function SecuritySettings({ agent, onAgentUpdate }: SecuritySettingsProps
             <Label htmlFor="basic_attributes_only" className="cursor-pointer text-sm font-normal">
               Solo Atributos Básicos
             </Label>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button type="button" className="inline-flex">
+                    <Info className="h-4 w-4 cursor-help text-muted-foreground" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="max-w-xs">
+                    Almacena solo metadatos, toda transcripción, grabación y datos PII serán eliminados
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </RadioGroup>
       </div>

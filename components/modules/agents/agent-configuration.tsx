@@ -306,7 +306,7 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentCon
   const selectedVoiceModel = VOICE_MODELS.find((model) => model.value === voiceConfig.model) || VOICE_MODELS[0];
 
   return (
-    <div className="h-full min-h-screen flex-1 space-y-6 rounded-lg bg-white p-6">
+    <div className="bg-white-0 flex h-[calc(100vhx)] w-full flex-col overflow-y-auto rounded-lg p-4">
       <div className="flex items-center gap-3">
         <div className="flex-1">
           <Select value={llmId}>
@@ -484,7 +484,7 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentCon
           value={loading ? 'Cargando...' : formData.prompt}
           onChange={(e) => setFormData((prev) => ({ ...prev, prompt: e.target.value }))}
           disabled={loading}
-          className="mt-2 min-h-[300px] resize-none font-mono text-sm"
+          className="mt-2 h-[40vh] min-h-[300px] resize-y pb-[40px] font-mono text-sm"
         />
         {hasChanges && (
           <div className="absolute bottom-4 left-4 flex gap-2">

@@ -831,7 +831,7 @@ export default function PhoneNumbersManagement() {
                 id="terminationUri"
                 value={newPhoneData.terminationUri}
                 onChange={(e) => setNewPhoneData({ ...newPhoneData, terminationUri: e.target.value })}
-                placeholder="Ingresa la URI de terminación (NO la URL del servidor SIP de Retell)"
+                placeholder="Ingresa la URI de terminación (NO la URL del servidor SIP)"
               />
             </div>
 

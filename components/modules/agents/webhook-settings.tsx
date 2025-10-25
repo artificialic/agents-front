@@ -1,6 +1,3 @@
-// @ts-nocheck
-'use client';
-
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
@@ -51,12 +48,7 @@ export function WebhookSettings({ agent, onAgentUpdate }: WebhookSettingsProps) 
     <div className="flex flex-col items-start space-y-4 px-7 pb-4 pt-0">
       <div className="w-full space-y-2">
         <div className="text-sm font-medium">URL de Webhook a Nivel de Agente</div>
-        <div className="text-xs text-muted-foreground">
-          URL de webhook para recibir eventos de Retell.{' '}
-          <a href="#" className="text-primary hover:underline">
-            (Más información)
-          </a>
-        </div>
+        <div className="text-xs text-muted-foreground">URL de webhook para recibir eventos.</div>
         <Input
           value={webhookUrl}
           onChange={(e) => setWebhookUrl(e.target.value)}

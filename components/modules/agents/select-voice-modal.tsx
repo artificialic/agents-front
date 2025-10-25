@@ -26,6 +26,7 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
+  const [isAddCustomVoiceOpen, setIsAddCustomVoiceOpen] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -121,7 +122,7 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
         style={{ minWidth: '1200px', minHeight: '700px' }}
       >
         <DialogHeader className="px-6 pb-0 pt-6">
-          <DialogTitle className="text-xl">Select Voice</DialogTitle>
+          <DialogTitle className="text-xl">Seleccionar Voz</DialogTitle>
         </DialogHeader>
 
         <Tabs
@@ -163,53 +164,54 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
               variant="default"
               size="sm"
               className="shrink-0 bg-foreground text-background hover:bg-foreground/90"
+              onClick={() => setIsAddCustomVoiceOpen(true)}
             >
-              + Add custom voice
+              + Agregar voz personalizada
             </Button>
 
             <Select value={genderFilter} onValueChange={setGenderFilter}>
               <SelectTrigger className="w-[140px] bg-background">
-                <SelectValue placeholder="All Gender" />
+                <SelectValue placeholder="Todos los Géneros" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Gender</SelectItem>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="female">Female</SelectItem>
+                <SelectItem value="all">Todos los Géneros</SelectItem>
+                <SelectItem value="male">Masculino</SelectItem>
+                <SelectItem value="female">Femenino</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={accentFilter} onValueChange={setAccentFilter}>
               <SelectTrigger className="w-[140px] bg-background">
-                <SelectValue placeholder="All Accent" />
+                <SelectValue placeholder="Todos los Acentos" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Accent</SelectItem>
-                <SelectItem value="American">American</SelectItem>
-                <SelectItem value="British">British</SelectItem>
-                <SelectItem value="Indian">Indian</SelectItem>
-                <SelectItem value="Spanish">Spanish</SelectItem>
-                <SelectItem value="German">German</SelectItem>
-                <SelectItem value="French">French</SelectItem>
-                <SelectItem value="Mexican">Mexican</SelectItem>
-                <SelectItem value="Australian">Australian</SelectItem>
-                <SelectItem value="Southern American">Southern American</SelectItem>
+                <SelectItem value="all">Todos los Acentos</SelectItem>
+                <SelectItem value="American">Americano</SelectItem>
+                <SelectItem value="British">Británico</SelectItem>
+                <SelectItem value="Indian">Indio</SelectItem>
+                <SelectItem value="Spanish">Español</SelectItem>
+                <SelectItem value="German">Alemán</SelectItem>
+                <SelectItem value="French">Francés</SelectItem>
+                <SelectItem value="Mexican">Mexicano</SelectItem>
+                <SelectItem value="Australian">Australiano</SelectItem>
+                <SelectItem value="Southern American">Sureño Americano</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-[140px] bg-background">
-                <SelectValue placeholder="All Types" />
+                <SelectValue placeholder="Todos los Tipos" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="retell">Retell Presets</SelectItem>
-                <SelectItem value="preset">Provider Presets</SelectItem>
-                <SelectItem value="custom">Custom</SelectItem>
+                <SelectItem value="all">Todos los Tipos</SelectItem>
+                <SelectItem value="retell">Preajustes Retell</SelectItem>
+                <SelectItem value="preset">Preajustes del Proveedor</SelectItem>
+                <SelectItem value="custom">Personalizado</SelectItem>
               </SelectContent>
             </Select>
 
             <Input
-              placeholder="Search..."
+              placeholder="Buscar..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="min-w-[200px] flex-1 bg-background"
@@ -219,7 +221,7 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
           <TabsContent value={activeTab} className="mt-0 flex-1 overflow-y-auto px-6">
             {loading ? (
               <div className="flex h-64 items-center justify-center">
-                <div className="text-muted-foreground">Loading voices...</div>
+                <div className="text-muted-foreground">Cargando voces...</div>
               </div>
             ) : (
               <div>
@@ -227,9 +229,9 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
                   <thead className="sticky top-0 border-b bg-background">
                     <tr className="text-sm font-medium text-muted-foreground">
                       <th className="w-[60px] py-3 text-left"></th>
-                      <th className="py-3 text-left">Voice</th>
-                      <th className="w-[300px] py-3 text-left">Trait</th>
-                      <th className="py-3 text-left">Voice ID</th>
+                      <th className="py-3 text-left">Voz</th>
+                      <th className="w-[300px] py-3 text-left">Características</th>
+                      <th className="py-3 text-left">ID de Voz</th>
                       <th className="w-[120px] py-3 text-left"></th>
                     </tr>
                   </thead>
@@ -308,7 +310,7 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
                             )}
                             {voice.voice_type === 'custom' && (
                               <span className="whitespace-nowrap rounded-md border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs text-primary">
-                                Custom
+                                Personalizado
                               </span>
                             )}
                           </div>
@@ -338,7 +340,7 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
                             >
                               <polyline points="20,6 9,17 4,12" />
                             </svg>
-                            Use Voice
+                            Usar Voz
                           </button>
                         </td>
                       </tr>
@@ -347,13 +349,57 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
                 </table>
 
                 {filteredVoices.length === 0 && !loading && (
-                  <div className="flex h-64 items-center justify-center text-muted-foreground">No voices found</div>
+                  <div className="flex h-64 items-center justify-center text-muted-foreground">
+                    No se encontraron voces
+                  </div>
                 )}
               </div>
             )}
           </TabsContent>
         </Tabs>
       </DialogContent>
+
+      <Dialog open={isAddCustomVoiceOpen} onOpenChange={setIsAddCustomVoiceOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Agregar Voz Personalizada</DialogTitle>
+          </DialogHeader>
+
+          <Tabs defaultValue="community" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="clone">Clonar Voz</TabsTrigger>
+              <TabsTrigger value="community">Voces de la Comunidad</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="clone" className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Nombre de Voz</label>
+                <p className="text-sm text-muted-foreground">
+                  Explora las voces de la comunidad <span className="cursor-pointer text-primary">aquí</span>.
+                </p>
+                <Input placeholder="Buscar por nombre de voz" />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="community" className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Nombre de Voz</label>
+                <p className="text-sm text-muted-foreground">
+                  Explora las voces de la comunidad <span className="cursor-pointer text-primary">aquí</span>.
+                </p>
+                <Input placeholder="Buscar por nombre de voz" />
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={() => setIsAddCustomVoiceOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={() => setIsAddCustomVoiceOpen(false)}>Guardar</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }

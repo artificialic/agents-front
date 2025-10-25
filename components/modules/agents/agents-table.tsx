@@ -41,16 +41,18 @@ export function AgentsTable({ agents, loading, onAgentClick }: AgentsTableProps)
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border bg-white">
+    <div className="h-[calc(100vh-250px)] overflow-auto rounded-md border bg-white">
       <Table>
-        <TableHeader className="sticky top-0 z-10 bg-gray-50">
+        <TableHeader>
           <TableRow className="border-b hover:bg-gray-50">
-            <TableHead className="p-4 font-medium text-gray-600">Nombre del Agente</TableHead>
-            <TableHead className="p-4 font-medium text-gray-600">Tipo de Agente</TableHead>
-            <TableHead className="p-4 font-medium text-gray-600">Voz</TableHead>
-            <TableHead className="p-4 font-medium text-gray-600">Teléfono</TableHead>
-            <TableHead className="p-4 font-medium text-gray-600">Editado por</TableHead>
-            <TableHead className="w-12 p-4 font-medium text-gray-600"></TableHead>
+            <TableHead className="sticky top-0 z-10 bg-gray-50 p-4 font-medium text-gray-600">
+              Nombre del Agente
+            </TableHead>
+            <TableHead className="sticky top-0 z-10 bg-gray-50 p-4 font-medium text-gray-600">Tipo de Agente</TableHead>
+            <TableHead className="sticky top-0 z-10 bg-gray-50 p-4 font-medium text-gray-600">Voz</TableHead>
+            <TableHead className="sticky top-0 z-10 bg-gray-50 p-4 font-medium text-gray-600">Teléfono</TableHead>
+            <TableHead className="sticky top-0 z-10 bg-gray-50 p-4 font-medium text-gray-600">Editado por</TableHead>
+            <TableHead className="sticky top-0 z-10 w-12 bg-gray-50 p-4 font-medium text-gray-600"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

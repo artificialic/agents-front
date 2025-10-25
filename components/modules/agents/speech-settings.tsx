@@ -427,15 +427,7 @@ export function SpeechSettings({ agent, onAgentUpdate }: SpeechSettingsProps) {
       <div className="flex flex-col rounded-lg p-4">
         <div className="text-sm font-medium">Pronunciación</div>
         <p className="mb-2 text-xs font-normal leading-none text-muted-foreground">
-          Guía al modelo para pronunciar una palabra, nombre o frase de una manera específica.{' '}
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:underline"
-            href="https://docs.retellai.com/build/add-pronounciation"
-          >
-            (Más información)
-          </a>
+          Guía al modelo para pronunciar una palabra, nombre o frase de una manera específica.
         </p>
 
         {pronunciationDictionary.length > 0 && (

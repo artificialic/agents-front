@@ -370,19 +370,19 @@ interface Llm {
   model_high_priority: boolean;
   tool_call_strict_mode: boolean;
   general_prompt?: string;
-  general_tools?: Array<{
+  general_tools?: {
     type: string;
     name: string;
     description: string;
-  }>;
-  states?: Array<{
+  }[];
+  states?: {
     name: string;
     state_prompt: string;
-    edges?: Array<{
+    edges?: {
       destination_state_name: string;
       description: string;
-    }>;
-    tools?: Array<
+    }[];
+    tools?: (
       | {
           type: 'transfer_call';
           name: string;
@@ -390,6 +390,7 @@ interface Llm {
           transfer_destination: {
             type: string;
             number: string;
+            ignore_e164_validation?: boolean;
           };
           transfer_option: {
             type: string;
@@ -404,11 +405,12 @@ interface Llm {
           event_type_id: number;
           timezone: string;
         }
-    >;
-  }>;
+    )[];
+  }[];
   starting_state?: string;
   start_speaker?: 'user' | 'agent';
   begin_message?: string | null;
+  begin_after_user_silence_ms?: number;
   default_dynamic_variables?: Record<string, string>;
   knowledge_base_ids?: string[];
   kb_config?: {
@@ -416,8 +418,6 @@ interface Llm {
     filter_score: number;
   };
   last_modification_timestamp?: number;
-
-  // Timestamps
   created_at?: string;
   updated_at?: string;
 }

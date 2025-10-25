@@ -96,18 +96,6 @@ export function AgentHeader({ agent, agentId, llmId, onAgentUpdate }: AgentHeade
                   <Copy className="h-3 w-3" />
                 </button>
               </span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                $0.115/min
-              </span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <Zap className="h-3 w-3" />
-                2470-2805ms latencia
-              </span>
-              <span>•</span>
-              <span>47-287 tokens</span>
             </div>
           </div>
         </div>

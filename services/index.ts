@@ -139,8 +139,8 @@ class ApiServiceLocal extends ApiService {
     return this.getFullResponse<any>('/retell/voices');
   }
 
-  async getKnowledgeBases(): Promise<ApiResponse<any>> {
-    return this.getFullResponse<any>('/retell/knowledge-bases');
+  async getKnowledgeBases(): Promise<KnowledgeBase[]> {
+    return this.getFullResponse<KnowledgeBase[]>('/retell/knowledge-bases');
   }
 
   /* Templates */

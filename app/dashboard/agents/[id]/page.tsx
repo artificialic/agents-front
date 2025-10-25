@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client';
 
 import { AgentHeader } from '@/components/modules/agents/agent-header';
@@ -27,9 +26,9 @@ export default function AgentConfigPage() {
 
         const llmMap = new Map<string, Llm>();
         llmsResponse.forEach((llm: Llm) => {
-          const existing = llmMap.get(llm.llm_id);
+          const existing = llmMap.get(llm.model);
           if (!existing) {
-            llmMap.set(llm.llm_id, llm);
+            llmMap.set(llm.model, llm);
           }
         });
 
