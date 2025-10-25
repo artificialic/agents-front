@@ -143,6 +143,18 @@ class ApiServiceLocal extends ApiService {
     return this.getFullResponse<KnowledgeBase[]>('/retell/knowledge-bases');
   }
 
+  async searchCommunityVoice(searchData: { search_query: string }): Promise<any> {
+    return this.post('/retell/search-community-voice', searchData);
+  }
+
+  async addCommunityVoice(voiceData: {
+    provider_voice_id: string;
+    public_user_id: string;
+    voice_name: string;
+  }): Promise<any> {
+    return this.post('/retell/add-community-voice', voiceData);
+  }
+
   /* Templates */
   async getTemplates(): Promise<ApiResponse<Template[]>> {
     return this.getFullResponse<Template[]>('/templates');

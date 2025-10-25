@@ -27,6 +27,11 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
   const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   const [isAddCustomVoiceOpen, setIsAddCustomVoiceOpen] = useState(false);
+  const [communityVoices, setCommunityVoices] = useState<any[]>([]);
+  const [communitySearchQuery, setCommunitySearchQuery] = useState('');
+  const [loadingCommunityVoices, setLoadingCommunityVoices] = useState(false);
+  const [selectedCommunityVoice, setSelectedCommunityVoice] = useState<any | null>(null);
+  const [editableVoiceName, setEditableVoiceName] = useState('');
 
   useEffect(() => {
     if (open) {
@@ -42,6 +47,15 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
       }
     };
   }, [audioElement]);
+
+  useEffect(() => {
+    if (!isAddCustomVoiceOpen) {
+      setSelectedCommunityVoice(null);
+      setEditableVoiceName('');
+      setCommunityVoices([]);
+      setCommunitySearchQuery('');
+    }
+  }, [isAddCustomVoiceOpen]);
 
   const fetchAllVoices = async () => {
     try {
@@ -80,6 +94,78 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
   const handleSelectVoice = (voiceId: string) => {
     onSelectVoice(voiceId);
     onOpenChange(false);
+  };
+
+  const handleSearchCommunityVoices = async () => {
+    if (!communitySearchQuery.trim()) {
+      setCommunityVoices([]);
+      return;
+    }
+
+    try {
+      setLoadingCommunityVoices(true);
+      const response = await apiService.searchCommunityVoice({
+        search_query: communitySearchQuery
+      });
+      setCommunityVoices(response.voices || []);
+    } catch (error) {
+      console.error('Error searching community voices:', error);
+      setCommunityVoices([]);
+    } finally {
+      setLoadingCommunityVoices(false);
+    }
+  };
+
+  const handlePlayCommunityVoice = (voice: any) => {
+    if (playingVoiceId === voice.voice_id) {
+      if (audioElement) {
+        audioElement.pause();
+        setPlayingVoiceId(null);
+      }
+      return;
+    }
+
+    if (audioElement) {
+      audioElement.pause();
+    }
+
+    if (voice.preview_url) {
+      const audio = new Audio(voice.preview_url);
+      audio.play();
+      audio.onended = () => setPlayingVoiceId(null);
+      setAudioElement(audio);
+      setPlayingVoiceId(voice.voice_id);
+    }
+  };
+
+  const handleSelectCommunityVoice = (voice: any) => {
+    setSelectedCommunityVoice(voice);
+    setEditableVoiceName(voice.name || '');
+  };
+
+  const handleSaveCommunityVoice = async () => {
+    if (!selectedCommunityVoice) return;
+
+    try {
+      setLoadingCommunityVoices(true);
+      const response = await apiService.addCommunityVoice({
+        provider_voice_id: selectedCommunityVoice.voice_id,
+        public_user_id: selectedCommunityVoice.public_owner_id,
+        voice_name: editableVoiceName
+      });
+
+      onSelectVoice(response.voice_id);
+      setIsAddCustomVoiceOpen(false);
+      onOpenChange(false);
+      setSelectedCommunityVoice(null);
+      setEditableVoiceName('');
+      setCommunityVoices([]);
+      setCommunitySearchQuery('');
+    } catch (error) {
+      console.error('Error adding community voice:', error);
+    } finally {
+      setLoadingCommunityVoices(false);
+    }
   };
 
   const filteredVoices = allVoices
@@ -360,43 +446,146 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
       </DialogContent>
 
       <Dialog open={isAddCustomVoiceOpen} onOpenChange={setIsAddCustomVoiceOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-xl">Agregar Voz Personalizada</DialogTitle>
           </DialogHeader>
 
-          <Tabs defaultValue="community" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="clone">Clonar Voz</TabsTrigger>
-              <TabsTrigger value="community">Voces de la Comunidad</TabsTrigger>
+          <Tabs defaultValue="community" className="flex w-full flex-1 flex-col overflow-hidden">
+            <TabsList className="w-full">
+              <TabsTrigger value="community" className="flex-1">
+                Voces de la Comunidad
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="clone" className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Nombre de Voz</label>
-                <p className="text-sm text-muted-foreground">
-                  Explora las voces de la comunidad <span className="cursor-pointer text-primary">aquí</span>.
-                </p>
-                <Input placeholder="Buscar por nombre de voz" />
-              </div>
-            </TabsContent>
+            <TabsContent value="community" className="flex flex-1 flex-col space-y-4 overflow-hidden">
+              {!selectedCommunityVoice ? (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Buscar Voces de la Comunidad</label>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Buscar por nombre de voz"
+                        value={communitySearchQuery}
+                        onChange={(e) => setCommunitySearchQuery(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSearchCommunityVoices();
+                          }
+                        }}
+                      />
+                      <Button onClick={handleSearchCommunityVoices} disabled={loadingCommunityVoices}>
+                        Buscar
+                      </Button>
+                    </div>
+                  </div>
 
-            <TabsContent value="community" className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Nombre de Voz</label>
-                <p className="text-sm text-muted-foreground">
-                  Explora las voces de la comunidad <span className="cursor-pointer text-primary">aquí</span>.
-                </p>
-                <Input placeholder="Buscar por nombre de voz" />
-              </div>
+                  <div className="flex-1 overflow-y-auto rounded-lg border">
+                    {loadingCommunityVoices ? (
+                      <div className="flex h-64 items-center justify-center">
+                        <div className="text-muted-foreground">Buscando voces...</div>
+                      </div>
+                    ) : communityVoices.length > 0 ? (
+                      <div className="divide-y">
+                        {communityVoices.map((voice) => (
+                          <div key={voice.voice_id} className="p-4 transition-colors hover:bg-muted/50">
+                            <div className="flex items-start gap-4">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handlePlayCommunityVoice(voice);
+                                }}
+                                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-muted-foreground hover:text-background"
+                              >
+                                {playingVoiceId === voice.voice_id ? (
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <rect x="6" y="4" width="4" height="16" rx="1" />
+                                    <rect x="14" y="4" width="4" height="16" rx="1" />
+                                  </svg>
+                                ) : (
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z" />
+                                  </svg>
+                                )}
+                              </button>
+
+                              <div className="min-w-0 flex-1">
+                                <h4 className="mb-1 text-sm font-medium">{voice.name}</h4>
+                                <p className="mb-2 line-clamp-2 text-xs text-muted-foreground">{voice.description}</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {voice.accent && (
+                                    <span className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs">
+                                      {voice.accent}
+                                    </span>
+                                  )}
+                                  {voice.gender && (
+                                    <span className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs">
+                                      {voice.gender}
+                                    </span>
+                                  )}
+                                  {voice.age && (
+                                    <span className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs">
+                                      {voice.age}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              <Button size="sm" onClick={() => handleSelectCommunityVoice(voice)}>
+                                Seleccionar
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : communitySearchQuery ? (
+                      <div className="flex h-64 items-center justify-center text-muted-foreground">
+                        No se encontraron voces
+                      </div>
+                    ) : (
+                      <div className="flex h-64 items-center justify-center text-muted-foreground">
+                        Ingresa un término de búsqueda para encontrar voces de la comunidad
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Nombre de Voz</label>
+                    <p className="text-sm text-muted-foreground">
+                      Explora las voces de la comunidad <span className="cursor-pointer text-primary">aquí</span>.
+                    </p>
+                    <Input
+                      value={editableVoiceName}
+                      onChange={(e) => setEditableVoiceName(e.target.value)}
+                      placeholder="Nombre de la voz"
+                    />
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedCommunityVoice(null);
+                      setEditableVoiceName('');
+                    }}
+                  >
+                    ← Volver a búsqueda
+                  </Button>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
 
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex justify-end gap-2 border-t pt-4">
             <Button variant="outline" onClick={() => setIsAddCustomVoiceOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={() => setIsAddCustomVoiceOpen(false)}>Guardar</Button>
+            {selectedCommunityVoice && (
+              <Button onClick={handleSaveCommunityVoice} disabled={loadingCommunityVoices}>
+                Guardar
+              </Button>
+            )}
           </div>
         </DialogContent>
       </Dialog>
