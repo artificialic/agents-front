@@ -29,9 +29,10 @@ interface AgentsTableProps {
   agents: Agent[];
   loading: boolean;
   onAgentClick: (agentId: string) => void;
+  onDeleteClick: (agentId: string, agentName: string) => void;
 }
 
-export function AgentsTable({ agents, loading, onAgentClick }: AgentsTableProps) {
+export function AgentsTable({ agents, loading, onAgentClick, onDeleteClick }: AgentsTableProps) {
   if (loading) {
     return (
       <div className="rounded-lg border bg-white p-8 text-center">
@@ -122,7 +123,15 @@ export function AgentsTable({ agents, loading, onAgentClick }: AgentsTableProps)
                     <DropdownMenuItem className="text-sm">Editar</DropdownMenuItem>
                     <DropdownMenuItem className="text-sm">Duplicar</DropdownMenuItem>
                     <DropdownMenuItem className="text-sm">Ver Análisis</DropdownMenuItem>
-                    <DropdownMenuItem className="text-sm text-destructive">Eliminar</DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-sm text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteClick(agent.id, agent.name);
+                      }}
+                    >
+                      Eliminar
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>

@@ -5,117 +5,16 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { apiService } from '@/services';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CustomAlertDialog } from '@/components';
 
-interface PhoneNumber {
-  phone_number: string;
-  phone_number_type: string;
-  phone_number_pretty: string;
-  nickname: string;
-  inbound_agent_id: string;
-  outbound_agent_id: string;
-  last_modification_timestamp: number;
-  inbound_agent_version: number;
-  outbound_agent_version: number;
-  inbound_webhook_url?: string;
-}
-
-interface ApiAgent {
-  agent_id: string;
-  agent_name: string;
-  version: number;
-  response_engine: {
-    type: string;
-    llm_id?: string;
-  };
-  voice_id: string;
-  last_modification_timestamp: number;
-}
-
-interface Agent {
+interface AgentLocal {
   id: string;
   name: string;
   version: number;
-}
-
-interface Llm {
-  general_prompt?: string;
-}
-
-interface CustomAlertDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  title: string;
-  description: string;
-  actionLabel?: string;
-  cancelLabel?: string;
-  onAction?: () => void;
-  isLoading?: boolean;
-  variant?: 'error' | 'warning';
-}
-
-function CustomAlertDialog({
-  open,
-  onOpenChange,
-  title,
-  description,
-  actionLabel,
-  cancelLabel = 'Cancelar',
-  onAction,
-  isLoading = false,
-  variant = 'error'
-}: CustomAlertDialogProps) {
-  const showActions = actionLabel && onAction;
-
-  return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100">
-              <svg className="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor">
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <AlertDialogTitle>{title}</AlertDialogTitle>
-              <AlertDialogDescription className="mt-2">{description}</AlertDialogDescription>
-            </div>
-          </div>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          {showActions ? (
-            <>
-              <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
-                {cancelLabel}
-              </Button>
-              <Button onClick={onAction} disabled={isLoading} className="bg-gray-900 hover:bg-gray-800">
-                {isLoading ? `${actionLabel}...` : actionLabel}
-              </Button>
-            </>
-          ) : (
-            <AlertDialogAction className="bg-gray-900 hover:bg-gray-800">Cerrar</AlertDialogAction>
-          )}
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
 }
 
 export default function PhoneNumbersManagement() {
@@ -125,7 +24,7 @@ export default function PhoneNumbersManagement() {
   const [phoneNumbers, setPhoneNumbers] = useState<PhoneNumber[]>([]);
   const [loadingPhoneNumbers, setLoadingPhoneNumbers] = useState(false);
   const [selectedPhone, setSelectedPhone] = useState<PhoneNumber | null>(null);
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const [agents, setAgents] = useState<AgentLocal[]>([]);
   const [loadingAgents, setLoadingAgents] = useState(false);
   const [inboundAgent, setInboundAgent] = useState('');
   const [outboundAgent, setOutboundAgent] = useState('');
@@ -197,15 +96,15 @@ export default function PhoneNumbersManagement() {
       setLoadingAgents(true);
       const response = await apiService.getAgents();
 
-      const agentMap = new Map<string, ApiAgent>();
-      response.forEach((agent: ApiAgent) => {
+      const agentMap = new Map<string, Agent>();
+      response.forEach((agent: Agent) => {
         const existing = agentMap.get(agent.agent_id);
         if (!existing || agent.version > existing.version) {
           agentMap.set(agent.agent_id, agent);
         }
       });
 
-      const mappedAgents: Agent[] = Array.from(agentMap.values()).map((agent: ApiAgent) => ({
+      const mappedAgents: AgentLocal[] = Array.from(agentMap.values()).map((agent: Agent) => ({
         id: agent.agent_id,
         name: agent.agent_name,
         version: agent.version
@@ -278,7 +177,7 @@ export default function PhoneNumbersManagement() {
 
     try {
       const agentsResponse = await apiService.getAgents();
-      const agent = agentsResponse.find((a: ApiAgent) => a.agent_id === selectedPhone.outbound_agent_id);
+      const agent = agentsResponse.find((a: Agent) => a.agent_id === selectedPhone.outbound_agent_id);
 
       if (agent && agent.response_engine?.llm_id) {
         const llmId = agent.response_engine.llm_id;
