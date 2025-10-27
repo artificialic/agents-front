@@ -16,7 +16,7 @@ export const navItems: NavItem[] = [
     role: [ROLES.USER]
   },
   {
-    title: 'Crear Campaña',
+    title: 'Campañas',
     url: '/dashboard/campaign',
     icon: 'campaigns',
     isActive: true,
