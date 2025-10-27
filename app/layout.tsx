@@ -1,6 +1,7 @@
 import { auth } from '@/auth';
 import Providers from '@/components/layout/providers';
 import { Toaster } from '@/components/ui/sonner';
+import Clarity from '@/components/clarity';
 import type { Metadata, Viewport } from 'next';
 import { Open_Sans } from 'next/font/google';
 import NextTopLoader from 'nextjs-toploader';
@@ -47,6 +48,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className={`${openSans.className}`} suppressHydrationWarning={true}>
       <body>
+        <Clarity />
         <NextTopLoader showSpinner={false} />
         <Providers session={session}>
           <Toaster position="top-right" />
