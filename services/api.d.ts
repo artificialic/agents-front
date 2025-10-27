@@ -160,18 +160,6 @@ interface TransactionHistory {
   updatedAt: string;
 }
 
-interface PhoneNumber {
-  phone_number: string;
-  phone_number_type: string;
-  phone_number_pretty: string;
-  nickname: string;
-  inbound_agent_id: string;
-  outbound_agent_id: string;
-  last_modification_timestamp: number;
-  inbound_agent_version: number;
-  outbound_agent_version: number;
-}
-
 interface CallDetail {
   call_id: string;
   call_type: string;
@@ -266,7 +254,7 @@ interface Agent {
   agent_id: string;
   agent_name?: string;
   language?: string;
-  version?: number;
+  version: number;
   is_published?: boolean;
 
   // Response Engine
@@ -434,4 +422,34 @@ interface KnowledgeBase {
   }[];
   enable_auto_refresh: boolean;
   last_refreshed_timestamp: number;
+}
+
+interface CreateWebCallRequest {
+  agent_id: string;
+  agent_version?: number;
+  metadata?: Record<string, any>;
+  retell_llm_dynamic_variables?: Record<string, any>;
+}
+
+interface CreateKnowledgeBasePayload {
+  knowledge_base_name: string;
+  knowledge_base_texts?: Array<{
+    text: string;
+    title: string;
+  }>;
+  knowledge_base_urls?: string[];
+  enable_auto_refresh?: boolean;
+}
+
+interface PhoneNumber {
+  phone_number: string;
+  phone_number_type: string;
+  phone_number_pretty: string;
+  nickname: string;
+  inbound_agent_id: string;
+  outbound_agent_id: string;
+  last_modification_timestamp: number;
+  inbound_agent_version: number;
+  outbound_agent_version: number;
+  inbound_webhook_url?: string | null;
 }

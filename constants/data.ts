@@ -52,6 +52,15 @@ export const navItems: NavItem[] = [
     role: [ROLES.USER]
   },
   {
+    title: 'Base de Conocimientos',
+    url: '/dashboard/knowledge-bases',
+    icon: 'fileStack',
+    isActive: true,
+    shortcut: ['c', 'l'],
+    items: [],
+    role: [ROLES.USER]
+  },
+  {
     title: 'Números de teléfonos',
     url: '/dashboard/phone-numbers',
     icon: 'phoneNumbers',

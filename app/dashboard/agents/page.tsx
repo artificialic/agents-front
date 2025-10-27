@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiService } from '@/services';
 import { CreateAgentModal } from '@/components/modules/agents/create-agent-modal';
+import { CustomAlertDialog } from '@/components/custom-alert-dialog';
 
 interface AgentLocal {
   id: string;
@@ -35,6 +36,13 @@ export default function AgentsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [llms, setLlms] = useState<Llm[]>([]);
+  const [voices, setVoices] = useState<Voice[]>([]);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [agentToDelete, setAgentToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const defaultVoiceId = '11labs-Cimo';
 
   useEffect(() => {
     fetchData();
@@ -44,10 +52,11 @@ export default function AgentsPage() {
     try {
       setLoading(true);
 
-      const [agentsResponse, voicesResponse, phoneNumbersResponse] = await Promise.all([
+      const [agentsResponse, voicesResponse, phoneNumbersResponse, llmsResponse] = await Promise.all([
         apiService.getAgents(),
         apiService.getVoices(),
-        apiService.getPhoneNumbers().catch(() => [])
+        apiService.getPhoneNumbers().catch(() => []),
+        apiService.getLlms()
       ]);
 
       const agentMap = new Map<string, Agent>();
@@ -55,6 +64,14 @@ export default function AgentsPage() {
         const existing = agentMap.get(agent.agent_id);
         if (!existing || agent.version > existing.version) {
           agentMap.set(agent.agent_id, agent);
+        }
+      });
+
+      const llmMap = new Map<string, Llm>();
+      llmsResponse.forEach((llm: Llm) => {
+        const existing = llmMap.get(llm.model);
+        if (!existing || llm.version > existing.version) {
+          llmMap.set(llm.model, llm);
         }
       });
 
@@ -83,6 +100,8 @@ export default function AgentsPage() {
       });
 
       setAgents(mappedAgents);
+      setLlms(Array.from(llmMap.values()));
+      setVoices(voicesResponse || []);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -96,6 +115,27 @@ export default function AgentsPage() {
 
   const handleCreateSuccess = () => {
     fetchData();
+  };
+
+  const handleDeleteClick = (agentId: string, agentName: string) => {
+    setAgentToDelete({ id: agentId, name: agentName });
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!agentToDelete) return;
+
+    try {
+      setDeleting(true);
+      await apiService.deleteAgent(agentToDelete.id);
+      setIsDeleteModalOpen(false);
+      setAgentToDelete(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting agent:', error);
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const filteredAgents = agents.filter((agent) => agent.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -120,10 +160,35 @@ export default function AgentsPage() {
         </div>
       </div>
       <div className="p-6">
-        <AgentsTable agents={filteredAgents} loading={loading} onAgentClick={handleAgentClick} />
+        <AgentsTable
+          agents={filteredAgents}
+          loading={loading}
+          onAgentClick={handleAgentClick}
+          onDeleteClick={handleDeleteClick}
+        />
       </div>
 
-      <CreateAgentModal open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen} onSuccess={handleCreateSuccess} />
+      <CreateAgentModal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        onSuccess={handleCreateSuccess}
+        llms={llms}
+        voices={voices}
+        loading={loading}
+        defaultVoiceId={defaultVoiceId}
+      />
+
+      <CustomAlertDialog
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        title="Eliminar agente"
+        description={`¿Estás seguro de que quieres eliminar todas las versiones de "${agentToDelete?.name}"?`}
+        actionLabel="Eliminar"
+        cancelLabel="Cancelar"
+        onAction={handleDeleteConfirm}
+        isLoading={deleting}
+        variant="error"
+      />
     </div>
   );
 }

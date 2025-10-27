@@ -24,6 +24,14 @@ const routeMapping: Record<string, BreadcrumbItem[]> = {
     { title: 'Dashboard', link: '/dashboard' },
     { title: 'Crear Campaña', link: '/dashboard/create-campaign' }
   ],
+  '/dashboard/agents': [
+    { title: 'Dashboard', link: '/dashboard' },
+    { title: 'Agentes', link: '/dashboard/agents' }
+  ],
+  '/dashboard/knowledge-bases': [
+    { title: 'Dashboard', link: '/dashboard' },
+    { title: 'Bases de Conocimiento', link: '/dashboard/knowledge-bases' }
+  ],
   '/dashboard/phone-numbers': [
     { title: 'Dashboard', link: '/dashboard' },
     { title: 'Teléfonos', link: '/dashboard/phone-numbers' }

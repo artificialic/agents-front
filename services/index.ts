@@ -91,6 +91,10 @@ class ApiServiceLocal extends ApiService {
     return this.post('/retell/calls/create', callData);
   }
 
+  async createWebCall(callData: CreateWebCallRequest): Promise<any> {
+    return this.post('/retell/web-calls/create', callData);
+  }
+
   async deletePhoneNumber(phoneNumber: string): Promise<any> {
     return this.delete(`/retell/phone-numbers/${phoneNumber}`);
   }
@@ -113,6 +117,14 @@ class ApiServiceLocal extends ApiService {
 
   async updateAgent(agentId: string, data: Partial<Agent>): Promise<Agent> {
     return this.patch<Agent>(`/retell/agents/${agentId}`, data);
+  }
+
+  async deleteAgent(agentId: string): Promise<any> {
+    return this.delete(`/retell/agents/${agentId}`);
+  }
+
+  async publishAgent(agentId: string): Promise<any> {
+    return this.post(`/retell/agents/${agentId}/publish`, {});
   }
 
   async getCalls(data: any): Promise<ApiResponse<Call[]>> {
@@ -141,6 +153,22 @@ class ApiServiceLocal extends ApiService {
 
   async getKnowledgeBases(): Promise<KnowledgeBase[]> {
     return this.getFullResponse<KnowledgeBase[]>('/retell/knowledge-bases');
+  }
+
+  async createKnowledgeBase(data: CreateKnowledgeBasePayload): Promise<any> {
+    return this.post('/retell/knowledge-bases', data);
+  }
+
+  async deleteKnowledgeBase(knowledgeBaseId: string): Promise<void> {
+    return this.delete(`/retell/knowledge-bases/${knowledgeBaseId}`);
+  }
+
+  async addKnowledgeBaseSources(knowledgeBaseId: string, data: FormData): Promise<any> {
+    return this.post(`/retell/knowledge-bases/${knowledgeBaseId}/sources`, data);
+  }
+
+  async deleteKnowledgeBaseSource(knowledgeBaseId: string, sourceId: string): Promise<any> {
+    return this.delete(`/retell/knowledge-bases/${knowledgeBaseId}/sources/${sourceId}`);
   }
 
   async searchCommunityVoice(searchData: { search_query: string }): Promise<any> {

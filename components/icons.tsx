@@ -8,6 +8,7 @@ import {
   Command,
   CreditCard,
   File,
+  FileStack,
   FileText,
   HelpCircle,
   Image,
@@ -94,5 +95,6 @@ export const Icons = {
   clients: Users,
   billingAlt: Receipt,
   templates: Copy,
-  phoneNumbers: Hash
+  phoneNumbers: Hash,
+  fileStack: FileStack
 };
