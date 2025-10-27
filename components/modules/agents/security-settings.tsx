@@ -150,7 +150,7 @@ export function SecuritySettings({ llm, agent, onAgentUpdate, onLlmUpdate }: Sec
       <div className="space-y-3">
         <div className="space-y-1">
           <div className="text-sm font-medium">Configuración de Almacenamiento de Datos</div>
-          <p className="text-xs text-muted-foreground">Elige cómo Retell almacena datos sensibles (Más información)</p>
+          <p className="text-xs text-muted-foreground">Elige cómo almacenar datos sensibles (Más información)</p>
         </div>
 
         <RadioGroup value={dataStorage} onValueChange={handleDataStorageChange}>

@@ -290,7 +290,7 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los Tipos</SelectItem>
-                <SelectItem value="retell">Preajustes Retell</SelectItem>
+                <SelectItem value="retell">Preajustes</SelectItem>
                 <SelectItem value="preset">Preajustes del Proveedor</SelectItem>
                 <SelectItem value="custom">Personalizado</SelectItem>
               </SelectContent>
