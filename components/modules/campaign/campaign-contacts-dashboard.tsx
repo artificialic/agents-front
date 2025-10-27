@@ -287,7 +287,7 @@ export default function CampaignContactsDashboard({
   }
 
   return (
-    <div className="min-h-screen w-full bg-white">
+    <div className="min-h-screen flex flex-col w-full bg-white">
       <div className="border-b border-gray-200 bg-white px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
@@ -368,7 +368,7 @@ export default function CampaignContactsDashboard({
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="px-6 pt-6">
         <div className="mb-4 flex items-center space-x-2">
           <Filter className="h-4 w-4 text-gray-500" />
           <span className="text-sm font-medium text-gray-700">Filtrar por estado de llamada:</span>
@@ -388,7 +388,9 @@ export default function CampaignContactsDashboard({
             </SelectContent>
           </Select>
         </div>
+      </div>
 
+      <div className="px-6">
         {loading && (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
@@ -421,39 +423,41 @@ export default function CampaignContactsDashboard({
             )}
           </div>
         )}
+      </div>
 
-        {!loading && !error && (contacts || []).length > 0 && (
-          <div className="h-[calc(100vh-400px)] overflow-auto rounded-md border">
-            <Table>
+      {!loading && !error && (contacts || []).length > 0 && (
+        <div className="px-6">
+          <div className="h-[calc(100vh-400px)] overflow-x-auto overflow-y-auto rounded-md border">
+            <Table className="w-max min-w-full">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="sticky top-0 z-10 bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <TableHead className="sticky top-0 z-[1] bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     Número de Teléfono
                   </TableHead>
-                  <TableHead className="sticky top-0 z-10 bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <TableHead className="sticky top-0 z-[1] bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     Estado
                   </TableHead>
-                  <TableHead className="sticky top-0 z-10 bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <TableHead className="sticky top-0 z-[1] bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     ID de Llamada
                   </TableHead>
-                  <TableHead className="sticky top-0 z-10 bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <TableHead className="sticky top-0 z-[1] bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     Coste
                   </TableHead>
-                  <TableHead className="sticky top-0 z-10 bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <TableHead className="sticky top-0 z-[1] bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     Fecha de Creación
                   </TableHead>
-                  <TableHead className="sticky top-0 z-10 bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <TableHead className="sticky top-0 z-[1] bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     Procesado
                   </TableHead>
                   {dynamicFields.map((fieldName) => (
                     <TableHead
                       key={fieldName}
-                      className="sticky top-0 z-10 bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500"
+                      className="sticky top-0 z-[1] min-w-[200px] bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500"
                     >
                       {fieldName}
                     </TableHead>
                   ))}
-                  <TableHead className="sticky top-0 z-10 bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <TableHead className="sticky top-0 z-[1] bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
                     Acciones
                   </TableHead>
                 </TableRow>
@@ -524,8 +528,8 @@ export default function CampaignContactsDashboard({
               </TableBody>
             </Table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <CallDetailSheet call={selectedCall} open={isSheetOpen} onOpenChange={setIsSheetOpen} />
 
