@@ -125,11 +125,10 @@ export function DataTable<TData, TValue>({
   const canNextPage = sequentialPagination ? currentPage < totalPages : currentPage < totalPages;
 
   return (
-    <div className="flex h-full flex-grow flex-col gap-4 pt-8">
-      <div className="relative flex-grow">
-        <div className="absolute bottom-0 left-0 right-0 top-0 max-h-[700px] min-h-[700px] overflow-x-auto">
-          <Table className="w-full caption-bottom p-8 text-sm">
-            <TableHeader className="sticky top-0 z-30 bg-gray-50 shadow-sm">
+    <div className="flex flex-col gap-4">
+      <div className="h-[calc(100vh-400px)] overflow-x-auto overflow-y-auto rounded-md border">
+          <Table className="w-max min-w-full caption-bottom text-sm">
+            <TableHeader className="sticky top-0 z-[1] bg-gray-50">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
@@ -176,8 +175,10 @@ export function DataTable<TData, TValue>({
             </TableBody>
           </Table>
         </div>
-        <div className="absolute left-0 right-0 top-[700px] z-50 mt-4 w-full">
-          {showPagination && (
+
+        {showPagination && (
+          <div className="mt-4">
+
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <p className="text-sm font-medium">Filas por página</p>
@@ -253,39 +254,38 @@ export function DataTable<TData, TValue>({
                 </div>
               </div>
             </div>
-          )}
 
-          <div className="mt-2 flex items-center justify-between text-sm text-gray-500">
-            <div>
-              {serverPagination ? (
-                <>
-                  {sequentialPagination ? (
-                    `Mostrando ${totalRows} registros`
-                  ) : (
-                    <>
-                      Mostrando {(currentPage - 1) * currentPageSize + 1} a{' '}
-                      {Math.min(currentPage * currentPageSize, totalRows)} de {totalRows} registros
-                    </>
-                  )}
-                </>
-              ) : (
-                <>
-                  Mostrando {table.getRowModel().rows.length} de {table.getFilteredRowModel().rows.length} registros
-                  {table.getFilteredRowModel().rows.length !== data.length && (
-                    <span> (filtrados de {data.length} total)</span>
-                  )}
-                </>
+            <div className="mt-2 flex items-center justify-between text-sm text-gray-500">
+              <div>
+                {serverPagination ? (
+                  <>
+                    {sequentialPagination ? (
+                      `Mostrando ${totalRows} registros`
+                    ) : (
+                      <>
+                        Mostrando {(currentPage - 1) * currentPageSize + 1} a{' '}
+                        {Math.min(currentPage * currentPageSize, totalRows)} de {totalRows} registros
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    Mostrando {table.getRowModel().rows.length} de {table.getFilteredRowModel().rows.length} registros
+                    {table.getFilteredRowModel().rows.length !== data.length && (
+                      <span> (filtrados de {data.length} total)</span>
+                    )}
+                  </>
+                )}
+              </div>
+              {table.getFilteredSelectedRowModel().rows.length > 0 && (
+                <div>
+                  {table.getFilteredSelectedRowModel().rows.length} de{' '}
+                  {serverPagination ? totalRows : table.getFilteredRowModel().rows.length} filas seleccionadas
+                </div>
               )}
             </div>
-            {table.getFilteredSelectedRowModel().rows.length > 0 && (
-              <div>
-                {table.getFilteredSelectedRowModel().rows.length} de{' '}
-                {serverPagination ? totalRows : table.getFilteredRowModel().rows.length} filas seleccionadas
-              </div>
-            )}
           </div>
-        </div>
-      </div>
+        )}
     </div>
   );
 }
