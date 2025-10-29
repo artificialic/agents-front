@@ -1,4 +1,4 @@
-interface Campaign {
+export interface Campaign {
   _id: string;
   name: string;
   owner: string;
@@ -10,7 +10,7 @@ interface Campaign {
   updatedAt: string;
 }
 
-interface Client {
+export interface Client {
   _id: string;
   firstName: string;
   email: string;
@@ -37,9 +37,9 @@ interface Client {
 }
 
 // TODO: Define the Billing interface
-interface Billing {}
+export interface Billing {} 
 
-type PaymentSourcePayload = {
+export type PaymentSourcePayload = {
   cardNumber: string;
   expiryMonth: string;
   expiryYear: string;
@@ -47,7 +47,7 @@ type PaymentSourcePayload = {
   cardHolder: string;
 };
 
-type CreateAgentPayload = {
+export type CreateAgentPayload = {
   agent_name: string;
   voice_id: string;
   response_engine: {
@@ -57,7 +57,7 @@ type CreateAgentPayload = {
   };
 };
 
-type Call = {
+export type Call = {
   call_id: string;
   call_type: string;
   agent_id: string;
@@ -93,7 +93,7 @@ type Call = {
   direction: string;
 };
 
-type CreateCallPayload = {
+export type CreateCallPayload = {
   agent_id: string;
   from_number: string;
   to_number: string;
@@ -101,7 +101,7 @@ type CreateCallPayload = {
   [key: string]: any;
 };
 
-type Concurrency = {
+export type Concurrency = {
   current_concurrency: number;
   concurrency_limit: number;
   base_concurrency: number;
@@ -110,20 +110,20 @@ type Concurrency = {
   remaining_purchase_limit: number;
 };
 
-type CreateCampaignPayload = {
+export type CreateCampaignPayload = {
   agentId: string;
   name: string;
   fromNumber: string;
 };
 
-type CreateContactsPayload = {
+export type CreateContactsPayload = {
   contacts: {
     toNumber: string;
     dynamicVariables: Record<string, string>;
   }[];
 };
 
-interface ContactByCampaign {
+export interface ContactByCampaign {
   _id: string;
   campaignId: string;
   toNumber: string;
@@ -140,11 +140,11 @@ interface ContactByCampaign {
   };
 }
 
-type CreateTransactionPayload = {
+export type CreateTransactionPayload = {
   amount: number;
 };
 
-interface TransactionHistory {
+export interface TransactionHistory {
   _id: string;
   userId: string;
   wompiTransactionId: string;
@@ -160,7 +160,7 @@ interface TransactionHistory {
   updatedAt: string;
 }
 
-interface CallDetail {
+export interface CallDetail {
   call_id: string;
   call_type: string;
   agent_id: string;
@@ -196,7 +196,7 @@ interface CallDetail {
   direction: string;
 }
 
-interface Template {
+export interface Template {
   _id: string;
   name: string;
   agentId: string;
@@ -205,13 +205,13 @@ interface Template {
   updatedAt: string;
 }
 
-interface CreateTemplatePayload {
+export interface CreateTemplatePayload {
   name: string;
   agentId: string;
   filePath: string;
 }
 
-interface DashboardStats {
+export interface DashboardStats {
   campaignsCount: number;
   callsCount: number;
   transactionsSum: number;
@@ -230,7 +230,7 @@ interface DashboardStats {
   };
 }
 
-interface Voice {
+export interface Voice {
   standard_voice_type?: 'preset' | 'retell';
   accent?: string;
   age?: string;
@@ -240,7 +240,7 @@ interface Voice {
 }
 
 /* RETELL */
-interface Voice {
+export interface Voice {
   voice_id: string;
   voice_name: string;
   provider: 'elevenlabs' | 'openai' | 'deepgram';
@@ -250,7 +250,7 @@ interface Voice {
   preview_audio_url: string;
 }
 
-interface Agent {
+export interface Agent {
   agent_id: string;
   agent_name?: string;
   language?: string;
@@ -348,7 +348,7 @@ interface Agent {
   last_modification_timestamp?: number;
 }
 
-interface Llm {
+export interface Llm {
   llm_id: string;
   version: number;
   is_published: boolean;
@@ -410,7 +410,7 @@ interface Llm {
   updated_at?: string;
 }
 
-interface KnowledgeBase {
+export interface KnowledgeBase {
   knowledge_base_id: string;
   knowledge_base_name: string;
   status: string;
@@ -424,14 +424,14 @@ interface KnowledgeBase {
   last_refreshed_timestamp: number;
 }
 
-interface CreateWebCallRequest {
+export interface CreateWebCallRequest {
   agent_id: string;
   agent_version?: number;
   metadata?: Record<string, any>;
   retell_llm_dynamic_variables?: Record<string, any>;
 }
 
-interface CreateKnowledgeBasePayload {
+export interface CreateKnowledgeBasePayload {
   knowledge_base_name: string;
   knowledge_base_texts?: Array<{
     text: string;
@@ -441,7 +441,7 @@ interface CreateKnowledgeBasePayload {
   enable_auto_refresh?: boolean;
 }
 
-interface PhoneNumber {
+export interface PhoneNumber {
   phone_number: string;
   phone_number_type: string;
   phone_number_pretty: string;
