@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Clock, X, ChevronLeft } from 'lucide-react';
-import DateRangePicker from '@/components/date-range-picker';
+import { DateRangePicker } from '@/components/date-range-picker';
 import { DataTable } from '@/components/data-table';
 import { columns, type CallLog } from './call-history-columns';
 import CallDetailSheet from './call-detail-sheet';

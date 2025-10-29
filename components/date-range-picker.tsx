@@ -12,7 +12,7 @@ interface DateRangePickerProps {
   align?: 'start' | 'center' | 'end';
 }
 
-export default function DateRangePicker({ value, onChange, align = 'start' }: DateRangePickerProps) {
+export function DateRangePicker({ value, onChange, align = 'start' }: DateRangePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(value?.from || new Date());
   const [selectedRange, setSelectedRange] = useState<DateRange | undefined>(value);
