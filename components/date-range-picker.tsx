@@ -1,36 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from '@radix-ui/react-icons';
+import { type DateRange } from 'react-day-picker';
 
 interface DateRangePickerProps {
-  value?: { from: Date | null; to: Date | null };
-  onChange?: (range: { from: Date | null; to: Date | null }) => void;
+  value?: DateRange;
+  onChange?: (range: DateRange | undefined) => void;
+  align?: 'start' | 'center' | 'end';
 }
 
-export default function DateRangePicker({ value, onChange }: DateRangePickerProps) {
+export default function DateRangePicker({ value, onChange, align = 'start' }: DateRangePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedRange, setSelectedRange] = useState<{ from: Date | null; to: Date | null }>({
-    from: value?.from || null,
-    to: value?.to || null
-  });
+  const [currentMonth, setCurrentMonth] = useState(value?.from || new Date());
+  const [selectedRange, setSelectedRange] = useState<DateRange | undefined>(value);
+
+  useEffect(() => {
+    setSelectedRange(value);
+  }, [value]);
 
   const monthNames = [
-    'Enero',
-    'Febrero',
-    'Marzo',
-    'Abril',
-    'Mayo',
-    'Junio',
-    'Julio',
-    'Agosto',
-    'Septiembre',
-    'Octubre',
-    'Noviembre',
-    'Diciembre'
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ];
 
   const dayNames = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'];
@@ -64,8 +57,9 @@ export default function DateRangePicker({ value, onChange }: DateRangePickerProp
   const handleDateClick = (day: number, month: Date) => {
     const clickedDate = new Date(month.getFullYear(), month.getMonth(), day);
 
-    if (!selectedRange.from || (selectedRange.from && selectedRange.to)) {
-      setSelectedRange({ from: clickedDate, to: null });
+    if (!selectedRange?.from || (selectedRange.from && selectedRange.to)) {
+      const newRange = { from: clickedDate, to: undefined };
+      setSelectedRange(newRange);
     } else if (selectedRange.from && !selectedRange.to) {
       if (clickedDate >= selectedRange.from) {
         const newRange = { from: selectedRange.from, to: clickedDate };
@@ -73,33 +67,31 @@ export default function DateRangePicker({ value, onChange }: DateRangePickerProp
         onChange?.(newRange);
         setIsOpen(false);
       } else {
-        setSelectedRange({ from: clickedDate, to: null });
+        const newRange = { from: clickedDate, to: undefined };
+        setSelectedRange(newRange);
       }
     }
   };
 
   const isDateInRange = (day: number, month: Date) => {
-    if (!selectedRange.from) return false;
-
+    if (!selectedRange?.from) return false;
     const date = new Date(month.getFullYear(), month.getMonth(), day);
-
     if (selectedRange.from && selectedRange.to) {
       return date >= selectedRange.from && date <= selectedRange.to;
     } else if (selectedRange.from) {
       return date.getTime() === selectedRange.from.getTime();
     }
-
     return false;
   };
 
   const isDateRangeStart = (day: number, month: Date) => {
-    if (!selectedRange.from) return false;
+    if (!selectedRange?.from) return false;
     const date = new Date(month.getFullYear(), month.getMonth(), day);
     return date.getTime() === selectedRange.from.getTime();
   };
 
   const isDateRangeEnd = (day: number, month: Date) => {
-    if (!selectedRange.to) return false;
+    if (!selectedRange?.to) return false;
     const date = new Date(month.getFullYear(), month.getMonth(), day);
     return date.getTime() === selectedRange.to.getTime();
   };
@@ -108,17 +100,12 @@ export default function DateRangePicker({ value, onChange }: DateRangePickerProp
     const daysInMonth = getDaysInMonth(month);
     const firstDay = getFirstDayOfMonth(month);
     const days = [];
-
     const prevMonth = new Date(month.getFullYear(), month.getMonth() - 1, 0);
     const prevMonthDays = prevMonth.getDate();
 
     for (let i = firstDay - 1; i >= 0; i--) {
       days.push(
-        <button
-          key={`prev-${prevMonthDays - i}`}
-          className="h-8 w-8 rounded text-sm text-gray-400 hover:bg-gray-100"
-          disabled
-        >
+        <button key={`prev-${prevMonthDays - i}`} className="h-8 w-8 rounded text-sm text-gray-400 hover:bg-gray-100" disabled>
           {prevMonthDays - i}
         </button>
       );
@@ -128,7 +115,6 @@ export default function DateRangePicker({ value, onChange }: DateRangePickerProp
       const isInRange = isDateInRange(day, month);
       const isStart = isDateRangeStart(day, month);
       const isEnd = isDateRangeEnd(day, month);
-
       days.push(
         <button
           key={day}
@@ -154,14 +140,13 @@ export default function DateRangePicker({ value, onChange }: DateRangePickerProp
         </button>
       );
     }
-
     return days;
   };
 
   const formatDateRange = () => {
-    if (selectedRange.from && selectedRange.to) {
+    if (selectedRange?.from && selectedRange?.to) {
       return `${selectedRange.from.toLocaleDateString('es-ES')} - ${selectedRange.to.toLocaleDateString('es-ES')}`;
-    } else if (selectedRange.from) {
+    } else if (selectedRange?.from) {
       return selectedRange.from.toLocaleDateString('es-ES');
     }
     return 'Seleccionar rango de fechas';
@@ -175,7 +160,7 @@ export default function DateRangePicker({ value, onChange }: DateRangePickerProp
           {formatDateRange()}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto p-0" align={align}>
         <div className="p-4">
           <div className="mb-4 flex items-center justify-between">
             <Button variant="ghost" size="icon" onClick={() => navigateMonth('prev')}>
@@ -193,7 +178,6 @@ export default function DateRangePicker({ value, onChange }: DateRangePickerProp
               <ChevronRightIcon className="h-4 w-4" />
             </Button>
           </div>
-
           <div className="flex space-x-8">
             <div>
               <div className="mb-2 grid grid-cols-7 gap-1">
@@ -205,7 +189,6 @@ export default function DateRangePicker({ value, onChange }: DateRangePickerProp
               </div>
               <div className="grid grid-cols-7 gap-1">{renderCalendar(currentMonth)}</div>
             </div>
-
             <div>
               <div className="mb-2 grid grid-cols-7 gap-1">
                 {dayNames.map((day) => (

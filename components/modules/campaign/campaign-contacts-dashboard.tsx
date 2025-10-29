@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   ChevronLeft,
   Users,
@@ -26,6 +25,8 @@ import CallDetailSheet from '@/components/modules/call-history/call-detail-sheet
 import { useUserStore } from '@/stores/useUserStore';
 import { applyCostMultiplier } from '@/utils';
 import { formatDate } from '@/lib/utils';
+import { DataTable } from '@/components/data-table';
+import { createCampaignContactsColumns } from '@/components/modules/campaign/campaign-contacts-columns';
 
 interface CampaignContactsDashboardProps {
   campaign: Campaign | null;
@@ -38,7 +39,7 @@ interface CampaignContactsDashboardProps {
   onRefresh: () => void;
   onUpdateCampaign: (data: { name: string; status: Campaign['status'] }) => Promise<void>;
   onExportCSV: () => void;
-  onCallStatusFilterChange?: (status: string) => void;
+  onCallStatusFilterChange?: (status: string) => void; 
 }
 
 interface ContactByCampaign {
@@ -94,7 +95,7 @@ export default function CampaignContactsDashboard({
   onRefresh,
   onUpdateCampaign,
   onExportCSV,
-  onCallStatusFilterChange
+  onCallStatusFilterChange 
 }: CampaignContactsDashboardProps) {
   const router = useRouter();
   const getMultiplier = useUserStore((state) => state.getMultiplier);
@@ -107,7 +108,7 @@ export default function CampaignContactsDashboard({
   const [editForm, setEditForm] = useState({ name: '', status: '' });
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const createDynamicColumns = (data: ContactByCampaign[]) => {
+  const createDynamicColumnsData = (data: ContactByCampaign[]) => {
     const customFieldsSet = new Set<string>();
     data.forEach((contact) => {
       if (contact.callAnalysis?.custom_analysis_data) {
@@ -121,7 +122,7 @@ export default function CampaignContactsDashboard({
 
   useEffect(() => {
     if (contacts) {
-      createDynamicColumns(contacts);
+      createDynamicColumnsData(contacts);
     }
   }, [contacts]);
 
@@ -158,88 +159,6 @@ export default function CampaignContactsDashboard({
       console.error('Error updating campaign:', err);
     } finally {
       setIsUpdating(false);
-    }
-  };
-
-  const handleCallStatusFilterChange = (value: string) => {
-    if (onCallStatusFilterChange) {
-      onCallStatusFilterChange(value);
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'done':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'failed':
-        return 'bg-red-100 text-red-800';
-      case 'processing':
-        return 'bg-blue-100 text-blue-800';
-      case 'working':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'done':
-        return 'Completado';
-      case 'pending':
-        return 'Pendiente';
-      case 'failed':
-        return 'Fallido';
-      case 'processing':
-        return 'Procesando';
-      case 'working':
-        return 'Trabajando';
-      default:
-        return status;
-    }
-  };
-
-  const getCallStatusBadge = (callStatus: string) => {
-    switch (callStatus) {
-      case 'registered':
-        return 'bg-purple-100 text-purple-800';
-      case 'not_connected':
-        return 'bg-orange-100 text-orange-800';
-      case 'ongoing':
-        return 'bg-blue-100 text-blue-800';
-      case 'ended':
-        return 'bg-green-100 text-green-800';
-      case 'error':
-        return 'bg-red-100 text-red-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'working':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getCallStatusText = (callStatus: string) => {
-    switch (callStatus) {
-      case 'registered':
-        return 'Registrada';
-      case 'not_connected':
-        return 'No Conectada';
-      case 'ongoing':
-        return 'En Curso';
-      case 'ended':
-        return 'Finalizada';
-      case 'error':
-        return 'Error';
-      case 'pending':
-        return 'Pendiente';
-      case 'working':
-        return 'Trabajando';
-      default:
-        return callStatus;
     }
   };
 
@@ -285,6 +204,9 @@ export default function CampaignContactsDashboard({
   if (!campaign) {
     return null;
   }
+
+
+  const columns = createCampaignContactsColumns({ dynamicFields, handleViewContact, loadingCall });
 
   return (
     <div className="min-h-screen flex flex-col w-full bg-white">
@@ -369,28 +291,6 @@ export default function CampaignContactsDashboard({
       </div>
 
       <div className="px-6 pt-6">
-        <div className="mb-4 flex items-center space-x-2">
-          <Filter className="h-4 w-4 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700">Filtrar por estado de llamada:</span>
-          <Select value={callStatusFilter} onValueChange={handleCallStatusFilterChange}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="registered">Registrada</SelectItem>
-              <SelectItem value="not_connected">No Conectada</SelectItem>
-              <SelectItem value="ongoing">En Curso</SelectItem>
-              <SelectItem value="ended">Finalizada</SelectItem>
-              <SelectItem value="error">Error</SelectItem>
-              <SelectItem value="pending">Pendiente</SelectItem>
-              <SelectItem value="working">Trabajando</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="px-6">
         {loading && (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
@@ -417,7 +317,7 @@ export default function CampaignContactsDashboard({
                 : 'Esta campaña aún no tiene contactos agregados'}
             </p>
             {callStatusFilter !== 'all' && (
-              <Button onClick={() => handleCallStatusFilterChange('all')} variant="outline">
+              <Button onClick={() => onCallStatusFilterChange && onCallStatusFilterChange('all')} variant="outline">
                 Ver todos los contactos
               </Button>
             )}
@@ -427,107 +327,7 @@ export default function CampaignContactsDashboard({
 
       {!loading && !error && (contacts || []).length > 0 && (
         <div className="px-6">
-          <div className="h-[calc(100vh-400px)] overflow-x-auto overflow-y-auto rounded-md border">
-            <Table className="w-max min-w-full">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="sticky top-0 z-[1] bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Número de Teléfono
-                  </TableHead>
-                  <TableHead className="sticky top-0 z-[1] bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Estado
-                  </TableHead>
-                  <TableHead className="sticky top-0 z-[1] bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
-                    ID de Llamada
-                  </TableHead>
-                  <TableHead className="sticky top-0 z-[1] bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Coste
-                  </TableHead>
-                  <TableHead className="sticky top-0 z-[1] bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Fecha de Creación
-                  </TableHead>
-                  <TableHead className="sticky top-0 z-[1] bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Procesado
-                  </TableHead>
-                  {dynamicFields.map((fieldName) => (
-                    <TableHead
-                      key={fieldName}
-                      className="sticky top-0 z-[1] min-w-[200px] bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500"
-                    >
-                      {fieldName}
-                    </TableHead>
-                  ))}
-                  <TableHead className="sticky top-0 z-[1] bg-gray-50 text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Acciones
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {contacts.map((contact) => (
-                  <TableRow key={contact._id} className="hover:bg-gray-50">
-                    <TableCell className="py-4">
-                      <span className="font-mono text-sm text-gray-900">{contact.toNumber}</span>
-                    </TableCell>
-                    <TableCell className="py-4">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                          contact.callStatus ? getCallStatusBadge(contact.callStatus) : getStatusBadge(contact.status)
-                        }`}
-                      >
-                        {contact.callStatus ? getCallStatusText(contact.callStatus) : getStatusText(contact.status)}
-                      </span>
-                    </TableCell>
-                    <TableCell className="py-4">
-                      {contact.callId ? (
-                        <span className="font-mono text-sm text-gray-900">{contact.callId}</span>
-                      ) : (
-                        <span className="text-sm text-gray-400">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="py-4">
-                      <span className="text-sm text-gray-900">
-                        ${applyCostMultiplier(contact.cost, getMultiplier()).toFixed(4)}
-                      </span>
-                    </TableCell>
-                    <TableCell className="py-4">
-                      <span className="text-sm text-gray-900">{formatDate(contact.createdAt)}</span>
-                    </TableCell>
-                    <TableCell className="py-4">
-                      {contact.processedAt ? (
-                        <span className="text-sm text-gray-900">{formatDate(contact.processedAt)}</span>
-                      ) : (
-                        <span className="text-sm text-gray-400">-</span>
-                      )}
-                    </TableCell>
-                    {dynamicFields.map((fieldName) => {
-                      const value = contact.callAnalysis?.custom_analysis_data?.[fieldName];
-                      return (
-                        <TableCell key={fieldName} className="py-4">
-                          <span className="text-sm text-gray-900">{value || '-'}</span>
-                        </TableCell>
-                      );
-                    })}
-                    <TableCell className="py-4">
-                      {contact.callId ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          onClick={() => handleViewContact(contact)}
-                          disabled={loadingCall}
-                        >
-                          {loadingCall ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
-                          <span className="sr-only">Ver contacto</span>
-                        </Button>
-                      ) : (
-                        <span className="text-sm text-gray-400">-</span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <DataTable columns={columns} data={contacts} loading={loading} />
         </div>
       )}
 
