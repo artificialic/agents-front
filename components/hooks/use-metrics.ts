@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from 'react';
 import type { CampaignMetrics, MetricsSummary, RecordStats } from '@/types/metrics';
-import type { CallLog } from '../modules/call-history/call-history-columns';
 
 export function useMetrics(callLogs?: CallLog[]) {
   const [campaigns, setCampaigns] = useState<CampaignMetrics[]>([]);

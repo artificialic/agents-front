@@ -4,7 +4,6 @@ import { DateRange } from 'react-day-picker';
 
 import { DataTableColumnHeader } from '@/components/data-table-column-header';
 import { callStatusColorMap, disconnectionReasonColorMap, sentimentColorMap, translatedStatus } from '@/utils';
-import { CallLog } from '@/services/api.d'; // Assuming CallLog is exported from api.d
 
 export const fuzzyFilter: FilterFn<any> = (row, columnId, value) => {
   const itemValue = String(row.getValue(columnId)).toLowerCase();

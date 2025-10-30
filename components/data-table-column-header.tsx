@@ -29,7 +29,6 @@ interface DataTableColumnHeaderProps<TData, TValue>
   title: string;
 }
 
-// Componente específico para el filtro de rango de fechas para manejar su propio estado.
 const DateRangeFilter = ({ column }: { column: Column<any, any> }) => {
   const [date, setDate] = React.useState<DateRange | undefined>(
     column.getFilterValue() as DateRange | undefined
@@ -37,7 +36,6 @@ const DateRangeFilter = ({ column }: { column: Column<any, any> }) => {
 
   React.useEffect(() => {
     column.setFilterValue(date);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date]);
 
   return (
@@ -78,7 +76,7 @@ export function DataTableColumnHeader<TData, TValue>({
               onChange={(event) => column.setFilterValue(event.target.value)}
               className="max-w-sm"
             />
-            {filterValue && (
+            {filterValue ? (
               <Button
                 variant="ghost"
                 onClick={() => column.setFilterValue(undefined)}
@@ -86,7 +84,7 @@ export function DataTableColumnHeader<TData, TValue>({
               >
                 Borrar filtro
               </Button>
-            )}
+            ) : null}
           </div>
         );
       case 'select':
@@ -108,7 +106,7 @@ export function DataTableColumnHeader<TData, TValue>({
                 ))}
               </SelectContent>
             </Select>
-            {filterValue && (
+            {filterValue ? (
               <Button
                 variant="ghost"
                 onClick={() => column.setFilterValue(undefined)}
@@ -116,7 +114,7 @@ export function DataTableColumnHeader<TData, TValue>({
               >
                 Borrar filtro
               </Button>
-            )}
+            ) : null}
           </div>
         );
       case 'dateRange':

@@ -1,16 +1,8 @@
 import { ColumnDef, FilterFn } from '@tanstack/react-table';
-import { Campaign } from '@/services/api.d';
 import { formatDate } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
 import { DataTableColumnHeader } from '@/components/data-table-column-header';
 import { Button } from '@/components/ui/button';
-
-declare module '@tanstack/react-table' {
-  interface ColumnMeta<TData extends object, TValue> {
-    filterVariant?: 'text' | 'select' | 'dateRange';
-    options?: { value: string; label: string }[];
-  }
-}
 
 export const fuzzyFilter: FilterFn<any> = (row, columnId, value) => {
   const itemValue = String(row.getValue(columnId)).toLowerCase();
