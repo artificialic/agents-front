@@ -217,6 +217,7 @@ export default function AgentConfigPage() {
             llmId={agent.response_engine.llm_id}
             llms={llms}
             loadingLlms={loadingLlms}
+            llm={llm}
           />
         </div>
         <div className="w-3/4">
@@ -232,7 +233,7 @@ export default function AgentConfigPage() {
             loadingLlms={loadingLlms}
           />
         </div>
-        <div className="w-1/4 hidden">
+        <div className="hidden w-1/4">
           <div className="flex h-full w-full flex-col rounded-lg bg-white">
             <div className="flex items-center justify-between border-b p-4">
               <div className="flex gap-2">
