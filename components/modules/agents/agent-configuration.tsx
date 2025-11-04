@@ -21,6 +21,7 @@ interface AgentConfigurationProps {
   llmId: string;
   llms: Llm[];
   loadingLlms: boolean;
+  llm: Llm | null;
 }
 
 const VOICE_MODELS = [
@@ -41,7 +42,7 @@ const VOICE_MODELS = [
   }
 ];
 
-export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentConfigurationProps) {
+export function AgentConfiguration({ agent, llmId, llms, loadingLlms, llm }: AgentConfigurationProps) {
   const [formData, setFormData] = useState({
     prompt: '',
     customMessage: '',
@@ -70,7 +71,6 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentCon
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savingVoice, setSavingVoice] = useState(false);
-  const [llm, setLlm] = useState<Llm | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState('en-US');
   const [voicePopoverOpen, setVoicePopoverOpen] = useState(false);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
@@ -83,12 +83,16 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentCon
   };
 
   useEffect(() => {
-    const fetchLlm = async () => {
+    const initializeFormData = async () => {
       try {
-        const response = await apiService.getLlm(llmId);
-        const llmPrompt = response.general_prompt || '';
-        const beginMessage = response.begin_message || '';
-        const silenceMs = response.begin_after_user_silence_ms || 10000;
+        if (!llm) {
+          setLoading(false);
+          return;
+        }
+
+        const llmPrompt = llm.general_prompt || '';
+        const beginMessage = llm.begin_message || '';
+        const silenceMs = llm.begin_after_user_silence_ms || 10000;
 
         setFormData({
           prompt: llmPrompt,
@@ -103,15 +107,13 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentCon
         });
 
         const voiceSettings = {
-          model: response.voice_model || 'auto-gpt-4o-mini',
-          speed: [response.voice_speed || 1.0],
-          temperature: [response.voice_temperature || 1.0],
-          volume: [response.voice_volume || 1.0]
+          model: llm.voice_model || 'auto-gpt-4o-mini',
+          speed: [llm.voice_speed || 1.0],
+          temperature: [llm.voice_temperature || 1.0],
+          volume: [llm.voice_volume || 1.0]
         };
         setVoiceConfig(voiceSettings);
         setOriginalVoiceConfig(voiceSettings);
-
-        setLlm(response);
 
         if (agent.language) {
           setSelectedLanguage(agent.language);
@@ -131,16 +133,14 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentCon
           }
         }
       } catch (error) {
-        console.error('Error fetching LLM:', error);
+        console.error('Error initializing form data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    if (llmId) {
-      fetchLlm();
-    }
-  }, [llmId, agent.language, agent.voice_id]);
+    initializeFormData();
+  }, [llm, agent.language, agent.voice_id]);
 
   const hasChanges = formData.prompt !== originalData.prompt;
   const hasVoiceChanges = JSON.stringify(voiceConfig) !== JSON.stringify(originalVoiceConfig);
@@ -653,6 +653,13 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentCon
         </div>
       </div>
 
+      {llm?.states && llm.states.length > 0 && (
+        <div className="space-y-2">
+          <Label className="mt-4 text-sm font-medium">Árbol de Prompts Multi-Estado</Label>
+          <PromptTreePreview onEdit={handleEditPromptTree} llm={llm} />
+        </div>
+      )}
+      
       <SelectVoiceModal
         open={showVoiceModal}
         onOpenChange={setShowVoiceModal}

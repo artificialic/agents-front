@@ -7,7 +7,7 @@ interface PromptTreePreviewProps {
 
 export function PromptTreePreview({ onEdit }: PromptTreePreviewProps) {
   return (
-    <div className="relative flex min-h-[400px] w-full cursor-pointer items-center justify-center rounded-lg border bg-card p-8 text-card-foreground shadow-sm md:min-h-[500px] lg:min-h-[50vh]">
+    <div className="relative flex min-h-[150px] w-full cursor-pointer items-center justify-center rounded-lg border bg-card p-8 text-card-foreground shadow-sm md:min-h-[200px]">
       <div className="relative h-full w-full max-w-[600px]">
         <Image
           alt="Árbol de Prompts"
