@@ -84,16 +84,17 @@ interface CampaignContactsColumnsProps {
 export const createCampaignContactsColumns = ({ dynamicFields, handleViewContact, loadingCall, contacts }: CampaignContactsColumnsProps): ColumnDef<ContactByCampaign>[] => {
   const getMultiplier = useUserStore.getState().getMultiplier;
 
-  const getUniqueDispositions = () => {
-    const dispositions = new Set<string>();
+  const getUniqueValuesForField = (fieldName: string) => {
+    const values = new Set<string>();
     contacts.forEach((contact) => {
-      if (contact.disposition) {
-        dispositions.add(contact.disposition);
+      const value = contact.callAnalysis?.custom_analysis_data?.[fieldName];
+      if (value) {
+        values.add(String(value));
       }
     });
-    return Array.from(dispositions).sort().map(disposition => ({
-      value: disposition,
-      label: disposition
+    return Array.from(values).sort().map(value => ({
+      value: value,
+      label: value
     }));
   };
 
@@ -139,19 +140,6 @@ export const createCampaignContactsColumns = ({ dynamicFields, handleViewContact
         if (!value) return true;
         const status = row.original.callStatus || row.original.status;
         return status === value;
-      },
-    },
-    {
-      accessorKey: 'disposition',
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Tipificacion" />,
-      cell: ({ row }) => row.original.disposition ? <span className="text-sm text-gray-900">{row.original.disposition}</span> : <span className="text-sm text-gray-400">-</span>,
-      meta: {
-        filterVariant: 'select',
-        options: getUniqueDispositions()
-      },
-      filterFn: (row, columnId, value) => {
-        if (!value) return true;
-        return row.original.disposition === value;
       },
     },
     {
@@ -214,10 +202,17 @@ export const createCampaignContactsColumns = ({ dynamicFields, handleViewContact
       header: ({ column }) => <DataTableColumnHeader column={column} title={fieldName} />,
       cell: ({ row }) => {
         const value = row.original.callAnalysis?.custom_analysis_data?.[fieldName];
-        return <span className="text-sm text-gray-900">{String(value) || '-'}</span>;
+        return value ? <span className="text-sm text-gray-900">{String(value)}</span> : <span className="text-sm text-gray-400">-</span>;
       },
-      meta: { filterVariant: 'text' },
-      filterFn: fuzzyFilter,
+      meta: {
+        filterVariant: 'select',
+        options: getUniqueValuesForField(fieldName)
+      },
+      filterFn: (row, columnId, value) => {
+        if (!value) return true;
+        const fieldValue = row.original.callAnalysis?.custom_analysis_data?.[fieldName];
+        return String(fieldValue) === value;
+      },
     });
   });
 
