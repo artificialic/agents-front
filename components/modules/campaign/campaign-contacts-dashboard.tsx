@@ -48,6 +48,7 @@ interface ContactByCampaign {
   toNumber: string;
   status: string;
   callStatus?: string;
+  disposition?: string;
   cost?: number;
   createdAt: string;
   updatedAt: string;
@@ -206,7 +207,7 @@ export default function CampaignContactsDashboard({
   }
 
 
-  const columns = createCampaignContactsColumns({ dynamicFields, handleViewContact, loadingCall });
+  const columns = createCampaignContactsColumns({ dynamicFields, handleViewContact, loadingCall, contacts: contacts || [] });
 
   return (
     <div className="min-h-screen flex flex-col w-full bg-white">

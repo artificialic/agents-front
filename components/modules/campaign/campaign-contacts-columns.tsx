@@ -78,10 +78,24 @@ interface CampaignContactsColumnsProps {
   dynamicFields: string[];
   handleViewContact: (contact: ContactByCampaign) => Promise<void>;
   loadingCall: boolean;
+  contacts: ContactByCampaign[];
 }
 
-export const createCampaignContactsColumns = ({ dynamicFields, handleViewContact, loadingCall }: CampaignContactsColumnsProps): ColumnDef<ContactByCampaign>[] => {
+export const createCampaignContactsColumns = ({ dynamicFields, handleViewContact, loadingCall, contacts }: CampaignContactsColumnsProps): ColumnDef<ContactByCampaign>[] => {
   const getMultiplier = useUserStore.getState().getMultiplier;
+
+  const getUniqueDispositions = () => {
+    const dispositions = new Set<string>();
+    contacts.forEach((contact) => {
+      if (contact.disposition) {
+        dispositions.add(contact.disposition);
+      }
+    });
+    return Array.from(dispositions).sort().map(disposition => ({
+      value: disposition,
+      label: disposition
+    }));
+  };
 
   const columns: ColumnDef<ContactByCampaign>[] = [
     {
@@ -131,8 +145,14 @@ export const createCampaignContactsColumns = ({ dynamicFields, handleViewContact
       accessorKey: 'disposition',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Tipificacion" />,
       cell: ({ row }) => row.original.disposition ? <span className="text-sm text-gray-900">{row.original.disposition}</span> : <span className="text-sm text-gray-400">-</span>,
-      meta: { filterVariant: 'text' },
-      filterFn: fuzzyFilter,
+      meta: {
+        filterVariant: 'select',
+        options: getUniqueDispositions()
+      },
+      filterFn: (row, columnId, value) => {
+        if (!value) return true;
+        return row.original.disposition === value;
+      },
     },
     {
       accessorKey: 'callId',
