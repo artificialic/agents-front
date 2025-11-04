@@ -29,7 +29,6 @@ interface DataTableColumnHeaderProps<TData, TValue>
   title: string;
 }
 
-
 const DateRangeFilter = ({ column }: { column: Column<any, any> }) => {
   const [date, setDate] = React.useState<DateRange | undefined>(
     column.getFilterValue() as DateRange | undefined
@@ -37,7 +36,6 @@ const DateRangeFilter = ({ column }: { column: Column<any, any> }) => {
 
   React.useEffect(() => {
     column.setFilterValue(date);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date]);
 
   return (

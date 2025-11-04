@@ -1,4 +1,4 @@
-export interface Campaign {
+interface Campaign {
   _id: string;
   name: string;
   owner: string;
@@ -10,7 +10,7 @@ export interface Campaign {
   updatedAt: string;
 }
 
-export interface Client {
+interface Client {
   _id: string;
   firstName: string;
   email: string;
@@ -37,9 +37,9 @@ export interface Client {
 }
 
 // TODO: Define the Billing interface
-export interface Billing {} 
+interface Billing {} 
 
-export type PaymentSourcePayload = {
+type PaymentSourcePayload = {
   cardNumber: string;
   expiryMonth: string;
   expiryYear: string;
@@ -47,7 +47,7 @@ export type PaymentSourcePayload = {
   cardHolder: string;
 };
 
-export type CreateAgentPayload = {
+type CreateAgentPayload = {
   agent_name: string;
   voice_id: string;
   response_engine: {
@@ -57,7 +57,7 @@ export type CreateAgentPayload = {
   };
 };
 
-export type Call = {
+type Call = {
   call_id: string;
   call_type: string;
   agent_id: string;
@@ -93,7 +93,138 @@ export type Call = {
   direction: string;
 };
 
-export type CreateCallPayload = {
+//@TODO: merge types,  CallLog = Call?
+type CallLog = {
+  call_id: string;
+  call_type: string;
+  agent_id: string;
+  agent_name: string;
+  agent_version?: number;
+  call_status: string;
+  start_timestamp: number;
+  end_timestamp: number;
+  duration_ms: number;
+  disconnection_reason: string;
+  call_cost: {
+    combined_cost: number;
+    total_duration_seconds: number;
+    product_costs?: Array<{
+      product: string;
+      unitPrice: number;
+      cost: number;
+    }>;
+    total_duration_unit_price?: number;
+    total_one_time_price?: number;
+  };
+  call_analysis: {
+    user_sentiment: string;
+    call_successful: boolean;
+    call_summary?: string;
+    in_voicemail?: boolean;
+    custom_analysis_data?: any;
+  };
+  from_number?: string;
+  to_number?: string;
+  direction?: string;
+  batch_call_id?: string;
+  latency?: {
+    e2e?: {
+      p50: number;
+      p90: number;
+      p95: number;
+      p99: number;
+      max: number;
+      min: number;
+      num: number;
+      values: number[];
+    };
+    llm?: {
+      p50: number;
+      p90: number;
+      p95: number;
+      p99: number;
+      max: number;
+      min: number;
+      num: number;
+      values: number[];
+    };
+    llm_websocket_network_rtt?: {
+      p50: number;
+      p90: number;
+      p95: number;
+      p99: number;
+      max: number;
+      min: number;
+      num: number;
+      values: number[];
+    };
+    tts?: {
+      p50: number;
+      p90: number;
+      p95: number;
+      p99: number;
+      max: number;
+      min: number;
+      num: number;
+      values: number[];
+    };
+    knowledge_base?: {
+      p50: number;
+      p90: number;
+      p95: number;
+      p99: number;
+      max: number;
+      min: number;
+      num: number;
+      values: number[];
+    };
+    s2s?: {
+      p50: number;
+      p90: number;
+      p95: number;
+      p99: number;
+      max: number;
+      min: number;
+      num: number;
+      values: number[];
+    };
+  };
+  transcript?: string;
+  transcript_object?: Array<{
+    role: string;
+    content: string;
+    words?: Array<{
+      word: string;
+      start: number;
+      end: number;
+    }>;
+  }>;
+  transcript_with_tool_calls?: Array<{
+    role: string;
+    content: string;
+    words?: Array<{
+      word: string;
+      start: number;
+      end: number;
+    }>;
+  }>;
+  recording_url?: string;
+  public_log_url?: string;
+  knowledge_base_retrieved_contents_url?: string;
+  metadata?: any;
+  retell_llm_dynamic_variables?: any;
+  collected_dynamic_variables?: any;
+  opt_out_sensitive_data_storage?: boolean;
+  opt_in_signed_url?: boolean;
+  access_token?: string;
+  llm_token_usage?: {
+    values: number[];
+    average: number;
+    num_requests: number;
+  };
+};
+
+type CreateCallPayload = {
   agent_id: string;
   from_number: string;
   to_number: string;
@@ -101,7 +232,7 @@ export type CreateCallPayload = {
   [key: string]: any;
 };
 
-export type Concurrency = {
+type Concurrency = {
   current_concurrency: number;
   concurrency_limit: number;
   base_concurrency: number;
@@ -110,20 +241,20 @@ export type Concurrency = {
   remaining_purchase_limit: number;
 };
 
-export type CreateCampaignPayload = {
+type CreateCampaignPayload = {
   agentId: string;
   name: string;
   fromNumber: string;
 };
 
-export type CreateContactsPayload = {
+type CreateContactsPayload = {
   contacts: {
     toNumber: string;
     dynamicVariables: Record<string, string>;
   }[];
 };
 
-export interface ContactByCampaign {
+interface ContactByCampaign {
   _id: string;
   campaignId: string;
   toNumber: string;
@@ -141,11 +272,11 @@ export interface ContactByCampaign {
   };
 }
 
-export type CreateTransactionPayload = {
+type CreateTransactionPayload = {
   amount: number;
 };
 
-export interface TransactionHistory {
+interface TransactionHistory {
   _id: string;
   userId: string;
   wompiTransactionId: string;
@@ -161,7 +292,7 @@ export interface TransactionHistory {
   updatedAt: string;
 }
 
-export interface CallDetail {
+interface CallDetail {
   call_id: string;
   call_type: string;
   agent_id: string;
@@ -197,7 +328,7 @@ export interface CallDetail {
   direction: string;
 }
 
-export interface Template {
+interface Template {
   _id: string;
   name: string;
   agentId: string;
@@ -206,13 +337,13 @@ export interface Template {
   updatedAt: string;
 }
 
-export interface CreateTemplatePayload {
+interface CreateTemplatePayload {
   name: string;
   agentId: string;
   filePath: string;
 }
 
-export interface DashboardStats {
+interface DashboardStats {
   campaignsCount: number;
   callsCount: number;
   transactionsSum: number;
@@ -231,7 +362,7 @@ export interface DashboardStats {
   };
 }
 
-export interface Voice {
+interface Voice {
   standard_voice_type?: 'preset' | 'retell';
   accent?: string;
   age?: string;
@@ -241,7 +372,7 @@ export interface Voice {
 }
 
 /* RETELL */
-export interface Voice {
+interface Voice {
   voice_id: string;
   voice_name: string;
   provider: 'elevenlabs' | 'openai' | 'deepgram';
@@ -251,7 +382,7 @@ export interface Voice {
   preview_audio_url: string;
 }
 
-export interface Agent {
+interface Agent {
   agent_id: string;
   agent_name?: string;
   language?: string;
@@ -349,7 +480,7 @@ export interface Agent {
   last_modification_timestamp?: number;
 }
 
-export interface Llm {
+interface Llm {
   llm_id: string;
   version: number;
   is_published: boolean;
@@ -411,7 +542,7 @@ export interface Llm {
   updated_at?: string;
 }
 
-export interface KnowledgeBase {
+interface KnowledgeBase {
   knowledge_base_id: string;
   knowledge_base_name: string;
   status: string;
@@ -425,14 +556,14 @@ export interface KnowledgeBase {
   last_refreshed_timestamp: number;
 }
 
-export interface CreateWebCallRequest {
+interface CreateWebCallRequest {
   agent_id: string;
   agent_version?: number;
   metadata?: Record<string, any>;
   retell_llm_dynamic_variables?: Record<string, any>;
 }
 
-export interface CreateKnowledgeBasePayload {
+interface CreateKnowledgeBasePayload {
   knowledge_base_name: string;
   knowledge_base_texts?: Array<{
     text: string;
@@ -442,7 +573,7 @@ export interface CreateKnowledgeBasePayload {
   enable_auto_refresh?: boolean;
 }
 
-export interface PhoneNumber {
+interface PhoneNumber {
   phone_number: string;
   phone_number_type: string;
   phone_number_pretty: string;

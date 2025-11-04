@@ -3,7 +3,6 @@
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Copy, Download } from 'lucide-react';
-import type { CallLog } from './call-history-columns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { disconnectionReasonColorMap, sentimentColorMap, translatedStatus } from '@/utils';
 import React from 'react';

@@ -1,12 +1,10 @@
 import type { ColumnDef, FilterFn } from '@tanstack/react-table';
 import { Copy } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
-
 import { DataTableColumnHeader } from '@/components/data-table-column-header';
 import { callStatusColorMap, disconnectionReasonColorMap, sentimentColorMap, translatedStatus } from '@/utils';
-import { Call } from '@/services/api.d';
 
-export type CallLog = Call; 
+export type CallLog = Call;
 
 export const fuzzyFilter: FilterFn<any> = (row, columnId, value) => {
   const itemValue = String(row.getValue(columnId)).toLowerCase();

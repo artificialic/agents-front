@@ -1,7 +1,6 @@
 import { ColumnDef, FilterFn } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { Eye, Loader2 } from 'lucide-react';
-import { ContactByCampaign } from '@/services/api.d';
 import { formatDate } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
 import * as React from 'react';

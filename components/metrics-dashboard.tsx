@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RefreshCw, TrendingUp, Phone, PhoneCall, PhoneOff, DollarSign, Clock, Users, BarChart3 } from 'lucide-react';
-import type { CallLog } from './modules/call-history/call-history-columns';
 
 interface MetricsDashboardProps {
   callLogs?: CallLog[];

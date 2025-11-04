@@ -219,7 +219,7 @@ export default function AgentConfigPage() {
             loadingLlms={loadingLlms}
           />
         </div>
-        <div className="w-1/4">
+        <div className="w-3/4">
           <SettingsPanel
             agent={agent}
             llm={llm}
@@ -232,7 +232,7 @@ export default function AgentConfigPage() {
             loadingLlms={loadingLlms}
           />
         </div>
-        <div className="w-1/4">
+        <div className="w-1/4 hidden">
           <div className="flex h-full w-full flex-col rounded-lg bg-white">
             <div className="flex items-center justify-between border-b p-4">
               <div className="flex gap-2">

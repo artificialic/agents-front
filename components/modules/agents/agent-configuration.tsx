@@ -13,6 +13,8 @@ import { ChevronDown, Clock, Info, Settings } from 'lucide-react';
 import { apiService } from '@/services';
 import { SelectVoiceModal } from '@/components/modules/agents/select-voice-modal';
 import { LANGUAGES } from '@/components/modules/agents/constants';
+import { PromptTreePreview } from './prompt-tree-preview';
+import { FlowEditorModal } from './flow-editor-modal';
 
 interface AgentConfigurationProps {
   agent: Agent;
@@ -74,6 +76,11 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentCon
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>('');
   const [selectedVoiceName, setSelectedVoiceName] = useState<string>('Seleccionar Voz');
+  const [flowEditorOpen, setFlowEditorOpen] = useState(false);
+
+  const handleEditPromptTree = () => {
+    setFlowEditorOpen(true);
+  };
 
   useEffect(() => {
     const fetchLlm = async () => {
@@ -297,6 +304,20 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentCon
     }
   };
 
+  const handleSaveFlowStates = async (updatedLlm: Llm) => {
+    try {
+      await apiService.updateLlm(llmId, {
+        states: updatedLlm.states,
+        starting_state: updatedLlm.starting_state,
+        last_modification_timestamp: updatedLlm.last_modification_timestamp
+      });
+      const response = await apiService.getLlm(llmId);
+      setLlm(response);
+    } catch (error) {
+      console.error('Error updating LLM states:', error);
+    }
+  };
+
   const activeOption = getActiveWelcomeOption();
   const isSilenceSwitchOn = llm?.begin_after_user_silence_ms !== null && llm?.begin_after_user_silence_ms !== undefined;
   const silenceMessageType = llm?.begin_message === null || llm?.begin_message === undefined ? 'dynamic' : 'static';
@@ -498,6 +519,11 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentCon
         )}
       </div>
 
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Árbol de Prompts Multi-Estado</Label>
+        <PromptTreePreview onEdit={handleEditPromptTree} />
+      </div>
+
       <div className="space-y-4 border-t border-border pt-4">
         <div className="flex items-center justify-between">
           <Label className="text-sm font-medium">Mensaje de Bienvenida</Label>
@@ -633,6 +659,8 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentCon
         currentVoiceId={selectedVoiceId}
         onSelectVoice={handleVoiceSelect}
       />
+
+      <FlowEditorModal open={flowEditorOpen} onOpenChange={setFlowEditorOpen} llm={llm} onSave={handleSaveFlowStates} />
     </div>
   );
 }
