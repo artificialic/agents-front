@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useState, useEffect } from 'react';
 import { Column } from '@tanstack/react-table';
 import { ArrowDown, ArrowUp, Filter } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
@@ -23,18 +23,18 @@ import {
 } from '@/components/ui/select';
 import { DateRangePicker } from '@/components/date-range-picker';
 
-interface DataTableColumnHeaderProps<TData, TValue>
-  extends React.HTMLAttributes<HTMLDivElement> {
+interface DataTableColumnHeaderProps<TData, TValue> {
   column: Column<TData, TValue>;
   title: string;
+  className?: string;
 }
 
 const DateRangeFilter = ({ column }: { column: Column<any, any> }) => {
-  const [date, setDate] = React.useState<DateRange | undefined>(
+  const [date, setDate] = useState<DateRange | undefined>(
     column.getFilterValue() as DateRange | undefined
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     column.setFilterValue(date);
   }, [date]);
 
@@ -55,11 +55,11 @@ const DateRangeFilter = ({ column }: { column: Column<any, any> }) => {
 };
 
 const DurationRangeFilter = ({ column }: { column: Column<any, any> }) => {
-  const [comparisonType, setComparisonType] = React.useState<'greaterThan' | 'greaterThanOrEqualTo' | 'lessThan' | 'lessThanOrEqualTo' | 'equalTo' | 'between'>('greaterThan');
-  const [value1Minutes, setValue1Minutes] = React.useState('');
-  const [value1Seconds, setValue1Seconds] = React.useState('');
-  const [value2Minutes, setValue2Minutes] = React.useState('');
-  const [value2Seconds, setValue2Seconds] = React.useState('');
+  const [comparisonType, setComparisonType] = useState<'greaterThan' | 'greaterThanOrEqualTo' | 'lessThan' | 'lessThanOrEqualTo' | 'equalTo' | 'between'>('greaterThan');
+  const [value1Minutes, setValue1Minutes] = useState('');
+  const [value1Seconds, setValue1Seconds] = useState('');
+  const [value2Minutes, setValue2Minutes] = useState('');
+  const [value2Seconds, setValue2Seconds] = useState('');
 
   const minutesToMs = (minutes: string) => (parseInt(minutes) || 0) * 60 * 1000;
   const secondsToMs = (seconds: string) => (parseInt(seconds) || 0) * 1000;
@@ -93,7 +93,6 @@ const DurationRangeFilter = ({ column }: { column: Column<any, any> }) => {
         filterValue = undefined;
     }
 
-    console.log('Applying duration filter:', filterValue);
     column.setFilterValue(filterValue);
   };
 

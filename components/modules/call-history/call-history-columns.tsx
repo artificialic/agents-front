@@ -27,8 +27,6 @@ export const dateRangeFilterFn: FilterFn<any> = (row, columnId, filterValue: Dat
 export const durationRangeFilterFn: FilterFn<any> = (row, columnId, filterValue: { type: string; value?: number; min?: number; max?: number }) => {
   const duration = row.getValue(columnId) as number;
 
-  console.log('Filtering:', { duration, filterValue });
-
   if (!filterValue || !filterValue.type) {
     return true;
   }
