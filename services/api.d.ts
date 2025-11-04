@@ -129,6 +129,7 @@ export interface ContactByCampaign {
   toNumber: string;
   status: string;
   callStatus?: string;
+  disposition?: string;
   cost?: number;
   createdAt: string;
   updatedAt: string;

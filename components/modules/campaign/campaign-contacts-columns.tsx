@@ -129,6 +129,13 @@ export const createCampaignContactsColumns = ({ dynamicFields, handleViewContact
       },
     },
     {
+      accessorKey: 'disposition',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Tipificacion" />,
+      cell: ({ row }) => row.original.disposition ? <span className="text-sm text-gray-900">{row.original.disposition}</span> : <span className="text-sm text-gray-400">-</span>,
+      meta: { filterVariant: 'text' },
+      filterFn: fuzzyFilter,
+    },
+    {
       accessorKey: 'callId',
       header: ({ column }) => <DataTableColumnHeader column={column} title="ID de Llamada" />,
       cell: ({ row }) => row.original.callId ? <span className="font-mono text-sm text-gray-900">{row.original.callId}</span> : <span className="text-sm text-gray-400">-</span>,
@@ -182,7 +189,6 @@ export const createCampaignContactsColumns = ({ dynamicFields, handleViewContact
     },
   ];
 
-  // Añadir columnas dinámicas
   dynamicFields.forEach((fieldName) => {
     columns.splice(columns.length - 1, 0, {
       accessorKey: `callAnalysis.custom_analysis_data.${fieldName}`,

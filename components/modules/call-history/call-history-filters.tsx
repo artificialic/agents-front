@@ -155,6 +155,9 @@ export default function CallHistoryFilters({
   const [durationValue, setDurationValue] = useState('');
   const [durationValueMin, setDurationValueMin] = useState('');
   const [durationValueMax, setDurationValueMax] = useState('');
+  const [durationUnit, setDurationUnit] = useState('mins');
+  const [durationUnitMin, setDurationUnitMin] = useState('mins');
+  const [durationUnitMax, setDurationUnitMax] = useState('mins');
 
   const [showFromFilter, setShowFromFilter] = useState(false);
   const [fromNumberValue, setFromNumberValue] = useState('');
@@ -377,7 +380,7 @@ export default function CallHistoryFilters({
     setIsOpen(false);
   };
 
-  // New filter handlers
+  
   const handleCallIdSave = () => {
     const filterCriteria: any = {};
 
@@ -404,15 +407,26 @@ export default function CallHistoryFilters({
   const handleDurationSave = () => {
     const filterCriteria: any = {};
 
+    const convertToMs = (value: string, unit: string) => {
+      const numericValue = parseInt(value);
+      if (isNaN(numericValue)) {
+        return 0;
+      }
+      if (unit === 'hours') {
+        return numericValue * 60 * 60 * 1000;
+      }
+      return numericValue * 60 * 1000;
+    };
+
     if (durationOperator === 'is between') {
       if (durationValueMin && durationValueMax) {
         filterCriteria.duration_ms = {
-          lower_threshold: parseInt(durationValueMin) * 60 * 1000,
-          upper_threshold: parseInt(durationValueMax) * 60 * 1000
+          lower_threshold: convertToMs(durationValueMin, durationUnitMin),
+          upper_threshold: convertToMs(durationValueMax, durationUnitMax)
         };
       }
     } else if (durationValue) {
-      const milliseconds = parseInt(durationValue) * 60 * 1000;
+      const milliseconds = convertToMs(durationValue, durationUnit);
 
       if (durationOperator === 'is greater than') {
         filterCriteria.duration_ms = {
@@ -437,6 +451,9 @@ export default function CallHistoryFilters({
     setDurationValue('');
     setDurationValueMin('');
     setDurationValueMax('');
+    setDurationUnit('mins');
+    setDurationUnitMin('mins');
+    setDurationUnitMax('mins');
 
     const finalCriteria = { filter_criteria: {} };
     onFilterSelect?.(finalCriteria);
@@ -1107,6 +1124,14 @@ export default function CallHistoryFilters({
                     className="w-full"
                     min="0"
                   />
+                  <select
+                    value={durationUnitMin}
+                    onChange={(e) => setDurationUnitMin(e.target.value)}
+                    className="rounded-md border border-gray-300 px-2 py-2 text-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                  >
+                    <option value="mins">mins</option>
+                    <option value="hours">hours</option>
+                  </select>
                   <span className="text-sm text-gray-500">-</span>
                   <Input
                     type="number"
@@ -1116,7 +1141,14 @@ export default function CallHistoryFilters({
                     className="w-full"
                     min="0"
                   />
-                  <span className="text-sm text-gray-500">mins</span>
+                  <select
+                    value={durationUnitMax}
+                    onChange={(e) => setDurationUnitMax(e.target.value)}
+                    className="rounded-md border border-gray-300 px-2 py-2 text-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                  >
+                    <option value="mins">mins</option>
+                    <option value="hours">hours</option>
+                  </select>
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
@@ -1128,7 +1160,14 @@ export default function CallHistoryFilters({
                     className="flex-1"
                     min="0"
                   />
-                  <span className="text-sm text-gray-500">mins</span>
+                  <select
+                    value={durationUnit}
+                    onChange={(e) => setDurationUnit(e.target.value)}
+                    className="rounded-md border border-gray-300 px-2 py-2 text-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                  >
+                    <option value="mins">mins</option>
+                    <option value="hours">hours</option>
+                  </select>
                 </div>
               )}
             </div>

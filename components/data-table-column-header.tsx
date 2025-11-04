@@ -29,7 +29,7 @@ interface DataTableColumnHeaderProps<TData, TValue>
   title: string;
 }
 
-// Componente específico para el filtro de rango de fechas para manejar su propio estado.
+
 const DateRangeFilter = ({ column }: { column: Column<any, any> }) => {
   const [date, setDate] = React.useState<DateRange | undefined>(
     column.getFilterValue() as DateRange | undefined
@@ -56,12 +56,146 @@ const DateRangeFilter = ({ column }: { column: Column<any, any> }) => {
   );
 };
 
+const DurationRangeFilter = ({ column }: { column: Column<any, any> }) => {
+  const [comparisonType, setComparisonType] = React.useState<'greaterThan' | 'greaterThanOrEqualTo' | 'lessThan' | 'lessThanOrEqualTo' | 'equalTo' | 'between'>('greaterThan');
+  const [value1Minutes, setValue1Minutes] = React.useState('');
+  const [value1Seconds, setValue1Seconds] = React.useState('');
+  const [value2Minutes, setValue2Minutes] = React.useState('');
+  const [value2Seconds, setValue2Seconds] = React.useState('');
+
+  const minutesToMs = (minutes: string) => (parseInt(minutes) || 0) * 60 * 1000;
+  const secondsToMs = (seconds: string) => (parseInt(seconds) || 0) * 1000;
+
+  const handleApply = () => {
+    let filterValue: any;
+
+    const val1Ms = minutesToMs(value1Minutes) + secondsToMs(value1Seconds);
+    const val2Ms = minutesToMs(value2Minutes) + secondsToMs(value2Seconds);
+
+    switch (comparisonType) {
+      case 'greaterThan':
+        filterValue = { type: 'greaterThan', value: val1Ms };
+        break;
+      case 'greaterThanOrEqualTo':
+        filterValue = { type: 'greaterThanOrEqualTo', value: val1Ms };
+        break;
+      case 'lessThan':
+        filterValue = { type: 'lessThan', value: val1Ms };
+        break;
+      case 'lessThanOrEqualTo':
+        filterValue = { type: 'lessThanOrEqualTo', value: val1Ms };
+        break;
+      case 'equalTo':
+        filterValue = { type: 'equalTo', value: val1Ms };
+        break;
+      case 'between':
+        filterValue = { type: 'between', min: Math.min(val1Ms, val2Ms), max: Math.max(val1Ms, val2Ms) };
+        break;
+      default:
+        filterValue = undefined;
+    }
+
+    console.log('Applying duration filter:', filterValue);
+    column.setFilterValue(filterValue);
+  };
+
+  const handleClear = () => {
+    setComparisonType('greaterThan');
+    setValue1Minutes('');
+    setValue1Seconds('');
+    setValue2Minutes('');
+    setValue2Seconds('');
+    column.setFilterValue(undefined);
+  };
+
+  const isClearable = Boolean(value1Minutes || value1Seconds || value2Minutes || value2Seconds || column.getFilterValue());
+
+  return (
+    <div className="p-2 space-y-2">
+      <Select value={comparisonType} onValueChange={(value: 'greaterThan' | 'lessThan' | 'equalTo' | 'between' | 'greaterThanOrEqualTo' | 'lessThanOrEqualTo') => setComparisonType(value)}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Seleccionar tipo de comparación" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="greaterThan">Mayor que</SelectItem>
+          <SelectItem value="greaterThanOrEqualTo">Mayor o igual que</SelectItem>
+          <SelectItem value="lessThan">Menor que</SelectItem>
+          <SelectItem value="lessThanOrEqualTo">Menor o igual que</SelectItem>
+          <SelectItem value="equalTo">Igual a</SelectItem>
+          <SelectItem value="between">Entre</SelectItem>
+        </SelectContent>
+      </Select>
+
+      <div className="flex items-center space-x-2">
+        <span className="text-sm font-medium">{comparisonType === 'between' ? 'Desde:' : 'Valor:'}</span>
+        <Input
+          type="number"
+          placeholder="MM"
+          value={value1Minutes}
+          onChange={(e) => setValue1Minutes(e.target.value)}
+          className="w-full"
+          min="0"
+        />
+        <Input
+          type="number"
+          placeholder="SS"
+          value={value1Seconds}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (parseInt(value) >= 0 && parseInt(value) < 60 || value === '') {
+              setValue1Seconds(value);
+            }
+          }}
+          className="w-full"
+          min="0"
+          max="59"
+        />
+      </div>
+
+      {comparisonType === 'between' && (
+        <div className="flex items-center space-x-2">
+          <span className="text-sm font-medium">Hasta:</span>
+          <Input
+            type="number"
+            placeholder="MM"
+            value={value2Minutes}
+            onChange={(e) => setValue2Minutes(e.target.value)}
+            className="w-full"
+            min="0"
+          />
+          <Input
+            type="number"
+            placeholder="SS"
+            value={value2Seconds}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (parseInt(value) >= 0 && parseInt(value) < 60 || value === '') {
+                setValue2Seconds(value);
+              }
+            }}
+            className="w-full"
+            min="0"
+            max="59"
+          />
+        </div>
+      )}
+
+      <Button onClick={handleApply} className="w-full">Aplicar</Button>
+      {isClearable && (
+        <Button variant="ghost" onClick={handleClear} className="w-full">
+          Borrar filtro
+        </Button>
+      )}
+    </div>
+  );
+};
+
 export function DataTableColumnHeader<TData, TValue>({
   column,
   title,
   className,
 }: DataTableColumnHeaderProps<TData, TValue>) {
-  const filterVariant = column.columnDef.meta?.filterVariant;
+  const filterVariant = column.columnDef.meta?.filterVariant as 'text' | 'select' | 'dateRange' | 'durationRange' | undefined;
   const filterOptions = column.columnDef.meta?.options as { label: string; value: string }[] | undefined;
 
   const filterValue = column.getFilterValue();
@@ -78,7 +212,7 @@ export function DataTableColumnHeader<TData, TValue>({
               onChange={(event) => column.setFilterValue(event.target.value)}
               className="max-w-sm"
             />
-            {filterValue && (
+            {Boolean(filterValue) && (
               <Button
                 variant="ghost"
                 onClick={() => column.setFilterValue(undefined)}
@@ -108,7 +242,7 @@ export function DataTableColumnHeader<TData, TValue>({
                 ))}
               </SelectContent>
             </Select>
-            {filterValue && (
+            {Boolean(filterValue) && (
               <Button
                 variant="ghost"
                 onClick={() => column.setFilterValue(undefined)}
@@ -121,6 +255,8 @@ export function DataTableColumnHeader<TData, TValue>({
         );
       case 'dateRange':
         return <DateRangeFilter column={column} />;
+      case 'durationRange':
+        return <DurationRangeFilter column={column} />;
       default:
         return null;
     }
