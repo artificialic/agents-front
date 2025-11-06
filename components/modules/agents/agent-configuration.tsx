@@ -13,12 +13,15 @@ import { ChevronDown, Clock, Info, Settings } from 'lucide-react';
 import { apiService } from '@/services';
 import { SelectVoiceModal } from '@/components/modules/agents/select-voice-modal';
 import { LANGUAGES } from '@/components/modules/agents/constants';
+import { PromptTreePreview } from './prompt-tree-preview';
+import { FlowEditorModal } from './flow-editor-modal';
 
 interface AgentConfigurationProps {
   agent: Agent;
   llmId: string;
   llms: Llm[];
   loadingLlms: boolean;
+  llm: Llm | null;
 }
 
 const VOICE_MODELS = [
@@ -39,7 +42,7 @@ const VOICE_MODELS = [
   }
 ];
 
-export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentConfigurationProps) {
+export function AgentConfiguration({ agent, llmId, llms, loadingLlms, llm }: AgentConfigurationProps) {
   const [formData, setFormData] = useState({
     prompt: '',
     customMessage: '',
@@ -68,20 +71,28 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentCon
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savingVoice, setSavingVoice] = useState(false);
-  const [llm, setLlm] = useState<Llm | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState('en-US');
   const [voicePopoverOpen, setVoicePopoverOpen] = useState(false);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>('');
   const [selectedVoiceName, setSelectedVoiceName] = useState<string>('Seleccionar Voz');
+  const [flowEditorOpen, setFlowEditorOpen] = useState(false);
+
+  const handleEditPromptTree = () => {
+    setFlowEditorOpen(true);
+  };
 
   useEffect(() => {
-    const fetchLlm = async () => {
+    const initializeFormData = async () => {
       try {
-        const response = await apiService.getLlm(llmId);
-        const llmPrompt = response.general_prompt || '';
-        const beginMessage = response.begin_message || '';
-        const silenceMs = response.begin_after_user_silence_ms || 10000;
+        if (!llm) {
+          setLoading(false);
+          return;
+        }
+
+        const llmPrompt = llm.general_prompt || '';
+        const beginMessage = llm.begin_message || '';
+        const silenceMs = llm.begin_after_user_silence_ms || 10000;
 
         setFormData({
           prompt: llmPrompt,
@@ -96,15 +107,13 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentCon
         });
 
         const voiceSettings = {
-          model: response.voice_model || 'auto-gpt-4o-mini',
-          speed: [response.voice_speed || 1.0],
-          temperature: [response.voice_temperature || 1.0],
-          volume: [response.voice_volume || 1.0]
+          model: llm.voice_model || 'auto-gpt-4o-mini',
+          speed: [llm.voice_speed || 1.0],
+          temperature: [llm.voice_temperature || 1.0],
+          volume: [llm.voice_volume || 1.0]
         };
         setVoiceConfig(voiceSettings);
         setOriginalVoiceConfig(voiceSettings);
-
-        setLlm(response);
 
         if (agent.language) {
           setSelectedLanguage(agent.language);
@@ -124,16 +133,14 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentCon
           }
         }
       } catch (error) {
-        console.error('Error fetching LLM:', error);
+        console.error('Error initializing form data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    if (llmId) {
-      fetchLlm();
-    }
-  }, [llmId, agent.language, agent.voice_id]);
+    initializeFormData();
+  }, [llm, agent.language, agent.voice_id]);
 
   const hasChanges = formData.prompt !== originalData.prompt;
   const hasVoiceChanges = JSON.stringify(voiceConfig) !== JSON.stringify(originalVoiceConfig);
@@ -294,6 +301,20 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentCon
       handleWelcomeMessageChange({ start_speaker: 'user', begin_message: null });
     } else {
       handleWelcomeMessageChange({ start_speaker: 'agent', begin_message: null });
+    }
+  };
+
+  const handleSaveFlowStates = async (updatedLlm: Llm) => {
+    try {
+      await apiService.updateLlm(llmId, {
+        states: updatedLlm.states,
+        starting_state: updatedLlm.starting_state,
+        last_modification_timestamp: updatedLlm.last_modification_timestamp
+      });
+      const response = await apiService.getLlm(llmId);
+      setLlm(response);
+    } catch (error) {
+      console.error('Error updating LLM states:', error);
     }
   };
 
@@ -627,12 +648,21 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms }: AgentCon
         </div>
       </div>
 
+      {llm?.states && llm.states.length > 0 && (
+        <div className="space-y-2">
+          <Label className="mt-4 text-sm font-medium">Árbol de Prompts Multi-Estado</Label>
+          <PromptTreePreview onEdit={handleEditPromptTree} llm={llm} />
+        </div>
+      )}
+      
       <SelectVoiceModal
         open={showVoiceModal}
         onOpenChange={setShowVoiceModal}
         currentVoiceId={selectedVoiceId}
         onSelectVoice={handleVoiceSelect}
       />
+
+      <FlowEditorModal open={flowEditorOpen} onOpenChange={setFlowEditorOpen} llm={llm} onSave={handleSaveFlowStates} />
     </div>
   );
 }

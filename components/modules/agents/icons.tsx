@@ -18,4 +18,44 @@ const IconDelete = () => (
   </svg>
 );
 
-export { IconDelete, IconEdit };
+const TrashIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
+  <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path
+      d="M6.66675 7.33301V11.333"
+      stroke="currentColor"
+      strokeWidth="1.33333"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M9.33325 7.33301V11.333"
+      stroke="currentColor"
+      strokeWidth="1.33333"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M2.66675 4.66699H13.3334"
+      stroke="currentColor"
+      strokeWidth="1.33333"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M4 4.66699H8H12V12.0003C12 13.1049 11.1046 14.0003 10 14.0003H6C4.89543 14.0003 4 13.1049 4 12.0003V4.66699Z"
+      stroke="currentColor"
+      strokeWidth="1.33333"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M6 3.33333C6 2.59695 6.59695 2 7.33333 2H8.66667C9.40305 2 10 2.59695 10 3.33333V4.66667H6V3.33333Z"
+      stroke="currentColor"
+      strokeWidth="1.33333"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export { IconDelete, IconEdit, TrashIcon };

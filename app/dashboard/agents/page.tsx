@@ -78,11 +78,12 @@ export default function AgentsPage() {
       const mappedAgents: AgentLocal[] = Array.from(agentMap.values()).map((agent: Agent) => {
         const voice = voicesResponse.find((v: Voice) => v.voice_id === agent.voice_id);
         const phoneNumber = phoneNumbersResponse.find((p: any) => p.outbound_agent_id === agent.agent_id);
+        const agentLlm = llmsResponse.find((llm: Llm) => llm.llm_id === agent.response_engine.llm_id);
 
         return {
           id: agent.agent_id,
           name: agent.agent_name,
-          type: agent.response_engine.type === 'retell-llm' ? 'Prompt Único' : 'Multi Prompt',
+          type: agentLlm?.states !== undefined ? 'Multi Prompt' : 'Prompt Único',
           voice: {
             name: voice ? voice.voice_name : agent.voice_id.replace('11labs-', ''),
             avatar: voice?.avatar_url || '/placeholder-user.jpg'
