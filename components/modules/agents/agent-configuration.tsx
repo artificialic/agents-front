@@ -9,6 +9,7 @@ import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronDown, Clock, Info, Settings } from 'lucide-react';
 import { apiService } from '@/services';
 import { SelectVoiceModal } from '@/components/modules/agents/select-voice-modal';
@@ -327,342 +328,352 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms, llm }: Age
   const selectedVoiceModel = VOICE_MODELS.find((model) => model.value === voiceConfig.model) || VOICE_MODELS[0];
 
   return (
-    <div className="bg-white-0 flex h-[calc(100vhx)] w-full flex-col overflow-y-auto rounded-lg p-4">
-      <div className="flex items-center gap-3">
-        <div className="flex-1">
-          <Select value={llmId}>
-            <SelectTrigger className="w-full">
-              <div className="flex items-center gap-2">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-foreground">
-                  <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" />
-                  <circle cx="8" cy="8" r="2" fill="currentColor" />
-                </svg>
-                <SelectValue />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {loadingLlms ? (
-                <SelectItem value="loading" disabled>
-                  Cargando...
-                </SelectItem>
-              ) : (
-                llms.map((llm) => (
-                  <SelectItem key={llm.llm_id} value={llm.llm_id}>
-                    {llm.model}
+    <ScrollArea className="h-[calc(100dvh-180px)] w-full">
+      <div className="bg-white-0 flex min-h-full w-full flex-col rounded-lg p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <Select value={llmId}>
+              <SelectTrigger className="w-full">
+                <div className="flex items-center gap-2">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-foreground">
+                    <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" />
+                    <circle cx="8" cy="8" r="2" fill="currentColor" />
+                  </svg>
+                  <SelectValue />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {loadingLlms ? (
+                  <SelectItem value="loading" disabled>
+                    Cargando...
                   </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex flex-1 items-center gap-2">
-          <button onClick={() => setShowVoiceModal(true)} className="flex-1">
-            <div className="flex cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 transition-colors hover:bg-accent hover:text-accent-foreground">
-              <div className="h-4 w-4 rounded-full bg-gradient-to-br from-orange-400 to-pink-500" />
-              <span className="text-sm">{selectedVoiceName}</span>
-            </div>
-          </button>
-
-          <Popover open={voicePopoverOpen} onOpenChange={setVoicePopoverOpen}>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="h-10 w-10 shrink-0">
-                <Settings className="h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80" align="end">
-              <div className="space-y-4">
-                <div className="space-y-3">
-                  <h4 className="text-sm font-medium">Modelo de Voz</h4>
-                  <div className="space-y-2">
-                    {VOICE_MODELS.map((model) => (
-                      <label key={model.value} className="flex cursor-pointer items-start gap-3">
-                        <div className="mt-0.5 flex items-center gap-2">
-                          <div
-                            className={`flex h-4 w-4 items-center justify-center rounded-full border-2 ${
-                              voiceConfig.model === model.value ? 'border-primary bg-primary' : 'border-border'
-                            }`}
-                          >
-                            {voiceConfig.model === model.value && (
-                              <div className="h-2 w-2 rounded-full bg-primary-foreground" />
-                            )}
-                          </div>
-                        </div>
-                        <div
-                          className="flex-1"
-                          onClick={() => setVoiceConfig((prev) => ({ ...prev, model: model.value }))}
-                        >
-                          <div className="text-sm font-medium">{model.label}</div>
-                          <div className="text-xs text-muted-foreground">{model.description}</div>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">Velocidad de Voz</Label>
-                    <span className="text-sm text-muted-foreground">{voiceConfig.speed[0].toFixed(2)}</span>
-                  </div>
-                  <Slider
-                    value={voiceConfig.speed}
-                    onValueChange={(value) => setVoiceConfig((prev) => ({ ...prev, speed: value }))}
-                    min={0.25}
-                    max={4.0}
-                    step={0.25}
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">Temperatura de Voz</Label>
-                    <span className="text-sm text-muted-foreground">{voiceConfig.temperature[0].toFixed(2)}</span>
-                  </div>
-                  <Slider
-                    value={voiceConfig.temperature}
-                    onValueChange={(value) => setVoiceConfig((prev) => ({ ...prev, temperature: value }))}
-                    min={0.0}
-                    max={2.0}
-                    step={0.1}
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">Volumen de Voz</Label>
-                    <span className="text-sm text-muted-foreground">{voiceConfig.volume[0].toFixed(2)}</span>
-                  </div>
-                  <Slider
-                    value={voiceConfig.volume}
-                    onValueChange={(value) => setVoiceConfig((prev) => ({ ...prev, volume: value }))}
-                    min={0.0}
-                    max={2.0}
-                    step={0.1}
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      handleVoiceRevert();
-                      setVoicePopoverOpen(false);
-                    }}
-                    disabled={savingVoice}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={async () => {
-                      await handleVoiceSave();
-                      setVoicePopoverOpen(false);
-                    }}
-                    disabled={savingVoice}
-                  >
-                    {savingVoice ? 'Guardando...' : 'Guardar'}
-                  </Button>
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        <div className="flex-1">
-          <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
-            <SelectTrigger className="w-full">
-              <div className="flex items-center gap-2">
-                {selectedLang.flag}
-                <SelectValue />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {LANGUAGES.map((lang) => (
-                <SelectItem key={lang.value} value={lang.value}>
-                  <div className="flex w-full items-center gap-2">
-                    <div className="text-sm font-normal">{lang.label}</div>
-                    {lang.region && <div className="text-xs text-muted-foreground">{lang.region}</div>}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="relative space-y-2">
-        <Label htmlFor="prompt" className="text-sm font-normal text-muted-foreground">
-          Escribe un prompt universal para tu agente, como su rol, estilo conversacional, objetivo, etc.
-        </Label>
-        <Textarea
-          id="prompt"
-          placeholder="Ingresa el prompt de tu agente..."
-          value={loading ? 'Cargando...' : formData.prompt}
-          onChange={(e) => setFormData((prev) => ({ ...prev, prompt: e.target.value }))}
-          disabled={loading}
-          className="mt-2 h-[40vh] min-h-[300px] resize-y pb-[40px] font-mono text-sm"
-        />
-        {hasChanges && (
-          <div className="absolute bottom-4 left-4 flex gap-2">
-            <Button onClick={handleSave} disabled={saving} size="sm">
-              {saving ? 'Guardando...' : 'Guardar'}
-            </Button>
-            <Button onClick={handleRevert} variant="outline" size="sm" disabled={saving}>
-              Revertir
-            </Button>
+                ) : (
+                  llms.map((llm) => (
+                    <SelectItem key={llm.llm_id} value={llm.llm_id}>
+                      {llm.model}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           </div>
-        )}
-      </div>
 
-      <div className="space-y-4 border-t border-border pt-4">
-        <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium">Mensaje de Bienvenida</Label>
-          <Button variant="ghost" size="sm" className="h-auto p-0 text-xs text-muted-foreground">
-            <Info className="mr-1 h-3 w-3" />
-            Pausa Antes de Hablar: 0s
-            <ChevronDown className="ml-1 h-3 w-3" />
-          </Button>
-        </div>
+          <div className="flex flex-1 items-center gap-2">
+            <button onClick={() => setShowVoiceModal(true)} className="flex-1">
+              <div className="flex cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-3 py-2 transition-colors hover:bg-accent hover:text-accent-foreground">
+                <div className="h-4 w-4 rounded-full bg-gradient-to-br from-orange-400 to-pink-500" />
+                <span className="text-sm">{selectedVoiceName}</span>
+              </div>
+            </button>
 
-        <div className="space-y-3">
-          <Select value={activeOption} onValueChange={handleWelcomeOptionChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue>{activeOption === 'user-first' ? 'Usuario habla primero' : 'IA habla primero'}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="user-first">Usuario habla primero</SelectItem>
-              <SelectItem value="ai-first">IA habla primero</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {activeOption === 'user-first' && (
-            <>
-              <div className="flex items-center justify-between py-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">IA comienza a hablar después del silencio</span>
-                  <Info className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="flex items-center gap-2">
-                  {isSilenceSwitchOn && (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-auto p-0 text-xs text-muted-foreground">
-                          <Clock className="mr-1 h-3 w-3" />
-                          Tiempo de Silencio: {(formData.silenceTime[0] / 1000).toFixed(0)}s
-                          <ChevronDown className="ml-1 h-3 w-3" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-96">
-                        <div className="space-y-4">
-                          <div>
-                            <h4 className="mb-1 text-sm font-medium">Tiempo de Espera de Entrada de IA</h4>
-                            <p className="text-xs text-muted-foreground">
-                              Tiempo de espera antes de que el asistente comience a hablar si el usuario permanece en
-                              silencio.
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <Slider
-                              value={formData.silenceTime}
-                              onValueChange={(value) => setFormData((prev) => ({ ...prev, silenceTime: value }))}
-                              onValueCommit={handleSilenceTimeCommit}
-                              min={1000}
-                              max={30000}
-                              step={100}
-                              className="flex-1"
-                            />
-                            <div className="w-12 text-right text-sm text-muted-foreground">
-                              {(formData.silenceTime[0] / 1000).toFixed(1)} s
+            <Popover open={voicePopoverOpen} onOpenChange={setVoicePopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="icon" className="h-10 w-10 shrink-0">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80" align="end">
+                <div className="space-y-4">
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium">Modelo de Voz</h4>
+                    <div className="space-y-2">
+                      {VOICE_MODELS.map((model) => (
+                        <label key={model.value} className="flex cursor-pointer items-start gap-3">
+                          <div className="mt-0.5 flex items-center gap-2">
+                            <div
+                              className={`flex h-4 w-4 items-center justify-center rounded-full border-2 ${
+                                voiceConfig.model === model.value ? 'border-primary bg-primary' : 'border-border'
+                              }`}
+                            >
+                              {voiceConfig.model === model.value && (
+                                <div className="h-2 w-2 rounded-full bg-primary-foreground" />
+                              )}
                             </div>
                           </div>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                  <Switch checked={isSilenceSwitchOn} onCheckedChange={handleSilenceSwitchChange} />
-                </div>
-              </div>
-
-              {isSilenceSwitchOn && (
-                <>
-                  <Select value={silenceMessageType} onValueChange={handleSilenceMessageTypeChange}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue>
-                        {silenceMessageType === 'dynamic' ? 'Mensaje dinámico basado en el prompt' : 'Mensaje estático'}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="static">Mensaje estático</SelectItem>
-                      <SelectItem value="dynamic">Mensaje dinámico basado en el prompt</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  {silenceMessageType === 'static' && (
-                    <div className="pt-2">
-                      <Textarea
-                        value={formData.staticMessage}
-                        onChange={(e) => setFormData((prev) => ({ ...prev, staticMessage: e.target.value }))}
-                        onBlur={handleStaticMessageBlur}
-                        placeholder="Ingresa mensaje estático..."
-                        className="min-h-[60px] resize-none text-sm"
-                      />
+                          <div
+                            className="flex-1"
+                            onClick={() => setVoiceConfig((prev) => ({ ...prev, model: model.value }))}
+                          >
+                            <div className="text-sm font-medium">{model.label}</div>
+                            <div className="text-xs text-muted-foreground">{model.description}</div>
+                          </div>
+                        </label>
+                      ))}
                     </div>
-                  )}
-                </>
-              )}
-            </>
-          )}
+                  </div>
 
-          {activeOption === 'ai-first' && (
-            <>
-              <Select value={aiMessageType} onValueChange={handleAiMessageTypeChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue>
-                    {aiMessageType === 'dynamic' ? 'Mensaje dinámico' : 'Mensaje personalizado'}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="dynamic">Mensaje dinámico</SelectItem>
-                  <SelectItem value="custom">Mensaje personalizado</SelectItem>
-                </SelectContent>
-              </Select>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">Velocidad de Voz</Label>
+                      <span className="text-sm text-muted-foreground">{voiceConfig.speed[0].toFixed(2)}</span>
+                    </div>
+                    <Slider
+                      value={voiceConfig.speed}
+                      onValueChange={(value) => setVoiceConfig((prev) => ({ ...prev, speed: value }))}
+                      min={0.25}
+                      max={4.0}
+                      step={0.25}
+                      className="w-full"
+                    />
+                  </div>
 
-              {aiMessageType === 'custom' && (
-                <div className="pt-2">
-                  <Textarea
-                    value={formData.customMessage}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, customMessage: e.target.value }))}
-                    onBlur={handleCustomMessageBlur}
-                    placeholder="Ingresa mensaje de bienvenida personalizado..."
-                    className="min-h-[60px] resize-none text-sm"
-                  />
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">Temperatura de Voz</Label>
+                      <span className="text-sm text-muted-foreground">{voiceConfig.temperature[0].toFixed(2)}</span>
+                    </div>
+                    <Slider
+                      value={voiceConfig.temperature}
+                      onValueChange={(value) => setVoiceConfig((prev) => ({ ...prev, temperature: value }))}
+                      min={0.0}
+                      max={2.0}
+                      step={0.1}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">Volumen de Voz</Label>
+                      <span className="text-sm text-muted-foreground">{voiceConfig.volume[0].toFixed(2)}</span>
+                    </div>
+                    <Slider
+                      value={voiceConfig.volume}
+                      onValueChange={(value) => setVoiceConfig((prev) => ({ ...prev, volume: value }))}
+                      min={0.0}
+                      max={2.0}
+                      step={0.1}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        handleVoiceRevert();
+                        setVoicePopoverOpen(false);
+                      }}
+                      disabled={savingVoice}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={async () => {
+                        await handleVoiceSave();
+                        setVoicePopoverOpen(false);
+                      }}
+                      disabled={savingVoice}
+                    >
+                      {savingVoice ? 'Guardando...' : 'Guardar'}
+                    </Button>
+                  </div>
                 </div>
-              )}
-            </>
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div className="flex-1">
+            <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
+              <SelectTrigger className="w-full">
+                <div className="flex items-center gap-2">
+                  {selectedLang.flag}
+                  <SelectValue />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {LANGUAGES.map((lang) => (
+                  <SelectItem key={lang.value} value={lang.value}>
+                    <div className="flex w-full items-center gap-2">
+                      <div className="text-sm font-normal">{lang.label}</div>
+                      {lang.region && <div className="text-xs text-muted-foreground">{lang.region}</div>}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="relative space-y-2">
+          <Label htmlFor="prompt" className="text-sm font-normal text-muted-foreground">
+            Escribe un prompt universal para tu agente, como su rol, estilo conversacional, objetivo, etc.
+          </Label>
+          <Textarea
+            id="prompt"
+            placeholder="Ingresa el prompt de tu agente..."
+            value={loading ? 'Cargando...' : formData.prompt}
+            onChange={(e) => setFormData((prev) => ({ ...prev, prompt: e.target.value }))}
+            disabled={loading}
+            className="mt-2 h-[40vh] min-h-[300px] resize-y pb-[40px] font-mono text-sm"
+          />
+          {hasChanges && (
+            <div className="absolute bottom-4 left-4 flex gap-2">
+              <Button onClick={handleSave} disabled={saving} size="sm">
+                {saving ? 'Guardando...' : 'Guardar'}
+              </Button>
+              <Button onClick={handleRevert} variant="outline" size="sm" disabled={saving}>
+                Revertir
+              </Button>
+            </div>
           )}
         </div>
-      </div>
 
-      {llm?.states && llm.states.length > 0 && (
-        <div className="space-y-2">
-          <Label className="mt-4 text-sm font-medium">Árbol de Prompts Multi-Estado</Label>
-          <PromptTreePreview onEdit={handleEditPromptTree} llm={llm} />
+        <div className="space-y-4 border-t border-border pt-4">
+          <div className="flex items-center justify-between">
+            <Label className="text-sm font-medium">Mensaje de Bienvenida</Label>
+            <Button variant="ghost" size="sm" className="h-auto p-0 text-xs text-muted-foreground">
+              <Info className="mr-1 h-3 w-3" />
+              Pausa Antes de Hablar: 0s
+              <ChevronDown className="ml-1 h-3 w-3" />
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            <Select value={activeOption} onValueChange={handleWelcomeOptionChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue>
+                  {activeOption === 'user-first' ? 'Usuario habla primero' : 'IA habla primero'}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="user-first">Usuario habla primero</SelectItem>
+                <SelectItem value="ai-first">IA habla primero</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {activeOption === 'user-first' && (
+              <>
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">IA comienza a hablar después del silencio</span>
+                    <Info className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {isSilenceSwitchOn && (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-auto p-0 text-xs text-muted-foreground">
+                            <Clock className="mr-1 h-3 w-3" />
+                            Tiempo de Silencio: {(formData.silenceTime[0] / 1000).toFixed(0)}s
+                            <ChevronDown className="ml-1 h-3 w-3" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-96">
+                          <div className="space-y-4">
+                            <div>
+                              <h4 className="mb-1 text-sm font-medium">Tiempo de Espera de Entrada de IA</h4>
+                              <p className="text-xs text-muted-foreground">
+                                Tiempo de espera antes de que el asistente comience a hablar si el usuario permanece en
+                                silencio.
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <Slider
+                                value={formData.silenceTime}
+                                onValueChange={(value) => setFormData((prev) => ({ ...prev, silenceTime: value }))}
+                                onValueCommit={handleSilenceTimeCommit}
+                                min={1000}
+                                max={30000}
+                                step={100}
+                                className="flex-1"
+                              />
+                              <div className="w-12 text-right text-sm text-muted-foreground">
+                                {(formData.silenceTime[0] / 1000).toFixed(1)} s
+                              </div>
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    )}
+                    <Switch checked={isSilenceSwitchOn} onCheckedChange={handleSilenceSwitchChange} />
+                  </div>
+                </div>
+
+                {isSilenceSwitchOn && (
+                  <>
+                    <Select value={silenceMessageType} onValueChange={handleSilenceMessageTypeChange}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue>
+                          {silenceMessageType === 'dynamic'
+                            ? 'Mensaje dinámico basado en el prompt'
+                            : 'Mensaje estático'}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="static">Mensaje estático</SelectItem>
+                        <SelectItem value="dynamic">Mensaje dinámico basado en el prompt</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    {silenceMessageType === 'static' && (
+                      <div className="pt-2">
+                        <Textarea
+                          value={formData.staticMessage}
+                          onChange={(e) => setFormData((prev) => ({ ...prev, staticMessage: e.target.value }))}
+                          onBlur={handleStaticMessageBlur}
+                          placeholder="Ingresa mensaje estático..."
+                          className="min-h-[60px] resize-none text-sm"
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+
+            {activeOption === 'ai-first' && (
+              <>
+                <Select value={aiMessageType} onValueChange={handleAiMessageTypeChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue>
+                      {aiMessageType === 'dynamic' ? 'Mensaje dinámico' : 'Mensaje personalizado'}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="dynamic">Mensaje dinámico</SelectItem>
+                    <SelectItem value="custom">Mensaje personalizado</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {aiMessageType === 'custom' && (
+                  <div className="pt-2">
+                    <Textarea
+                      value={formData.customMessage}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, customMessage: e.target.value }))}
+                      onBlur={handleCustomMessageBlur}
+                      placeholder="Ingresa mensaje de bienvenida personalizado..."
+                      className="min-h-[60px] resize-none text-sm"
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
-      )}
-      
-      <SelectVoiceModal
-        open={showVoiceModal}
-        onOpenChange={setShowVoiceModal}
-        currentVoiceId={selectedVoiceId}
-        onSelectVoice={handleVoiceSelect}
-      />
 
-      <FlowEditorModal open={flowEditorOpen} onOpenChange={setFlowEditorOpen} llm={llm} onSave={handleSaveFlowStates} />
-    </div>
+        {llm?.states && llm.states.length > 0 && (
+          <div className="space-y-2">
+            <Label className="mt-4 text-sm font-medium">Árbol de Prompts Multi-Estado</Label>
+            <PromptTreePreview onEdit={handleEditPromptTree} llm={llm} />
+          </div>
+        )}
+        <SelectVoiceModal
+          open={showVoiceModal}
+          onOpenChange={setShowVoiceModal}
+          currentVoiceId={selectedVoiceId}
+          onSelectVoice={handleVoiceSelect}
+        />
+
+        <FlowEditorModal
+          open={flowEditorOpen}
+          onOpenChange={setFlowEditorOpen}
+          llm={llm}
+          onSave={handleSaveFlowStates}
+        />
+      </div>
+    </ScrollArea>
   );
 }
