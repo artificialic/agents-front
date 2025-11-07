@@ -71,7 +71,7 @@ type Call = {
   duration_ms: number;
   public_log_url: string;
   disconnection_reason: string;
-  latency: Record<string, unknown>;
+  latency: Record<string, CallLatency>;
   call_cost: {
     total_duration_unit_price: number;
     product_costs: any[];
@@ -94,6 +94,70 @@ type Call = {
 };
 
 //@TODO: merge types,  CallLog = Call?
+
+type CallLatency = {
+  e2e?: {
+    p50: number;
+    p90: number;
+    p95: number;
+    p99: number;
+    max: number;
+    min: number;
+    num: number;
+    values: number[];
+  };
+  llm?: {
+    p50: number;
+    p90: number;
+    p95: number;
+    p99: number;
+    max: number;
+    min: number;
+    num: number;
+    values: number[];
+  };
+  llm_websocket_network_rtt?: {
+    p50: number;
+    p90: number;
+    p95: number;
+    p99: number;
+    max: number;
+    min: number;
+    num: number;
+    values: number[];
+  };
+  tts?: {
+    p50: number;
+    p90: number;
+    p95: number;
+    p99: number;
+    max: number;
+    min: number;
+    num: number;
+    values: number[];
+  };
+  knowledge_base?: {
+    p50: number;
+    p90: number;
+    p95: number;
+    p99: number;
+    max: number;
+    min: number;
+    num: number;
+    values: number[];
+  };
+  s2s?: {
+    p50: number;
+    p90: number;
+    p95: number;
+    p99: number;
+    max: number;
+    min: number;
+    num: number;
+    values: number[];
+  };
+}
+
 type CallLog = {
   call_id: string;
   call_type: string;
@@ -127,68 +191,7 @@ type CallLog = {
   to_number?: string;
   direction?: string;
   batch_call_id?: string;
-  latency?: {
-    e2e?: {
-      p50: number;
-      p90: number;
-      p95: number;
-      p99: number;
-      max: number;
-      min: number;
-      num: number;
-      values: number[];
-    };
-    llm?: {
-      p50: number;
-      p90: number;
-      p95: number;
-      p99: number;
-      max: number;
-      min: number;
-      num: number;
-      values: number[];
-    };
-    llm_websocket_network_rtt?: {
-      p50: number;
-      p90: number;
-      p95: number;
-      p99: number;
-      max: number;
-      min: number;
-      num: number;
-      values: number[];
-    };
-    tts?: {
-      p50: number;
-      p90: number;
-      p95: number;
-      p99: number;
-      max: number;
-      min: number;
-      num: number;
-      values: number[];
-    };
-    knowledge_base?: {
-      p50: number;
-      p90: number;
-      p95: number;
-      p99: number;
-      max: number;
-      min: number;
-      num: number;
-      values: number[];
-    };
-    s2s?: {
-      p50: number;
-      p90: number;
-      p95: number;
-      p99: number;
-      max: number;
-      min: number;
-      num: number;
-      values: number[];
-    };
-  };
+  latency?: CallLatency;
   transcript?: string;
   transcript_object?: Array<{
     role: string;

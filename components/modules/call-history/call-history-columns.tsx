@@ -328,10 +328,10 @@ export const columns: ColumnDef<CallLog>[] = [
     minSize: 200,
     enableResizing: false,
     cell: ({ row }) => {
-      const latencyValue = row.original.latency?.e2e?.p50;
+      const latencyValue = row.original?.latency as CallLatency;
       return (
         <div className="min-w-32 whitespace-nowrap text-sm text-gray-900">
-          {latencyValue ? `${latencyValue}ms` : '-'}
+          {latencyValue ? `${latencyValue?.e2e?.p50}ms` : '-'}
         </div>
       );
     },
