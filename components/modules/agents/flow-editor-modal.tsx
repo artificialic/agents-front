@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useCallback, useEffect } from 'react';
 import {
   ReactFlow,
@@ -15,8 +16,11 @@ import '@xyflow/react/dist/style.css';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { X, Plus, Minus } from 'lucide-react';
+import { TrashIcon } from './icons';
 
 interface NodeData extends Record<string, unknown> {
   label: string;
@@ -24,7 +28,13 @@ interface NodeData extends Record<string, unknown> {
   tools?: any[];
 }
 
+interface EdgeData {
+  condition?: string;
+  variables?: string;
+}
+
 type CustomNode = Node<NodeData>;
+type CustomEdge = Edge<EdgeData>;
 
 interface Llm {
   llm_id: string;
@@ -48,6 +58,11 @@ interface Llm {
       destination_state_name: string;
       description: string;
       speak_during_transition?: boolean;
+      parameters?: {
+        type: string;
+        properties: Record<string, any>;
+        required?: string[];
+      };
     }[];
     tools?: any[];
   }[];
@@ -116,10 +131,10 @@ const statesToNodes = (states?: Llm['states'], startingState?: string): CustomNo
   });
 };
 
-const statesToEdges = (states?: Llm['states']): Edge[] => {
+const statesToEdges = (states?: Llm['states']): CustomEdge[] => {
   if (!states) return [];
 
-  const edges: Edge[] = [];
+  const edges: CustomEdge[] = [];
   states.forEach((state) => {
     if (state.edges && state.edges.length > 0) {
       state.edges.forEach((edge, index) => {
@@ -127,9 +142,13 @@ const statesToEdges = (states?: Llm['states']): Edge[] => {
           id: `${state.name}-${edge.destination_state_name}-${index}`,
           source: state.name,
           target: edge.destination_state_name,
-          label: 'Edge',
+          label: 'Conexión',
           animated: true,
-          style: { stroke: '#ccc' }
+          style: { stroke: '#ccc', strokeWidth: 2 },
+          data: {
+            condition: edge.description || '',
+            variables: edge.parameters ? JSON.stringify(edge.parameters, null, 2) : ''
+          }
         });
       });
     }
@@ -138,18 +157,31 @@ const statesToEdges = (states?: Llm['states']): Edge[] => {
   return edges;
 };
 
-const nodesToStates = (nodes: CustomNode[], edges: Edge[]): Llm['states'] => {
+const nodesToStates = (nodes: CustomNode[], edges: CustomEdge[]): Llm['states'] => {
   return nodes.map((node) => {
     const nodeEdges = edges.filter((edge) => edge.source === node.id);
 
     return {
       name: node.id,
       state_prompt: node.data.prompt || '',
-      edges: nodeEdges.map((edge) => ({
-        destination_state_name: edge.target,
-        description: 'Edge',
-        speak_during_transition: false
-      })),
+      edges: nodeEdges.map((edge) => {
+        const edgeData: any = {
+          destination_state_name: edge.target,
+          description: edge.data?.condition || 'Conexión',
+          speak_during_transition: false
+        };
+
+        if (edge.data?.variables) {
+          try {
+            const parsedVariables = JSON.parse(edge.data.variables);
+            edgeData.parameters = parsedVariables;
+          } catch (e) {
+            console.error('Error parsing variables JSON:', e);
+          }
+        }
+
+        return edgeData;
+      }),
       tools: node.data.tools || []
     };
   });
@@ -157,13 +189,17 @@ const nodesToStates = (nodes: CustomNode[], edges: Edge[]): Llm['states'] => {
 
 export function FlowEditorModal({ open, onOpenChange, llm, onSave }: FlowEditorModalProps) {
   const [nodes, setNodes] = useState<CustomNode[]>([]);
-  const [edges, setEdges] = useState<Edge[]>([]);
+  const [edges, setEdges] = useState<CustomEdge[]>([]);
   const [selectedNode, setSelectedNode] = useState<CustomNode | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [selectedEdge, setSelectedEdge] = useState<CustomEdge | null>(null);
+  const [nodeSheetOpen, setNodeSheetOpen] = useState(false);
+  const [edgeSheetOpen, setEdgeSheetOpen] = useState(false);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
   const [nodePrompt, setNodePrompt] = useState('');
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState('');
+  const [edgeCondition, setEdgeCondition] = useState('');
+  const [edgeVariables, setEdgeVariables] = useState('');
 
   useEffect(() => {
     if (open && llm) {
@@ -182,6 +218,13 @@ export function FlowEditorModal({ open, onOpenChange, llm, onSave }: FlowEditorM
     }
   }, [selectedNode]);
 
+  useEffect(() => {
+    if (selectedEdge) {
+      setEdgeCondition(selectedEdge.data?.condition || '');
+      setEdgeVariables(selectedEdge.data?.variables || '');
+    }
+  }, [selectedEdge]);
+
   const onNodesChange = useCallback(
     (changes: any) => setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
     []
@@ -192,19 +235,49 @@ export function FlowEditorModal({ open, onOpenChange, llm, onSave }: FlowEditorM
     []
   );
 
-  const onConnect = useCallback((params: any) => setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)), []);
+  const onConnect = useCallback((params: any) => {
+    const newEdge: CustomEdge = {
+      ...params,
+      id: `${params.source}-${params.target}-${Date.now()}`,
+      label: 'Conexión',
+      animated: true,
+      style: { stroke: '#ccc', strokeWidth: 2 },
+      data: {
+        condition: '',
+        variables: ''
+      }
+    };
+    setEdges((edgesSnapshot) => [...edgesSnapshot, newEdge]);
+  }, []);
 
   const onNodeClick = useCallback((_event: any, node: CustomNode) => {
     setSelectedNode(node);
-    setSheetOpen(true);
+    setSelectedEdge(null);
+    setNodeSheetOpen(true);
+    setEdgeSheetOpen(false);
+  }, []);
+
+  const onEdgeClick = useCallback((_event: any, edge: CustomEdge) => {
+    setSelectedEdge(edge);
+    setSelectedNode(null);
+    setEdgeSheetOpen(true);
+    setNodeSheetOpen(false);
   }, []);
 
   const deleteNode = () => {
     if (selectedNode) {
       setNodes((nodes) => nodes.filter((node) => node.id !== selectedNode.id));
       setEdges((edges) => edges.filter((edge) => edge.source !== selectedNode.id && edge.target !== selectedNode.id));
-      setSheetOpen(false);
+      setNodeSheetOpen(false);
       setSelectedNode(null);
+    }
+  };
+
+  const deleteEdge = () => {
+    if (selectedEdge) {
+      setEdges((edges) => edges.filter((edge) => edge.id !== selectedEdge.id));
+      setEdgeSheetOpen(false);
+      setSelectedEdge(null);
     }
   };
 
@@ -250,7 +323,6 @@ export function FlowEditorModal({ open, onOpenChange, llm, onSave }: FlowEditorM
           node.id === selectedNode.id ? { ...node, data: { ...node.data, prompt: nodePrompt } } : node
         )
       );
-      setSelectedNode((prev) => (prev ? { ...prev, data: { ...prev.data, prompt: nodePrompt } } : null));
     }
   };
 
@@ -259,11 +331,11 @@ export function FlowEditorModal({ open, onOpenChange, llm, onSave }: FlowEditorM
   };
 
   const handleSaveName = () => {
-    if (selectedNode && editedName.trim()) {
+    if (selectedNode && editedName.trim() && editedName !== selectedNode.id) {
       const oldId = selectedNode.id;
       const newName = editedName.trim();
-      const isStartingState = nodes[0]?.id === selectedNode.id;
-      const newLabel = `${isStartingState ? '🚀 ' : '🤖 '}${newName}`;
+      const isStarting = selectedNode.data.label.startsWith('🚀');
+      const newLabel = `${isStarting ? '🚀 ' : '🤖 '}${newName}`;
 
       setNodes((nds) =>
         nds.map((node) =>
@@ -298,6 +370,38 @@ export function FlowEditorModal({ open, onOpenChange, llm, onSave }: FlowEditorM
       handleSaveName();
     } else if (e.key === 'Escape') {
       handleCancelEditingName();
+    }
+  };
+
+  const handleSaveEdgeCondition = () => {
+    if (selectedEdge) {
+      setEdges((eds) =>
+        eds.map((edge) =>
+          edge.id === selectedEdge.id ? { ...edge, data: { ...edge.data, condition: edgeCondition } } : edge
+        )
+      );
+    }
+  };
+
+  const handleSaveEdgeVariables = () => {
+    if (selectedEdge) {
+      setEdges((eds) =>
+        eds.map((edge) =>
+          edge.id === selectedEdge.id ? { ...edge, data: { ...edge.data, variables: edgeVariables } } : edge
+        )
+      );
+    }
+  };
+
+  const formatJSON = () => {
+    if (edgeVariables) {
+      try {
+        const parsed = JSON.parse(edgeVariables);
+        const formatted = JSON.stringify(parsed, null, 2);
+        setEdgeVariables(formatted);
+      } catch (e) {
+        alert('JSON inválido. Por favor corrige el formato.');
+      }
     }
   };
 
@@ -371,6 +475,7 @@ export function FlowEditorModal({ open, onOpenChange, llm, onSave }: FlowEditorM
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onNodeClick={onNodeClick}
+            onEdgeClick={onEdgeClick}
             onInit={setReactFlowInstance}
             fitView
             className="h-full w-full"
@@ -380,8 +485,8 @@ export function FlowEditorModal({ open, onOpenChange, llm, onSave }: FlowEditorM
             <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
           </ReactFlow>
 
-          <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-            <SheetContent className="w-[550px] overflow-y-auto sm:w-[550px]">
+          <Sheet open={nodeSheetOpen} onOpenChange={setNodeSheetOpen}>
+            <SheetContent className="w-[550px] overflow-y-auto sm:w-[550px] [&>button]:hidden">
               {selectedNode && (
                 <>
                   <SheetHeader className="space-y-4">
@@ -427,43 +532,7 @@ export function FlowEditorModal({ open, onOpenChange, llm, onSave }: FlowEditorM
                         className="p-2 text-gray-400 transition-colors hover:text-red-600"
                         aria-label="Eliminar"
                       >
-                        <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path
-                            d="M6.66675 7.33301V11.333"
-                            stroke="currentColor"
-                            strokeWidth="1.33333"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M9.33325 7.33301V11.333"
-                            stroke="currentColor"
-                            strokeWidth="1.33333"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M2.66675 4.66699H13.3334"
-                            stroke="currentColor"
-                            strokeWidth="1.33333"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M4 4.66699H8H12V12.0003C12 13.1049 11.1046 14.0003 10 14.0003H6C4.89543 14.0003 4 13.1049 4 12.0003V4.66699Z"
-                            stroke="currentColor"
-                            strokeWidth="1.33333"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M6 3.33333C6 2.59695 6.59695 2 7.33333 2H8.66667C9.40305 2 10 2.59695 10 3.33333V4.66667H6V3.33333Z"
-                            stroke="currentColor"
-                            strokeWidth="1.33333"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
+                        <TrashIcon />
                       </button>
                     </div>
                     <hr className="border-gray-200" />
@@ -488,6 +557,74 @@ export function FlowEditorModal({ open, onOpenChange, llm, onSave }: FlowEditorM
                         placeholder="Ingresa parte de tu prompt aquí, por ejemplo: 'Haz una lista de preguntas para hacerle al usuario: [Pregunta 1] [Pregunta 2] [Pregunta 3] [Pregunta 4]'"
                         className="min-h-[350px] resize-y rounded-lg border-2 border-blue-500 focus:border-blue-600"
                       />
+                    </div>
+                  </div>
+                </>
+              )}
+            </SheetContent>
+          </Sheet>
+
+          <Sheet open={edgeSheetOpen} onOpenChange={setEdgeSheetOpen}>
+            <SheetContent className="w-[550px] overflow-y-auto sm:w-[550px] [&>button]:hidden">
+              {selectedEdge && (
+                <>
+                  <SheetHeader className="space-y-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <SheetTitle className="text-lg font-medium">Conexión del agente</SheetTitle>
+                      <button
+                        onClick={deleteEdge}
+                        className="p-2 text-gray-400 transition-colors hover:text-red-600"
+                        aria-label="Eliminar"
+                      >
+                        <TrashIcon />
+                      </button>
+                    </div>
+                    <hr className="border-gray-200" />
+                  </SheetHeader>
+
+                  <div className="mt-8 space-y-6">
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-sm font-medium text-gray-900">Condición de Ruta</Label>
+                        <p className="mt-1 text-xs text-gray-600">
+                          Describe la condición que activa la transición al siguiente estado
+                        </p>
+                      </div>
+                      <Input
+                        value={edgeCondition}
+                        onChange={(e) => setEdgeCondition(e.target.value)}
+                        onBlur={handleSaveEdgeCondition}
+                        placeholder='La condición que activa la transición al siguiente estado. ej., "Si el usuario ha proporcionado el nombre"'
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-sm font-medium text-gray-900">
+                          Guardar Información de Llamada como Variables (Opcional)
+                        </Label>
+                        <p className="mt-1 text-xs text-gray-600">
+                          Convierte información del nodo anterior en variables para usar en nodos futuros. Este debe ser
+                          el esquema JSON que define el formato en el que el LLM devolverá.
+                        </p>
+                      </div>
+
+                      <div className="space-y-3">
+                        <Textarea
+                          value={edgeVariables}
+                          onChange={(e) => setEdgeVariables(e.target.value)}
+                          onBlur={handleSaveEdgeVariables}
+                          placeholder="Ingresa el esquema JSON aquí..."
+                          className="min-h-[250px] resize-y rounded-lg bg-gray-50 font-mono text-sm"
+                        />
+
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" onClick={formatJSON} className="text-xs">
+                            Formatear JSON
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </>

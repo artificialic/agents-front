@@ -143,6 +143,10 @@ class ApiServiceLocal extends ApiService {
     return this.getFullResponse<Llm[]>(`/retell/llms`);
   }
 
+  async createLlm(llmData: CreateRetellLLMRequest): Promise<Llm> {
+    return this.post<Llm>('/retell/llm', llmData);
+  }
+
   async updateLlm(llmId: string, data: Partial<Llm>): Promise<Agent> {
     return this.patch<Llm>(`/retell/llm/${llmId}`, data);
   }
