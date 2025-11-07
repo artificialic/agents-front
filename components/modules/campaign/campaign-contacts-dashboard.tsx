@@ -27,6 +27,7 @@ import { applyCostMultiplier } from '@/utils';
 import { formatDate } from '@/lib/utils';
 import { DataTable } from '@/components/data-table';
 import { createCampaignContactsColumns } from '@/components/modules/campaign/campaign-contacts-columns';
+import CampaignReportDashboard from '@/components/modules/campaign/campaign-report-dashboard';
 
 interface CampaignContactsDashboardProps {
   campaign: Campaign | null;
@@ -228,6 +229,7 @@ export default function CampaignContactsDashboard({
             </div>
           </div>
           <div className="flex items-center space-x-3">
+            <CampaignReportDashboard contacts={contacts || []} campaignName={campaign?.name || 'Campaña'} />
             <Button onClick={handleEditCampaign} variant="outline" size="sm" disabled={!campaign}>
               <Pencil className="mr-2 h-4 w-4" />
               Editar Campaña
