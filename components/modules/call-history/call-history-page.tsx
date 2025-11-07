@@ -60,6 +60,7 @@ export default function CallHistoryPage({ batchId, multiplier, onBack, incomingC
   const [availableAgents, setAvailableAgents] = useState<Agent[]>([]);
   const [loadingAgents, setLoadingAgents] = useState(false);
   const [agentsError, setAgentsError] = useState<string | null>(null);
+  const [dispositionsOptions, setDispositionsOptions] = useState<{ value: string; label: string }[]>([]);
 
   useEffect(() => {
     fetchAgents();
@@ -102,12 +103,20 @@ export default function CallHistoryPage({ batchId, multiplier, onBack, incomingC
 
   const createDynamicColumns = (data: CallLog[]) => {
     const customFieldsSet = new Set<string>();
+    const dispositionSet = new Set<string>();
 
     data.forEach((call) => {
       if (call.call_analysis?.custom_analysis_data) {
         Object.keys(call.call_analysis.custom_analysis_data).forEach((key) => {
-          customFieldsSet.add(key);
+          if (key !== 'tipificaciones') {
+            customFieldsSet.add(key);
+          }
         });
+
+        const disposition = call.call_analysis.custom_analysis_data.tipificaciones;
+        if (disposition && typeof disposition === 'string') {
+          dispositionSet.add(disposition);
+        }
       }
     });
 
@@ -121,7 +130,12 @@ export default function CallHistoryPage({ batchId, multiplier, onBack, incomingC
       }
     }));
 
+    const dispositionOptionsArray = Array.from(dispositionSet)
+      .sort()
+      .map((disp) => ({ value: disp, label: disp }));
+
     setDynamicColumns(newDynamicColumns);
+    setDispositionsOptions(dispositionOptionsArray);
   };
 
   const fetchCallLogs = async (filterCriteria?: any, paginationKey?: string) => {
@@ -390,17 +404,37 @@ export default function CallHistoryPage({ batchId, multiplier, onBack, incomingC
     }
   };
 
-  const enhancedColumns = [...columns, ...dynamicColumns].map((column) => ({
-    ...column,
-    cell: (props: any) => {
-      const originalCell = column.cell ? column.cell(props) : null;
-      return (
-        <div className="cursor-pointer" onClick={() => handleRowClick(props.row.original)}>
-          {originalCell}
-        </div>
-      );
+  const enhancedColumns = [...columns, ...dynamicColumns].map((column) => {
+    if (column.id === 'disposition' && dispositionsOptions.length > 0) {
+      return {
+        ...column,
+        meta: {
+          ...column.meta,
+          options: dispositionsOptions
+        },
+        cell: (props: any) => {
+          const originalCell = column.cell ? column.cell(props) : null;
+          return (
+            <div className="cursor-pointer" onClick={() => handleRowClick(props.row.original)}>
+              {originalCell}
+            </div>
+          );
+        }
+      };
     }
-  }));
+
+    return {
+      ...column,
+      cell: (props: any) => {
+        const originalCell = column.cell ? column.cell(props) : null;
+        return (
+          <div className="cursor-pointer" onClick={() => handleRowClick(props.row.original)}>
+            {originalCell}
+          </div>
+        );
+      }
+    };
+  });
 
   const SkeletonRow = () => (
     <div className="border-b border-gray-200 hover:bg-gray-50">
@@ -484,33 +518,6 @@ export default function CallHistoryPage({ batchId, multiplier, onBack, incomingC
             </div>
           </div>
           <div className="flex items-center space-x-3"></div>
-        </div>
-      </div>
-
-      <div className="border-b border-gray-200 bg-gray-50 px-6 py-4">
-        <div className="flex flex-wrap items-center space-x-4">
-          <DateRangePicker value={dateRange} onChange={handleDateRangeChange} />
-
-          {batchId && (
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-gray-700">ID de Llamada en Lote</span>
-              <div className="flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800">
-                <span className="max-w-48 truncate">{batchId}</span>
-                <Button variant="ghost" size="sm" className="ml-2 h-4 w-4 p-0" onClick={removeBatchFilter}>
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-          )}
-
-          <CallHistoryFilters
-            onFilterSelect={handleFilterSelect}
-            hideTypeFilter={incomingCallsFilter}
-            availableAgents={availableAgents}
-            loadingAgents={loadingAgents}
-            agentsError={agentsError}
-            onRetryAgents={fetchAgents}
-          />
         </div>
       </div>
 

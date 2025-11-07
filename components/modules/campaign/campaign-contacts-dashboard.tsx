@@ -27,6 +27,7 @@ import { applyCostMultiplier } from '@/utils';
 import { formatDate } from '@/lib/utils';
 import { DataTable } from '@/components/data-table';
 import { createCampaignContactsColumns } from '@/components/modules/campaign/campaign-contacts-columns';
+import CampaignReportDashboard from '@/components/modules/campaign/campaign-report-dashboard';
 
 interface CampaignContactsDashboardProps {
   campaign: Campaign | null;
@@ -48,6 +49,7 @@ interface ContactByCampaign {
   toNumber: string;
   status: string;
   callStatus?: string;
+  disposition?: string;
   cost?: number;
   createdAt: string;
   updatedAt: string;
@@ -206,7 +208,7 @@ export default function CampaignContactsDashboard({
   }
 
 
-  const columns = createCampaignContactsColumns({ dynamicFields, handleViewContact, loadingCall });
+  const columns = createCampaignContactsColumns({ dynamicFields, handleViewContact, loadingCall, contacts: contacts || [] });
 
   return (
     <div className="min-h-screen flex flex-col w-full bg-white">
@@ -227,6 +229,7 @@ export default function CampaignContactsDashboard({
             </div>
           </div>
           <div className="flex items-center space-x-3">
+            <CampaignReportDashboard contacts={contacts || []} campaignName={campaign?.name || 'Campaña'} />
             <Button onClick={handleEditCampaign} variant="outline" size="sm" disabled={!campaign}>
               <Pencil className="mr-2 h-4 w-4" />
               Editar Campaña

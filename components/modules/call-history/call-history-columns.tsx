@@ -1,9 +1,10 @@
 import type { ColumnDef, FilterFn } from '@tanstack/react-table';
 import { Copy } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
-
 import { DataTableColumnHeader } from '@/components/data-table-column-header';
 import { callStatusColorMap, disconnectionReasonColorMap, sentimentColorMap, translatedStatus } from '@/utils';
+
+export type CallLog = Call;
 
 export const fuzzyFilter: FilterFn<any> = (row, columnId, value) => {
   const itemValue = String(row.getValue(columnId)).toLowerCase();
@@ -21,6 +22,33 @@ export const dateRangeFilterFn: FilterFn<any> = (row, columnId, filterValue: Dat
   if (!from && to) return date <= to;
   if (from && to) return date >= from && date <= to;
   return true;
+};
+
+export const durationRangeFilterFn: FilterFn<any> = (row, columnId, filterValue: { type: string; value?: number; min?: number; max?: number }) => {
+  const duration = row.getValue(columnId) as number;
+
+  if (!filterValue || !filterValue.type) {
+    return true;
+  }
+
+  switch (filterValue.type) {
+    case 'greaterThan':
+      return duration > (filterValue.value || 0);
+    case 'greaterThanOrEqualTo':
+      return duration >= (filterValue.value || 0);
+    case 'lessThan':
+      return duration < (filterValue.value || 0);
+    case 'lessThanOrEqualTo':
+      return duration <= (filterValue.value || 0);
+    case 'equalTo':
+      return duration === (filterValue.value || 0);
+    case 'between':
+      const min = filterValue.min || 0;
+      const max = filterValue.max || 0;
+      return duration >= min && duration <= max;
+    default:
+      return true;
+  }
 };
 
 const formatTime = (timestamp: number) => {
@@ -104,6 +132,10 @@ export const columns: ColumnDef<CallLog>[] = [
         {formatDuration(row.getValue('duration_ms'))}
       </div>
     ),
+    meta: {
+      filterVariant: 'durationRange' as any
+    },
+    filterFn: durationRangeFilterFn,
   },
   {
     accessorKey: 'call_type',
@@ -266,6 +298,27 @@ export const columns: ColumnDef<CallLog>[] = [
       const outcome = row.original.call_analysis?.call_successful ? 'Successful' : 'Unsuccessful';
       return outcome === value;
     },
+  },
+  {
+    id: 'disposition',
+    accessorKey: 'call_analysis.custom_analysis_data.tipificaciones',
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Tipificación" />,
+    size: 180,
+    minSize: 180,
+    enableResizing: false,
+    cell: ({ row }) => {
+      const disposition = row.original.call_analysis?.custom_analysis_data?.tipificaciones;
+      return (
+        <div className="min-w-32 whitespace-nowrap text-sm text-gray-900">
+          {disposition as string || '-'}
+        </div>
+      );
+    },
+    meta: {
+      filterVariant: 'select',
+      options: []
+    },
+    filterFn: (row, columnId, value) => !value || row.original.call_analysis?.custom_analysis_data?.tipificaciones === value,
   },
   {
     id: 'latency',

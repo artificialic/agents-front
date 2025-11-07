@@ -78,10 +78,25 @@ interface CampaignContactsColumnsProps {
   dynamicFields: string[];
   handleViewContact: (contact: ContactByCampaign) => Promise<void>;
   loadingCall: boolean;
+  contacts: ContactByCampaign[];
 }
 
-export const createCampaignContactsColumns = ({ dynamicFields, handleViewContact, loadingCall }: CampaignContactsColumnsProps): ColumnDef<ContactByCampaign>[] => {
+export const createCampaignContactsColumns = ({ dynamicFields, handleViewContact, loadingCall, contacts }: CampaignContactsColumnsProps): ColumnDef<ContactByCampaign>[] => {
   const getMultiplier = useUserStore.getState().getMultiplier;
+
+  const getUniqueValuesForField = (fieldName: string) => {
+    const values = new Set<string>();
+    contacts.forEach((contact) => {
+      const value = contact.callAnalysis?.custom_analysis_data?.[fieldName];
+      if (value) {
+        values.add(String(value));
+      }
+    });
+    return Array.from(values).sort().map(value => ({
+      value: value,
+      label: value
+    }));
+  };
 
   const columns: ColumnDef<ContactByCampaign>[] = [
     {
@@ -181,17 +196,23 @@ export const createCampaignContactsColumns = ({ dynamicFields, handleViewContact
     },
   ];
 
-  // Añadir columnas dinámicas
   dynamicFields.forEach((fieldName) => {
     columns.splice(columns.length - 1, 0, {
       accessorKey: `callAnalysis.custom_analysis_data.${fieldName}`,
       header: ({ column }) => <DataTableColumnHeader column={column} title={fieldName} />,
       cell: ({ row }) => {
         const value = row.original.callAnalysis?.custom_analysis_data?.[fieldName];
-        return <span className="text-sm text-gray-900">{String(value) || '-'}</span>;
+        return value ? <span className="text-sm text-gray-900">{String(value)}</span> : <span className="text-sm text-gray-400">-</span>;
       },
-      meta: { filterVariant: 'text' },
-      filterFn: fuzzyFilter,
+      meta: {
+        filterVariant: 'select',
+        options: getUniqueValuesForField(fieldName)
+      },
+      filterFn: (row, columnId, value) => {
+        if (!value) return true;
+        const fieldValue = row.original.callAnalysis?.custom_analysis_data?.[fieldName];
+        return String(fieldValue) === value;
+      },
     });
   });
 
