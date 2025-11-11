@@ -97,7 +97,7 @@ export function CallSettings({ agent, onAgentUpdate }: CallSettingsProps) {
       } else {
         const text =
           voicemailMessage ||
-          'Hey {{user_name}}, sorry we could not reach you directly. Please give us a callback if you can.';
+          'Hola {{user_name}}, disculpa no pudimos comunicarnos contigo directamente. Por favor devuélvenos la llamada si puedes.';
         await apiService.updateAgent(agent.agent_id, { voicemail_option: { action: { type: 'prompt', text } } });
         setVoicemailMessage(text);
         setOriginalVoicemailMessage(text);
@@ -113,7 +113,7 @@ export function CallSettings({ agent, onAgentUpdate }: CallSettingsProps) {
       const type = value === 'prompt' ? 'prompt' : 'static_text';
       const text =
         voicemailMessage ||
-        'Hey {{user_name}}, sorry we could not reach you directly. Please give us a callback if you can.';
+        'Hola {{user_name}}, disculpa no pudimos comunicarnos contigo directamente. Por favor devuélvenos la llamada si puedes.';
       await apiService.updateAgent(agent.agent_id, {
         voicemail_option: { action: { type, text } }
       });

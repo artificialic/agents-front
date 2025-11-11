@@ -5,6 +5,7 @@ import Header from '@/components/layout/header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import type { Viewport } from 'next';
 import { cookies } from 'next/headers';
+import { Toaster } from '@/components/ui/sonner';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -27,6 +28,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
           {/* page main content ends */}
         </SidebarInset>
+        <Toaster position="top-right" />
       </SidebarProvider>
     </KBar>
   );

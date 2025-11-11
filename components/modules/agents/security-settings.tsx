@@ -215,7 +215,7 @@ export function SecuritySettings({ llm, agent, onAgentUpdate, onLlmUpdate }: Sec
         </div>
       </div>
 
-      <div className="space-y-3">
+{/*      <div className="space-y-3">
         <div className="space-y-1">
           <div className="text-sm font-medium">ID de Voz de Respaldo</div>
           <p className="text-xs text-muted-foreground">
@@ -225,7 +225,7 @@ export function SecuritySettings({ llm, agent, onAgentUpdate, onLlmUpdate }: Sec
         <Button variant="outline" size="sm" className="gap-2">
           + Agregar
         </Button>
-      </div>
+      </div>*/}
 
       <div className="space-y-3">
         <div className="space-y-1">

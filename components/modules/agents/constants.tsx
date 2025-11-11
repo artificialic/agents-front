@@ -1,8 +1,8 @@
 export const LANGUAGES = [
   {
     value: 'en-US',
-    label: 'English',
-    region: '(US)',
+    label: 'Inglés',
+    region: '(EE. UU.)',
     flag: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g clipPath="url(#clip0_1967_23473)">
@@ -38,7 +38,7 @@ export const LANGUAGES = [
   },
   {
     value: 'multilingual',
-    label: 'Multilingual',
+    label: 'Multilingüe',
     region: null,
     flag: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -87,8 +87,8 @@ export const LANGUAGES = [
   },
   {
     value: 'es-ES',
-    label: 'Spanish',
-    region: '(Spain)',
+    label: 'Español',
+    region: '(España)',
     flag: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g clipPath="url(#clip0_1967_38390)">
@@ -115,8 +115,8 @@ export const LANGUAGES = [
   },
   {
     value: 'es-419',
-    label: 'Spanish',
-    region: '(Latin America)',
+    label: 'Español',
+    region: '(Latinoamérica)',
     flag: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g clipPath="url(#clip0_1967_23572)">

@@ -654,7 +654,7 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms, llm }: Age
           </div>
         </div>
 
-        {llm?.states && llm.states.length > 0 && (
+        {llm?.states && Array.isArray(llm.states) > 0 && (
           <div className="space-y-2">
             <Label className="mt-4 text-sm font-medium">Árbol de Prompts Multi-Estado</Label>
             <PromptTreePreview onEdit={handleEditPromptTree} llm={llm} />

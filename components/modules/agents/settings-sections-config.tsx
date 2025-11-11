@@ -1,23 +1,23 @@
 export const settingsSections = [
-  // {
-  //   id: 'functions',
-  //   label: 'Funciones',
-  //   icon: (
-  //     <svg
-  //       xmlns="http://www.w3.org/2000/svg"
-  //       width="16"
-  //       height="16"
-  //       viewBox="0 0 20 20"
-  //       fill="none"
-  //       className="text-muted-foreground"
-  //     >
-  //       <path
-  //         d="M3.25 3.25H9.25V9.25H3.25V3.25ZM3.25 10.75H9.25V16.75H3.25V10.75ZM10.75 3.25H16.75V9.25H10.75V3.25ZM10.75 10.75H16.75V16.75H10.75V10.75ZM12.25 4.75V7.75H15.25V4.75H12.25ZM12.25 12.25V15.25H15.25V12.25H12.25ZM4.75 4.75V7.75H7.75V4.75H4.75ZM4.75 12.25V15.25H7.75V12.25H4.75Z"
-  //         fill="currentColor"
-  //       />
-  //     </svg>
-  //   )
-  // },
+  {
+    id: 'functions',
+    label: 'Funciones',
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 20 20"
+        fill="none"
+        className="text-muted-foreground"
+      >
+        <path
+          d="M3.25 3.25H9.25V9.25H3.25V3.25ZM3.25 10.75H9.25V16.75H3.25V10.75ZM10.75 3.25H16.75V9.25H10.75V3.25ZM10.75 10.75H16.75V16.75H10.75V10.75ZM12.25 4.75V7.75H15.25V4.75H12.25ZM12.25 12.25V15.25H15.25V12.25H12.25ZM4.75 4.75V7.75H7.75V4.75H4.75ZM4.75 12.25V15.25H7.75V12.25H4.75Z"
+          fill="currentColor"
+        />
+      </svg>
+    )
+  },
   {
     id: 'knowledge',
     label: 'Base de Conocimiento',
@@ -150,7 +150,7 @@ export const settingsSections = [
         />
       </svg>
     )
-  },
+  }
   // {
   //   id: 'mcps',
   //   label: 'MCPs',

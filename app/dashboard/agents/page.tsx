@@ -36,13 +36,9 @@ export default function AgentsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [llms, setLlms] = useState<Llm[]>([]);
-  const [voices, setVoices] = useState<Voice[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [agentToDelete, setAgentToDelete] = useState<{ id: string; name: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
-
-  const defaultVoiceId = '11labs-Cimo';
 
   useEffect(() => {
     fetchData();
@@ -101,8 +97,6 @@ export default function AgentsPage() {
       });
 
       setAgents(mappedAgents);
-      setLlms(Array.from(llmMap.values()));
-      setVoices(voicesResponse || []);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -114,8 +108,45 @@ export default function AgentsPage() {
     router.push(`/dashboard/agents/${agentId}`);
   };
 
-  const handleCreateSuccess = () => {
-    fetchData();
+  const handleCreateAgent = async (data: { agentType: string; agentName: string }) => {
+    try {
+      const llmPayload: any = {
+        begin_message: '',
+        general_tools: [
+          {
+            type: 'end_call',
+            name: 'end_call',
+            description:
+              'Finaliza la llamada cuando el usuario tenga que irse (como dice adiós) o se te indique que lo hagas.'
+          }
+        ],
+        model: 'gpt-4.1'
+      };
+
+      if (data.agentType === 'multi-prompt') {
+        llmPayload.states = [];
+      }
+
+      const llm = await apiService.createLlm(llmPayload);
+
+      await apiService.createAgent({
+        agent_name: data.agentName,
+        voice_id: '11labs-Cimo',
+        interruption_sensitivity: 0.9,
+        response_engine: {
+          type: 'retell-llm',
+          llm_id: llm.llm_id
+        },
+        normalize_for_speech: true,
+        denoising_mode: 'noise-and-background-speech-cancellation',
+        stt_mode: 'accurate'
+      });
+
+      setIsCreateModalOpen(false);
+      fetchData();
+    } catch (error) {
+      console.error('Error creating agent:', error);
+    }
   };
 
   const handleDeleteClick = (agentId: string, agentName: string) => {
@@ -172,11 +203,8 @@ export default function AgentsPage() {
       <CreateAgentModal
         open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
-        onSuccess={handleCreateSuccess}
-        llms={llms}
-        voices={voices}
+        onCreate={handleCreateAgent}
         loading={loading}
-        defaultVoiceId={defaultVoiceId}
       />
 
       <CustomAlertDialog

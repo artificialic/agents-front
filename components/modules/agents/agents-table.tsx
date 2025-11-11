@@ -117,9 +117,6 @@ export function AgentsTable({ agents, loading, onAgentClick, onDeleteClick }: Ag
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-40">
-                    <DropdownMenuItem className="text-sm">Editar</DropdownMenuItem>
-                    <DropdownMenuItem className="text-sm">Duplicar</DropdownMenuItem>
-                    <DropdownMenuItem className="text-sm">Ver Análisis</DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-sm text-destructive"
                       onClick={(e) => {

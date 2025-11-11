@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/u
 import { Loader2 } from 'lucide-react';
 import { FIELD_TYPE_ICONS } from '@/components/modules/agents/constants';
 import { apiService } from '@/services';
+import { toast } from 'sonner';
 
 interface PostCallAnalysisProps {
   agent: Agent;
@@ -59,7 +60,7 @@ export function PostCallAnalysis({ agent, onAgentUpdate, llms, loadingLlms }: Po
     setEditingField(field);
     setFieldName(field.name);
 
-    const uiType = field.type === 'enum' ? 'selector' : field.type;
+    const uiType = field.type === 'enum' ? 'array' : field.type;
     setFieldType(uiType);
 
     setDescription(fullField?.description || '');
@@ -119,20 +120,24 @@ export function PostCallAnalysis({ agent, onAgentUpdate, llms, loadingLlms }: Po
       const fieldData: any = {
         name: fieldName,
         description: description,
-        type: fieldType === 'selector' ? 'enum' : fieldType
+        type: fieldType === 'array' ? 'enum' : fieldType
       };
 
       if (fieldType === 'boolean' || fieldType === 'number') {
         fieldData.required = !isOptional;
       } else {
         const nonEmptyExamples = formatExamples.filter((ex) => ex.trim() !== '');
-        if (nonEmptyExamples.length > 0) {
-          if (fieldType === 'selector') {
-            fieldData.choices = nonEmptyExamples;
-            fieldData.required = !isOptional;
-          } else {
-            fieldData.examples = nonEmptyExamples;
+        if (fieldType === 'array') {
+          if (nonEmptyExamples.length === 0) {
+            toast.error('Debes agregar al menos una opción');
+            return;
           }
+          fieldData.choices = nonEmptyExamples;
+          if (!isOptional) {
+            fieldData.required = true;
+          }
+        } else if (nonEmptyExamples.length > 0) {
+          fieldData.examples = nonEmptyExamples;
         }
       }
 
@@ -321,8 +326,8 @@ export function PostCallAnalysis({ agent, onAgentUpdate, llms, loadingLlms }: Po
               <span>
                 {fieldType === 'string'
                   ? 'Texto'
-                  : fieldType === 'selector'
-                  ? 'Selector'
+                  : fieldType === 'array'
+                  ? 'Lista'
                   : fieldType === 'boolean'
                   ? 'Sí/No'
                   : fieldType === 'number'
@@ -363,13 +368,13 @@ export function PostCallAnalysis({ agent, onAgentUpdate, llms, loadingLlms }: Po
 
             {fieldType !== 'boolean' && fieldType !== 'number' && (
               <div className="space-y-2">
-                <Label>{fieldType === 'selector' ? 'Opciones' : 'Ejemplo de Formato (Opcional)'}</Label>
+                <Label>{fieldType === 'array' ? 'Opciones' : 'Ejemplo de Formato (Opcional)'}</Label>
                 {formatExamples.map((example, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <Input
                       value={example}
                       onChange={(e) => handleUpdateFormatExample(index, e.target.value)}
-                      placeholder={fieldType === 'selector' ? 'Opción...' : 'Ejemplo de formato...'}
+                      placeholder={fieldType === 'array' ? 'Opción...' : 'Ejemplo de formato...'}
                     />
                     <Button
                       variant="ghost"

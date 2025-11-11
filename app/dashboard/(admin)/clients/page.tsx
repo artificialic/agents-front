@@ -117,7 +117,7 @@ export default function Clients() {
           workspaceId: formData.workspaceId,
           ...(formData.billingConfig ? { billingConfig: formData.billingConfig } : {})
         };
-        const updatedClient = await apiService.updateClient(editingClient._id, updateData);
+        await apiService.updateClient(editingClient._id, updateData);
 
         toast({
           title: 'Éxito',
