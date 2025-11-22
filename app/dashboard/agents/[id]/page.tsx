@@ -192,6 +192,7 @@ export default function AgentConfigPage() {
             llms={llms}
             loadingLlms={loadingLlms}
             llm={llm}
+            onLlmUpdate={refreshLlm}
           />
         </div>
         <div className="w-4/12">

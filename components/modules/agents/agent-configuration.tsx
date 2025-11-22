@@ -23,6 +23,7 @@ interface AgentConfigurationProps {
   llms: Llm[];
   loadingLlms: boolean;
   llm: Llm | null;
+  onLlmUpdate: () => Promise<void>;
 }
 
 const VOICE_MODELS = [
@@ -43,12 +44,13 @@ const VOICE_MODELS = [
   }
 ];
 
-export function AgentConfiguration({ agent, llmId, llms, loadingLlms, llm }: AgentConfigurationProps) {
+export function AgentConfiguration({ agent, llmId, llms, loadingLlms, llm, onLlmUpdate }: AgentConfigurationProps) {
   const [formData, setFormData] = useState({
     prompt: '',
     customMessage: '',
     staticMessage: '',
-    silenceTime: [10000]
+    silenceTime: [10000],
+    pauseBeforeSpeak: [0]
   });
   const [originalData, setOriginalData] = useState({
     prompt: '',
@@ -94,12 +96,14 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms, llm }: Age
         const llmPrompt = llm.general_prompt || '';
         const beginMessage = llm.begin_message || '';
         const silenceMs = llm.begin_after_user_silence_ms || 10000;
+        const pauseMs = agent.begin_message_delay_ms || 0;
 
         setFormData({
           prompt: llmPrompt,
           customMessage: beginMessage,
           staticMessage: beginMessage,
-          silenceTime: [silenceMs]
+          silenceTime: [silenceMs],
+          pauseBeforeSpeak: [pauseMs]
         });
         setOriginalData({
           prompt: llmPrompt,
@@ -216,7 +220,7 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms, llm }: Age
       const response = await apiService.getLlm(llmId);
       const beginMessage = response.begin_message || '';
 
-      setLlm(response);
+      await onLlmUpdate();
       setFormData((prev) => ({
         ...prev,
         customMessage: beginMessage,
@@ -246,15 +250,15 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms, llm }: Age
 
   const handleSilenceSwitchChange = async (checked: boolean) => {
     try {
+      const newSilenceTime = checked ? 10000 : null;
       const updates = {
-        begin_after_user_silence_ms: checked ? 10000 : null
+        begin_after_user_silence_ms: newSilenceTime
       };
       await apiService.updateLlm(llmId, updates);
-      const response = await apiService.getLlm(llmId);
-      setLlm(response);
+      await onLlmUpdate();
       setFormData((prev) => ({
         ...prev,
-        silenceTime: [response.begin_after_user_silence_ms || 10000]
+        silenceTime: [newSilenceTime || 10000]
       }));
     } catch (error) {
       console.error('Error updating silence setting:', error);
@@ -264,10 +268,17 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms, llm }: Age
   const handleSilenceTimeCommit = async (value: number[]) => {
     try {
       await apiService.updateLlm(llmId, { begin_after_user_silence_ms: value[0] });
-      const response = await apiService.getLlm(llmId);
-      setLlm(response);
+      await onLlmUpdate();
     } catch (error) {
       console.error('Error updating silence time:', error);
+    }
+  };
+
+  const handlePauseBeforeSpeakCommit = async (value: number[]) => {
+    try {
+      await apiService.updateAgent(agent.agent_id, { begin_message_delay_ms: value[0] });
+    } catch (error) {
+      console.error('Error updating pause before speaking:', error);
     }
   };
 
@@ -312,8 +323,7 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms, llm }: Age
         starting_state: updatedLlm.starting_state,
         last_modification_timestamp: updatedLlm.last_modification_timestamp
       });
-      const response = await apiService.getLlm(llmId);
-      setLlm(response);
+      await onLlmUpdate();
     } catch (error) {
       console.error('Error updating LLM states:', error);
     }
@@ -524,11 +534,39 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms, llm }: Age
         <div className="space-y-4 border-t border-border pt-4">
           <div className="flex items-center justify-between">
             <Label className="text-sm font-medium">Mensaje de Bienvenida</Label>
-            <Button variant="ghost" size="sm" className="h-auto p-0 text-xs text-muted-foreground">
-              <Info className="mr-1 h-3 w-3" />
-              Pausa Antes de Hablar: 0s
-              <ChevronDown className="ml-1 h-3 w-3" />
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-auto p-0 text-xs text-muted-foreground">
+                  <Info className="mr-1 h-3 w-3" />
+                  Pausa Antes de Hablar: {(formData.pauseBeforeSpeak[0] / 1000).toFixed(1)}s
+                  <ChevronDown className="ml-1 h-3 w-3" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-96">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="mb-1 text-sm font-medium">Pausa Antes de Hablar</h4>
+                    <p className="text-xs text-muted-foreground">
+                      La duración antes de que el asistente comience a hablar al inicio de la llamada.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Slider
+                      value={formData.pauseBeforeSpeak}
+                      onValueChange={(value) => setFormData((prev) => ({ ...prev, pauseBeforeSpeak: value }))}
+                      onValueCommit={handlePauseBeforeSpeakCommit}
+                      min={0}
+                      max={5000}
+                      step={100}
+                      className="flex-1"
+                    />
+                    <div className="w-12 text-right text-sm text-muted-foreground">
+                      {(formData.pauseBeforeSpeak[0] / 1000).toFixed(1)} s
+                    </div>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="space-y-3">

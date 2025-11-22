@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { disconnectionReasonColorMap, sentimentColorMap, translatedStatus } from '@/utils';
 import React from 'react';
 import { formatDuration, formatDurationMs, formatTime, formatTimestamp } from '@/utils/date-utils';
+import { FIELD_TYPE_ICONS } from '@/components/modules/agents/constants';
 
 interface CallDetailSheetProps {
   call: CallLog | null;
@@ -100,6 +101,79 @@ function AnalysisRow({ icon, label, value, type }: AnalysisRowProps) {
   );
 }
 
+interface KeyValueDisplayProps {
+  data: Record<string, any> | Record<string, any>[];
+  emptyMessage?: string;
+}
+
+function KeyValueDisplay({ data, emptyMessage }: KeyValueDisplayProps) {
+  const dataArray = Array.isArray(data) ? data : [data];
+  const hasData = dataArray.some((d) => d && Object.keys(d).length > 0);
+
+  return (
+    <div className="flex h-auto w-full flex-col gap-2.5 rounded-lg bg-gray-50 p-3">
+      {hasData ? (
+        <div className="flex flex-col gap-4">
+          {dataArray.map(
+            (dataObj, idx) =>
+              dataObj &&
+              Object.entries(dataObj).map(([key, value]) => (
+                <div key={`${idx}-${key}`}>
+                  <div className="text-sm font-normal leading-tight text-gray-950">{key}</div>
+                  <div className="text-sm font-normal leading-tight text-gray-400">{String(value)}</div>
+                </div>
+              ))
+          )}
+        </div>
+      ) : emptyMessage ? (
+        <div className="text-sm font-normal leading-tight text-gray-400">{emptyMessage}</div>
+      ) : null}
+    </div>
+  );
+}
+
+interface CustomAnalysisDisplayProps {
+  data: Record<string, any>;
+}
+
+function CustomAnalysisDisplay({ data }: CustomAnalysisDisplayProps) {
+  if (!data || Object.keys(data).length === 0) {
+    return <div className="text-sm text-gray-500">No hay datos disponibles</div>;
+  }
+
+  const formatValue = (value: any): string => {
+    if (value === null || value === undefined) return '-';
+    if (typeof value === 'boolean') return value ? 'Sí' : 'No';
+    if (typeof value === 'number') return value.toLocaleString('es-ES');
+    if (typeof value === 'object') return JSON.stringify(value);
+    return String(value);
+  };
+
+  const getIcon = (value: any) => {
+    if (typeof value === 'boolean') {
+      return FIELD_TYPE_ICONS['boolean'];
+    } else if (typeof value === 'number') {
+      return FIELD_TYPE_ICONS['number'];
+    } else {
+      return FIELD_TYPE_ICONS['string'];
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-3">
+      {Object.entries(data).map(([key, value]) => (
+        <div key={key} className="flex items-center gap-3">
+          <div className="flex-shrink-0">{getIcon(value)}</div>
+          <div className="flex min-w-0 flex-1 items-center justify-between">
+            <div className="text-sm font-normal leading-tight text-gray-950">{key}</div>
+            <div className="text-sm font-normal leading-tight text-gray-600">{formatValue(value)}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function CallDetailSheet({ call, open, onOpenChange }: CallDetailSheetProps) {
   if (!call) return null;
 
@@ -164,8 +238,8 @@ export default function CallDetailSheet({ call, open, onOpenChange }: CallDetail
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full overflow-y-auto p-2 sm:max-w-lg">
-        <div className="sticky top-8 mt-12 border-b bg-white pb-4 pt-2" style={{ zIndex: 10 }}>
+      <SheetContent className="w-full overflow-y-auto p-2 pt-12 sm:max-w-lg">
+        <div className="sticky top-0 border-b bg-white pb-4 pt-2" style={{ zIndex: 10 }}>
           <div className="flex w-full flex-col items-start justify-center bg-white py-1">
             <div className="w-full text-lg font-medium leading-normal text-gray-950">
               <div className="flex w-full flex-row justify-between">
@@ -257,6 +331,14 @@ export default function CallDetailSheet({ call, open, onOpenChange }: CallDetail
           )}
         </div>
 
+        {call.call_analysis?.custom_analysis_data &&
+          Object.keys(call.call_analysis.custom_analysis_data).length > 0 && (
+            <div className="border-b border-gray-300 p-4">
+              <div className="mb-3 text-sm font-medium leading-normal text-gray-950">Análisis Personalizado</div>
+              <CustomAnalysisDisplay data={call.call_analysis.custom_analysis_data} />
+            </div>
+          )}
+
         {call.recording_url && (
           <div className="border-b border-gray-300 p-4">
             <div className="mb-3 text-sm font-medium leading-normal text-gray-950">Grabación de Llamada</div>
@@ -345,27 +427,9 @@ export default function CallDetailSheet({ call, open, onOpenChange }: CallDetail
                     <div className="text-sm font-medium leading-tight text-gray-950">Variables Dinámicas</div>
                   </div>
 
-                  <div className="flex h-auto w-full flex-col gap-2.5 rounded-lg bg-gray-50 p-3">
-                    <div className="flex flex-col gap-4">
-                      {call.retell_llm_dynamic_variables && Object.keys(call.retell_llm_dynamic_variables).length > 0
-                        ? Object.entries(call.retell_llm_dynamic_variables).map(([key, value]) => (
-                            <div key={key}>
-                              <div className="text-sm font-normal leading-tight text-gray-950">{key}</div>
-                              <div className="text-sm font-normal leading-tight text-gray-400">{String(value)}</div>
-                            </div>
-                          ))
-                        : null}
-
-                      {call.collected_dynamic_variables &&
-                        Object.keys(call.collected_dynamic_variables).length > 0 &&
-                        Object.entries(call.collected_dynamic_variables).map(([key, value]) => (
-                          <div key={key}>
-                            <div className="text-sm font-normal leading-tight text-gray-950">{key}</div>
-                            <div className="text-sm font-normal leading-tight text-gray-400">{String(value)}</div>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
+                  <KeyValueDisplay
+                    data={[call.retell_llm_dynamic_variables, call.collected_dynamic_variables].filter(Boolean)}
+                  />
                 </div>
 
                 <div className="inline-flex flex-col items-start justify-center gap-3 bg-white px-4 py-3">
@@ -383,20 +447,7 @@ export default function CallDetailSheet({ call, open, onOpenChange }: CallDetail
                     <div className="text-sm font-medium leading-tight text-gray-950">Metadatos</div>
                   </div>
 
-                  <div className="flex h-auto w-full flex-col gap-2.5 rounded-lg bg-gray-50 p-3">
-                    {call.metadata && Object.keys(call.metadata).length > 0 ? (
-                      <div className="flex flex-col gap-4">
-                        {Object.entries(call.metadata).map(([key, value]) => (
-                          <div key={key}>
-                            <div className="text-sm font-normal leading-tight text-gray-950">{key}</div>
-                            <div className="text-sm font-normal leading-tight text-gray-400">{String(value)}</div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-sm font-normal leading-tight text-gray-400">No hay metadatos</div>
-                    )}
-                  </div>
+                  <KeyValueDisplay data={call.metadata || {}} emptyMessage="No hay metadatos" />
                 </div>
               </div>
             </TabsContent>

@@ -129,7 +129,7 @@ export default function AgentsPage() {
 
       const llm = await apiService.createLlm(llmPayload);
 
-      await apiService.createAgent({
+      const newAgent = await apiService.createAgent({
         agent_name: data.agentName,
         voice_id: '11labs-Cimo',
         interruption_sensitivity: 0.9,
@@ -139,11 +139,16 @@ export default function AgentsPage() {
         },
         normalize_for_speech: true,
         denoising_mode: 'noise-and-background-speech-cancellation',
-        stt_mode: 'accurate'
+        stt_mode: 'accurate',
+        voicemail_option: {
+          action: {
+            type: 'hangup'
+          }
+        }
       });
 
       setIsCreateModalOpen(false);
-      fetchData();
+      router.push(`/dashboard/agents/${newAgent.agent_id}`);
     } catch (error) {
       console.error('Error creating agent:', error);
     }
