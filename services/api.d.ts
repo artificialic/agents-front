@@ -395,6 +395,7 @@ interface Agent {
   language?: string;
   version: number;
   is_published?: boolean;
+  channel?: string;
 
   // Response Engine
   response_engine: {

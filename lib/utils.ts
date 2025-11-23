@@ -5,15 +5,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-interface Agent {
-  agent_id: string;
-  version: number;
-  agent_name: string;
-  is_published: boolean;
-  last_modification_timestamp: number;
-  language: string;
-  channel: string;
-}
 /**
  * Groups data by agent_id and returns the latest version of each agent
  * @param {Array} agents - Array of objects with agent information
