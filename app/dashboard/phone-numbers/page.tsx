@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CustomAlertDialog } from '@/components/custom-alert-dialog';
+import { getLatestVersionByAgent } from '@/lib/utils';
 
 interface AgentLocal {
   id: string;
@@ -95,16 +96,9 @@ export default function PhoneNumbersManagement() {
     try {
       setLoadingAgents(true);
       const response = await apiService.getAgents();
+      const latestAgents = getLatestVersionByAgent(response || []);
 
-      const agentMap = new Map<string, Agent>();
-      response.forEach((agent: Agent) => {
-        const existing = agentMap.get(agent.agent_id);
-        if (!existing || agent.version > existing.version) {
-          agentMap.set(agent.agent_id, agent);
-        }
-      });
-
-      const mappedAgents: AgentLocal[] = Array.from(agentMap.values()).map((agent: Agent) => ({
+      const mappedAgents: AgentLocal[] = latestAgents.map((agent: Agent) => ({
         id: agent.agent_id,
         name: agent.agent_name,
         version: agent.version

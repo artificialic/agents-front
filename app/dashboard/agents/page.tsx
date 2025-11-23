@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { apiService } from '@/services';
 import { CreateAgentModal } from '@/components/modules/agents/create-agent-modal';
 import { CustomAlertDialog } from '@/components/custom-alert-dialog';
+import { getLatestVersionByAgent } from '@/lib/utils';
 
 interface AgentLocal {
   id: string;
@@ -55,13 +56,7 @@ export default function AgentsPage() {
         apiService.getLlms()
       ]);
 
-      const agentMap = new Map<string, Agent>();
-      agentsResponse.forEach((agent: Agent) => {
-        const existing = agentMap.get(agent.agent_id);
-        if (!existing || agent.version > existing.version) {
-          agentMap.set(agent.agent_id, agent);
-        }
-      });
+      const latestAgents = getLatestVersionByAgent(agentsResponse || []);
 
       const llmMap = new Map<string, Llm>();
       llmsResponse.forEach((llm: Llm) => {
@@ -71,7 +66,7 @@ export default function AgentsPage() {
         }
       });
 
-      const mappedAgents: AgentLocal[] = Array.from(agentMap.values()).map((agent: Agent) => {
+      const mappedAgents: AgentLocal[] = latestAgents.map((agent: Agent) => {
         const voice = voicesResponse.find((v: Voice) => v.voice_id === agent.voice_id);
         const phoneNumber = phoneNumbersResponse.find((p: any) => p.outbound_agent_id === agent.agent_id);
         const agentLlm = llmsResponse.find((llm: Llm) => llm.llm_id === agent.response_engine.llm_id);
