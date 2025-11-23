@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChevronLeft, Pencil, MoreHorizontal, RotateCcw, Copy } from 'lucide-react';
 import { apiService } from '@/services';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { copyToClipboard } from '@/utils';
 
@@ -16,9 +17,10 @@ interface AgentHeaderProps {
   llmId: string;
   onAgentUpdate: () => Promise<void>;
   onPublish: () => Promise<void>;
+  onVersionChange?: (version: number) => Promise<void>;
 }
 
-export function AgentHeader({ agent, agentId, llmId, onAgentUpdate, onPublish }: AgentHeaderProps) {
+export function AgentHeader({ agent, agentId, llmId, onAgentUpdate, onPublish, onVersionChange }: AgentHeaderProps) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(agent.agent_name || '');
@@ -26,6 +28,29 @@ export function AgentHeader({ agent, agentId, llmId, onAgentUpdate, onPublish }:
   const [versionName, setVersionName] = useState('');
   const [inboundPhone, setInboundPhone] = useState(false);
   const [outboundPhone, setOutboundPhone] = useState(false);
+  const [versions, setVersions] = useState<Agent[]>([]);
+  const [selectedVersion, setSelectedVersion] = useState<number>(agent.version);
+  const [loadingVersions, setLoadingVersions] = useState(false);
+
+  useEffect(() => {
+    const fetchVersions = async () => {
+      try {
+        setLoadingVersions(true);
+        const versionsData = await apiService.getAgentVersions(agentId);
+        setVersions(versionsData.sort((a, b) => b.version - a.version));
+      } catch (error) {
+        console.error('Error fetching agent versions:', error);
+      } finally {
+        setLoadingVersions(false);
+      }
+    };
+
+    fetchVersions();
+  }, [agentId]);
+
+  useEffect(() => {
+    setSelectedVersion(agent.version);
+  }, [agent.version]);
 
   const handleNameClick = () => {
     setIsEditing(true);
@@ -80,6 +105,14 @@ export function AgentHeader({ agent, agentId, llmId, onAgentUpdate, onPublish }:
     setVersionName('');
     setInboundPhone(false);
     setOutboundPhone(false);
+  };
+
+  const handleVersionChange = async (value: string) => {
+    const version = parseInt(value);
+    setSelectedVersion(version);
+    if (onVersionChange) {
+      await onVersionChange(version);
+    }
   };
 
   return (
@@ -137,6 +170,20 @@ export function AgentHeader({ agent, agentId, llmId, onAgentUpdate, onPublish }:
             <Button variant="outline" size="icon" className="h-8 w-8">
               <RotateCcw className="h-4 w-4" />
             </Button>
+            {versions.length > 0 && (
+              <Select value={selectedVersion.toString()} onValueChange={handleVersionChange} disabled={loadingVersions}>
+                <SelectTrigger className="h-8 w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {versions.map((version) => (
+                    <SelectItem key={version.version} value={version.version.toString()}>
+                      {`Versión ${version.version}${version.is_published ? ' (Publicada)' : ''}`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <Button size="sm" className="bg-black text-white hover:bg-black/90" onClick={handlePublishClick}>
               Publicar
             </Button>

@@ -66,26 +66,40 @@ export default function AgentConfigPage() {
     fetchKnowledgeBases();
   }, []);
 
-  useEffect(() => {
-    const fetchAgent = async () => {
-      try {
-        const id = params.id as string;
-        const agentResponse = await apiService.getAgent(id);
-        setAgent(agentResponse);
+  const fetchAgent = async (version?: number) => {
+    try {
+      setLoading(true);
+      const id = params.id as string;
 
-        const llmResponse = await apiService.getLlm(agentResponse.response_engine.llm_id);
-        setLlm(llmResponse);
-
-        const savedVariables = await dynamicVariablesStorage.load(id);
-        setDynamicVariables(savedVariables);
-        await fetchWebhookUrl(id);
-      } catch (error) {
-        console.error('Error fetching agent:', error);
-      } finally {
-        setLoading(false);
+      let agentResponse: Agent;
+      if (version) {
+        const versions = await apiService.getAgentVersions(id);
+        const specificVersion = versions.find((v) => v.version === version);
+        if (specificVersion) {
+          agentResponse = specificVersion;
+        } else {
+          agentResponse = await apiService.getAgent(id);
+        }
+      } else {
+        agentResponse = await apiService.getAgent(id);
       }
-    };
 
+      setAgent(agentResponse);
+
+      const llmResponse = await apiService.getLlm(agentResponse.response_engine.llm_id);
+      setLlm(llmResponse);
+
+      const savedVariables = await dynamicVariablesStorage.load(id);
+      setDynamicVariables(savedVariables);
+      await fetchWebhookUrl(id);
+    } catch (error) {
+      console.error('Error fetching agent:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (params.id) {
       fetchAgent();
     }
@@ -124,6 +138,10 @@ export default function AgentConfigPage() {
     } catch (error) {
       console.error('Error refreshing agent:', error);
     }
+  };
+
+  const handleVersionChange = async (version: number) => {
+    await fetchAgent(version);
   };
 
   const refreshLlm = async () => {
@@ -211,6 +229,7 @@ export default function AgentConfigPage() {
         llmId={agent.response_engine.llm_id}
         onAgentUpdate={refreshAgent}
         onPublish={handlePublish}
+        onVersionChange={handleVersionChange}
       />
       <div className="flex h-full w-full flex-row gap-2">
         <div className="h-full w-8/12 overflow-y-auto">

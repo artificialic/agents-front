@@ -115,6 +115,10 @@ class ApiServiceLocal extends ApiService {
     return this.getFullResponse<Agent>(`/retell/agents/${agentId}`);
   }
 
+  async getAgentVersions(agentId: string): Promise<Agent[]> {
+    return this.getFullResponse<Agent[]>(`/retell/agents/${agentId}/versions`);
+  }
+
   async updateAgent(agentId: string, data: Partial<Agent>): Promise<Agent> {
     return this.patch<Agent>(`/retell/agents/${agentId}`, data);
   }
