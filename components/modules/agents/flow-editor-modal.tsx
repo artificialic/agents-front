@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { useState, useCallback, useEffect } from 'react';
+import { apiService } from '@/services';
 import {
   ReactFlow,
   MiniMap,
@@ -85,6 +86,7 @@ interface FlowEditorModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   llm: Llm | null;
+  agentId: string;
   onSave?: (updatedLlm: Llm) => void;
 }
 
@@ -187,7 +189,7 @@ const nodesToStates = (nodes: CustomNode[], edges: CustomEdge[]): Llm['states'] 
   });
 };
 
-export function FlowEditorModal({ open, onOpenChange, llm, onSave }: FlowEditorModalProps) {
+export function FlowEditorModal({ open, onOpenChange, llm, agentId, onSave }: FlowEditorModalProps) {
   const [nodes, setNodes] = useState<CustomNode[]>([]);
   const [edges, setEdges] = useState<CustomEdge[]>([]);
   const [selectedNode, setSelectedNode] = useState<CustomNode | null>(null);
@@ -203,12 +205,35 @@ export function FlowEditorModal({ open, onOpenChange, llm, onSave }: FlowEditorM
 
   useEffect(() => {
     if (open && llm) {
-      const initialNodes = statesToNodes(llm.states, llm.starting_state);
-      const initialEdges = statesToEdges(llm.states);
-      setNodes(initialNodes);
-      setEdges(initialEdges);
+      const loadFlowState = async () => {
+        try {
+          const flowState = await apiService.getAgentFlowState(agentId);
+
+          if (flowState && flowState.nodes && flowState.nodes.length > 0) {
+            setNodes(flowState.nodes);
+            setEdges(flowState.edges);
+
+            if (reactFlowInstance && flowState.viewport) {
+              reactFlowInstance.setViewport(flowState.viewport);
+            }
+          } else {
+            const initialNodes = statesToNodes(llm.states, llm.starting_state);
+            const initialEdges = statesToEdges(llm.states);
+            setNodes(initialNodes);
+            setEdges(initialEdges);
+          }
+        } catch (error) {
+          console.error('Error loading flow state:', error);
+          const initialNodes = statesToNodes(llm.states, llm.starting_state);
+          const initialEdges = statesToEdges(llm.states);
+          setNodes(initialNodes);
+          setEdges(initialEdges);
+        }
+      };
+
+      loadFlowState();
     }
-  }, [open, llm]);
+  }, [open, llm, agentId, reactFlowInstance]);
 
   useEffect(() => {
     if (selectedNode) {
@@ -405,7 +430,7 @@ export function FlowEditorModal({ open, onOpenChange, llm, onSave }: FlowEditorM
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!llm) return;
 
     const updatedStates = nodesToStates(nodes, edges);
@@ -419,6 +444,19 @@ export function FlowEditorModal({ open, onOpenChange, llm, onSave }: FlowEditorM
 
     if (onSave) {
       onSave(updatedLlm);
+    }
+
+    try {
+      const viewport = reactFlowInstance?.getViewport() || { x: 0, y: 0, zoom: 1 };
+      const flowState = {
+        nodes,
+        edges,
+        viewport
+      };
+
+      await apiService.saveAgentFlowState(agentId, flowState);
+    } catch (error) {
+      console.error('Error saving flow state:', error);
     }
 
     onOpenChange(false);

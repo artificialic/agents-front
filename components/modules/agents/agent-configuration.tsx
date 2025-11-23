@@ -709,6 +709,7 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms, llm, onLlm
           open={flowEditorOpen}
           onOpenChange={setFlowEditorOpen}
           llm={llm}
+          agentId={agent.agent_id}
           onSave={handleSaveFlowStates}
         />
       </div>

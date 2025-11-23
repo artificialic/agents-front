@@ -592,3 +592,13 @@ interface PhoneNumber {
   outbound_agent_version: number;
   inbound_webhook_url?: string | null;
 }
+
+interface FlowState {
+  nodes: any[];
+  edges: any[];
+  viewport: {
+    x: number;
+    y: number;
+    zoom: number;
+  };
+}
