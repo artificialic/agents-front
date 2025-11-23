@@ -37,7 +37,7 @@ interface Client {
 }
 
 // TODO: Define the Billing interface
-interface Billing {} 
+interface Billing {}
 
 type PaymentSourcePayload = {
   cardNumber: string;
@@ -156,7 +156,7 @@ type CallLatency = {
     num: number;
     values: number[];
   };
-}
+};
 
 type CallLog = {
   call_id: string;
@@ -383,6 +383,10 @@ interface Voice {
   gender: string;
   age: string;
   preview_audio_url: string;
+}
+
+interface AgentWebhookResponse {
+  webhook_url: string | null;
 }
 
 interface Agent {

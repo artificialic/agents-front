@@ -127,6 +127,14 @@ class ApiServiceLocal extends ApiService {
     return this.post(`/retell/agents/${agentId}/publish`, {});
   }
 
+  async getAgentWebhook(agentId: string): Promise<AgentWebhookResponse> {
+    return this.getFullResponse<AgentWebhookResponse>(`/retell/agents/${agentId}/webhook`);
+  }
+
+  async saveAgentWebhook(agentId: string, webhookUrl: string | null): Promise<any> {
+    return this.post(`/retell/agents/${agentId}/webhook`, { webhook_url: webhookUrl });
+  }
+
   async getCalls(data: any): Promise<ApiResponse<Call[]>> {
     return this.post('/retell/calls', data);
   }

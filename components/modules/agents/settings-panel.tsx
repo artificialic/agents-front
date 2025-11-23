@@ -24,6 +24,9 @@ interface SettingsPanelProps {
   knowledgeBases: KnowledgeBase[];
   loadingKnowledgeBases: boolean;
   onKnowledgeBasesUpdate: () => Promise<void>;
+  webhookUrl: string;
+  loadingWebhook: boolean;
+  onWebhookUpdate: (url: string | null) => Promise<void>;
 }
 
 export function SettingsPanel({
@@ -35,7 +38,10 @@ export function SettingsPanel({
   knowledgeBases,
   loadingKnowledgeBases,
   loadingLlms,
-  onKnowledgeBasesUpdate
+  onKnowledgeBasesUpdate,
+  webhookUrl,
+  loadingWebhook,
+  onWebhookUpdate
 }: SettingsPanelProps) {
   const [openSections, setOpenSections] = useState<string[]>([]);
 
@@ -76,7 +82,13 @@ export function SettingsPanel({
                   ) : section.id === 'speech' ? (
                     <SpeechSettings agent={agent} onAgentUpdate={onAgentUpdate} />
                   ) : section.id === 'webhook' ? (
-                    <WebhookSettings agent={agent} onAgentUpdate={onAgentUpdate} />
+                    <WebhookSettings
+                      agent={agent}
+                      onAgentUpdate={onAgentUpdate}
+                      webhookUrl={webhookUrl}
+                      loadingWebhook={loadingWebhook}
+                      onWebhookUpdate={onWebhookUpdate}
+                    />
                   ) : section.id === 'analysis' ? (
                     <PostCallAnalysis
                       agent={agent}

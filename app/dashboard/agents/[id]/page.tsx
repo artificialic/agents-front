@@ -21,6 +21,8 @@ export default function AgentConfigPage() {
   const [loadingKnowledgeBases, setLoadingKnowledgeBases] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [dynamicVariables, setDynamicVariables] = useState<DynamicVariable[]>([]);
+  const [webhookUrl, setWebhookUrl] = useState<string>('');
+  const [loadingWebhook, setLoadingWebhook] = useState(false);
 
   useEffect(() => {
     const fetchLlms = async () => {
@@ -76,6 +78,7 @@ export default function AgentConfigPage() {
 
         const savedVariables = await dynamicVariablesStorage.load(id);
         setDynamicVariables(savedVariables);
+        await fetchWebhookUrl(id);
       } catch (error) {
         console.error('Error fetching agent:', error);
       } finally {
@@ -87,6 +90,31 @@ export default function AgentConfigPage() {
       fetchAgent();
     }
   }, [params.id]);
+
+  const fetchWebhookUrl = async (agentId: string) => {
+    try {
+      setLoadingWebhook(true);
+      const response = await apiService.getAgentWebhook(agentId);
+      // @ts-ignore
+      setWebhookUrl(response?.webhook_url || '');
+    } catch (error) {
+      console.error('Error fetching webhook URL:', error);
+      setWebhookUrl('');
+    } finally {
+      setLoadingWebhook(false);
+    }
+  };
+
+  const updateWebhookUrl = async (url: string | null) => {
+    try {
+      const id = params.id as string;
+      await apiService.saveAgentWebhook(id, url);
+      setWebhookUrl(url || '');
+    } catch (error) {
+      console.error('Error updating webhook URL:', error);
+      throw error;
+    }
+  };
 
   const refreshAgent = async () => {
     try {
@@ -206,6 +234,9 @@ export default function AgentConfigPage() {
             onKnowledgeBasesUpdate={refreshKnowledgeBases}
             llms={llms}
             loadingLlms={loadingLlms}
+            webhookUrl={webhookUrl}
+            loadingWebhook={loadingWebhook}
+            onWebhookUpdate={updateWebhookUrl}
           />
         </div>
         <div className="hidden w-1/4">

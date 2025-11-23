@@ -14,23 +14,33 @@ const SLIDER_CONFIGS = {
 interface WebhookSettingsProps {
   agent: Agent;
   onAgentUpdate: () => void;
+  webhookUrl: string;
+  loadingWebhook: boolean;
+  onWebhookUpdate: (url: string | null) => Promise<void>;
 }
 
-export function WebhookSettings({ agent, onAgentUpdate }: WebhookSettingsProps) {
-  const [webhookUrl, setWebhookUrl] = useState(agent.webhook_url || '');
-  const [originalWebhookUrl, setOriginalWebhookUrl] = useState(agent.webhook_url || '');
+export function WebhookSettings({
+  agent,
+  onAgentUpdate,
+  webhookUrl,
+  loadingWebhook,
+  onWebhookUpdate
+}: WebhookSettingsProps) {
+  const [localWebhookUrl, setLocalWebhookUrl] = useState(webhookUrl);
   const [webhookTimeout, setWebhookTimeout] = useState([agent.webhook_timeout_ms || 5000]);
 
+  if (webhookUrl !== localWebhookUrl && !loadingWebhook) {
+    setLocalWebhookUrl(webhookUrl);
+  }
+
   const handleWebhookUrlBlur = async () => {
-    if (webhookUrl !== originalWebhookUrl) {
+    if (localWebhookUrl !== webhookUrl) {
       try {
-        await apiService.updateAgent(agent.agent_id, {
-          webhook_url: webhookUrl.trim() || ''
-        });
-        setOriginalWebhookUrl(webhookUrl);
-        await onAgentUpdate();
+        const trimmedUrl = localWebhookUrl.trim();
+        await onWebhookUpdate(trimmedUrl || null);
       } catch (error) {
         console.error('Error updating webhook URL:', error);
+        setLocalWebhookUrl(webhookUrl);
       }
     }
   };
@@ -50,10 +60,11 @@ export function WebhookSettings({ agent, onAgentUpdate }: WebhookSettingsProps) 
         <div className="text-sm font-medium">URL de Webhook a Nivel de Agente</div>
         <div className="text-xs text-muted-foreground">URL de webhook para recibir eventos.</div>
         <Input
-          value={webhookUrl}
-          onChange={(e) => setWebhookUrl(e.target.value)}
+          value={localWebhookUrl}
+          onChange={(e) => setLocalWebhookUrl(e.target.value)}
           onBlur={handleWebhookUrlBlur}
-          placeholder=""
+          placeholder={loadingWebhook ? 'Cargando...' : ''}
+          disabled={loadingWebhook}
           className="w-full"
         />
       </div>
