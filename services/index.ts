@@ -23,6 +23,10 @@ class ApiServiceLocal extends ApiService {
     return this.getFullResponse<Client>('/auth/profile');
   }
 
+  async register(data: RegisterPayload): Promise<any> {
+    return this.post('/auth/register', data);
+  }
+
   async createPaymentSource(data: PaymentSourcePayload): Promise<any> {
     return this.post('/payments/payment-source', data);
   }

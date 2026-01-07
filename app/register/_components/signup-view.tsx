@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import UserAuthForm from './user-auth-form';
+import UserRegisterForm from './user-register-form';
 
-export default function SignInViewPage() {
+export default function SignUpViewPage() {
   return (
     <div className="relative h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
       <div className="hidden h-full flex-col bg-muted bg-zinc-900 p-10 dark:border-r lg:flex">
@@ -12,18 +12,18 @@ export default function SignInViewPage() {
       <div className="flex h-full items-center p-4 lg:p-8">
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
           <div className="flex flex-col space-y-2 text-center">
-            <h1 className="text-2xl font-semibold tracking-tight">Inicia sesión en tu cuenta</h1>
-            <p className="text-sm text-muted-foreground">Ingresa tu correo y contraseña para iniciar sesión</p>
+            <h1 className="text-2xl font-semibold tracking-tight">Crea tu cuenta</h1>
+            <p className="text-sm text-muted-foreground">Ingresa tus datos para crear una cuenta</p>
           </div>
-          <UserAuthForm />
+          <UserRegisterForm />
           <p className="px-8 text-center text-sm text-muted-foreground">
-            ¿No tienes una cuenta?{' '}
-            <Link href="/register" className="underline underline-offset-4 hover:text-primary">
-              Regístrate aquí
+            ¿Ya tienes una cuenta?{' '}
+            <Link href="/login" className="underline underline-offset-4 hover:text-primary">
+              Inicia sesión aquí
             </Link>
           </p>
           <p className="px-8 text-center text-sm text-muted-foreground">
-            Al hacer clic en continuar, aceptas nuestros{' '}
+            Al hacer clic en crear cuenta, aceptas nuestros{' '}
             <Link href="/terms" className="underline underline-offset-4 hover:text-primary">
               Términos de Servicio
             </Link>{' '}

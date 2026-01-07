@@ -32,8 +32,16 @@ export default function DashboardPage() {
         // @ts-ignore
         setDashboardStats(response);
       })
-      .catch((error) => {
-        console.error(error);
+      .catch(() => {
+        setDashboardStats({
+          campaignsCount: 0,
+          callsCount: 0,
+          transactionsSum: 0,
+          totalCallDuration: '0:00',
+          retellCalls: 0,
+          userSentimentStats: { Positive: 0, Negative: 0, Neutral: 0, Unknown: 0 },
+          callDirectionStats: { Unknown: 0, inbound: 0, outbound: 0 }
+        });
       });
   }, []);
 

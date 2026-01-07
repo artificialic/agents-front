@@ -176,7 +176,6 @@ class ApiService {
       originalError: error
     };
 
-    console.error('API Error:', errorResponse);
     return errorResponse;
   }
 
