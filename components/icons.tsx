@@ -22,6 +22,7 @@ import {
   Moon,
   MoreVertical,
   Pizza,
+  PlayCircle,
   Plus,
   Settings,
   SunMedium,
@@ -96,5 +97,6 @@ export const Icons = {
   billingAlt: Receipt,
   templates: Copy,
   phoneNumbers: Hash,
-  fileStack: FileStack
+  fileStack: FileStack,
+  playCircle: PlayCircle
 };

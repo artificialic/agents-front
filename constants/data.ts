@@ -52,6 +52,15 @@ export const navItems: NavItem[] = [
     role: [ROLES.USER]
   },
   {
+    title: 'Probar agentes',
+    url: '/dashboard/demos',
+    icon: 'playCircle',
+    isActive: true,
+    shortcut: ['d', 'e'],
+    items: [],
+    role: [ROLES.USER]
+  },
+  {
     title: 'Base de Conocimientos',
     url: '/dashboard/knowledge-bases',
     icon: 'fileStack',

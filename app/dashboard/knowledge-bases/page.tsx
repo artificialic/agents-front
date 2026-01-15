@@ -74,6 +74,10 @@ export default function KnowledgeBasesManagement() {
   const [showEditDropdown, setShowEditDropdown] = useState(false);
   const [deletingSourceId, setDeletingSourceId] = useState<string | null>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
+  const [showAddTextModal, setShowAddTextModal] = useState(false);
+  const [textFileName, setTextFileName] = useState('');
+  const [textContent, setTextContent] = useState('');
+  const [isCreatingMode, setIsCreatingMode] = useState(true);
 
   const fetchKnowledgeBases = async () => {
     try {
@@ -389,9 +393,10 @@ export default function KnowledgeBasesManagement() {
     );
   };
 
-  const getFileExtension = (filename: string) => {
+  const getFileExtension = (filename: string | undefined) => {
+    if (!filename) return '-';
     const parts = filename.split('.');
-    return parts.length > 1 ? parts[parts.length - 1].toUpperCase() : 'FILE';
+    return parts.length > 1 ? parts[parts.length - 1].toUpperCase() : '-';
   };
 
   const getFileColor = (extension: string) => {
@@ -461,8 +466,8 @@ export default function KnowledgeBasesManagement() {
     <div className="flex h-screen">
       <div className="w-64 border-r border-gray-200 bg-white">
         <div className="flex items-center justify-between border-b border-gray-200 p-4">
-          <h2 className="text-lg font-semibold">Base de Conocimiento</h2>
-          <Button size="sm" onClick={handleOpenCreateModal} className="h-8 w-8 rounded-full p-0">
+          <h2 className="text-base font-semibold">Base de Conocimiento</h2>
+          <Button size="sm" onClick={handleOpenCreateModal} className="h-6 w-6 rounded-full p-0 text-sm">
             +
           </Button>
         </div>
@@ -539,29 +544,26 @@ export default function KnowledgeBasesManagement() {
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <div
+                  <button
                     onClick={handleOpenEditModal}
-                    className="relative inline-flex h-9 items-center justify-center gap-1 rounded-lg border border-white p-2 shadow hover:bg-primary/90"
-                    style={{ cursor: 'pointer', backgroundColor: 'var(--bg-strong-950)' }}
+                    className="inline-flex h-9 items-center justify-center gap-1 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white shadow transition-colors hover:bg-gray-800"
                   >
-                    <div className="flex items-center justify-center px-1" style={{ cursor: 'pointer' }}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
-                        <path
-                          d="M5.23023 11.7L12.0761 4.85415L11.1216 3.8997L4.27578 10.7455V11.7H5.23023ZM5.78981 13.05H2.92578V10.186L10.6444 2.46735C10.771 2.3408 10.9426 2.26971 11.1216 2.26971C11.3006 2.26971 11.4723 2.3408 11.5989 2.46735L13.5084 4.37692C13.635 4.5035 13.7061 4.67516 13.7061 4.85415C13.7061 5.03313 13.635 5.20479 13.5084 5.33137L5.78981 13.05ZM2.92578 14.4H15.0758V15.75H2.92578V14.4Z"
-                          fill="var(--icon-white-0)"
-                        />
-                      </svg>
-                      <div className="text-text-white-0 ml-1 text-sm font-medium leading-tight">Editar</div>
-                    </div>
-                  </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                      <path
+                        d="M5.23023 11.7L12.0761 4.85415L11.1216 3.8997L4.27578 10.7455V11.7H5.23023ZM5.78981 13.05H2.92578V10.186L10.6444 2.46735C10.771 2.3408 10.9426 2.26971 11.1216 2.26971C11.3006 2.26971 11.4723 2.3408 11.5989 2.46735L13.5084 4.37692C13.635 4.5035 13.7061 4.67516 13.7061 4.85415C13.7061 5.03313 13.635 5.20479 13.5084 5.33137L5.78981 13.05ZM2.92578 14.4H15.0758V15.75H2.92578V14.4Z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                    <span>Editar</span>
+                  </button>
                   <button
                     onClick={() => setShowDeleteDialog(true)}
-                    className="flex h-9 w-10 items-center justify-center whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                    className="flex h-9 w-10 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
                       <path
                         d="M13.75 5.5H17.5V7H16V16.75C16 16.9489 15.921 17.1397 15.7803 17.2803C15.6397 17.421 15.4489 17.5 15.25 17.5H4.75C4.55109 17.5 4.36032 17.421 4.21967 17.2803C4.07902 17.1397 4 16.9489 4 16.75V7H2.5V5.5H6.25V3.25C6.25 3.05109 6.32902 2.86032 6.46967 2.71967C6.61032 2.57902 6.80109 2.5 7 2.5H13C13.1989 2.5 13.3897 2.57902 13.5303 2.71967C13.671 2.86032 13.75 3.05109 13.75 3.25V5.5ZM14.5 7H5.5V16H14.5V7ZM7.75 9.25H9.25V13.75H7.75V9.25ZM10.75 9.25H12.25V13.75H10.75V9.25ZM7.75 4V5.5H12.25V4H7.75Z"
-                        fill="#525866"
+                        fill="currentColor"
                       />
                     </svg>
                   </button>
@@ -610,7 +612,7 @@ export default function KnowledgeBasesManagement() {
                         </div>
                         <div className="flex flex-grow flex-col items-start justify-start gap-1">
                           <div className="text-text-strong-950 w-full text-sm font-medium leading-tight">
-                            {source.filename}
+                            {source.filename || 'Sin nombre'}
                           </div>
                           <div className="flex w-full items-center justify-start gap-1">
                             <div className="text-text-sub-600 text-xs font-normal leading-none">
@@ -678,7 +680,8 @@ export default function KnowledgeBasesManagement() {
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M9.99956 8.93949L13.7121 5.22699L14.7726 6.28749L11.0601 9.99999L14.7726 13.7125L13.7121 14.773L9.99956 11.0605L6.28706 14.773L5.22656 13.7125L8.93906 9.99999L5.22656 6.28749L6.28706 5.22699L9.99956 8.93949Z"
-                  fill="var(--icon-sub-600)"
+                  fill="currentColor"
+                  className="text-gray-600"
                 />
               </svg>
             </button>
@@ -770,7 +773,8 @@ export default function KnowledgeBasesManagement() {
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
                           <path
                             d="M12.375 4.95H15.75V6.3H14.4V15.075C14.4 15.254 14.3289 15.4257 14.2023 15.5523C14.0757 15.6789 13.904 15.75 13.725 15.75H4.275C4.09598 15.75 3.92429 15.6789 3.7977 15.5523C3.67112 15.4257 3.6 15.254 3.6 15.075V6.3H2.25V4.95H5.625V2.925C5.625 2.74598 5.69612 2.57429 5.8227 2.4477C5.94929 2.32112 6.12098 2.25 6.3 2.25H11.7C11.879 2.25 12.0507 2.32112 12.1773 2.4477C12.3039 2.57429 12.375 2.74598 12.375 2.925V4.95ZM13.05 6.3H4.95V14.4H13.05V6.3ZM6.975 8.325H8.325V12.375H6.975V8.325ZM9.675 8.325H11.025V12.375H9.675V8.325ZM6.975 3.6V4.95H11.025V3.6H6.975Z"
-                            fill="var(--icon-sub-600)"
+                            fill="currentColor"
+                  className="text-gray-600"
                           />
                         </svg>
                       </button>
@@ -877,12 +881,12 @@ export default function KnowledgeBasesManagement() {
                               textAnchor="middle"
                               dominantBaseline="middle"
                             >
-                              {source.filename.split('.').pop()?.toUpperCase().substring(0, 4) || 'FILE'}
+                              {source.filename?.split('.').pop()?.toUpperCase().substring(0, 4) || 'FILE'}
                             </text>
                           </svg>
                         </div>
                         <div className="flex flex-col gap-1">
-                          <div className="text-sm font-medium leading-tight text-[#0d111b]">{source.filename}</div>
+                          <div className="text-sm font-medium leading-tight text-[#0d111b]">{source.filename || 'Sin nombre'}</div>
                           <div className="text-xs font-normal leading-none text-[#525866]">
                             {formatFileSize(source.file_size)}
                           </div>
@@ -954,7 +958,8 @@ export default function KnowledgeBasesManagement() {
                             >
                               <path
                                 d="M10.7949 7.08249L11.8562 8.14374C12.3438 8.63126 12.7305 9.21004 12.9944 9.84703C13.2583 10.484 13.3941 11.1668 13.3941 11.8562C13.3941 12.5457 13.2583 13.2285 12.9944 13.8655C12.7305 14.5024 12.3438 15.0812 11.8562 15.5687L11.5907 15.8335C10.6061 16.8181 9.27066 17.3713 7.8782 17.3713C6.48574 17.3713 5.15031 16.8181 4.1657 15.8335C3.18108 14.8489 2.62793 13.5134 2.62793 12.121C2.62793 10.7285 3.18108 9.39311 4.1657 8.40849L5.22695 9.46974C4.87622 9.81741 4.59763 10.2309 4.40714 10.6865C4.21666 11.1422 4.11805 11.6309 4.11697 12.1248C4.11589 12.6186 4.21236 13.1078 4.40084 13.5642C4.58933 14.0207 4.86611 14.4354 5.21531 14.7846C5.56451 15.1338 5.97924 15.4106 6.43569 15.5991C6.89214 15.7876 7.38133 15.8841 7.87517 15.883C8.36901 15.8819 8.85777 15.7833 9.31339 15.5928C9.76902 15.4023 10.1825 15.1237 10.5302 14.773L10.7957 14.5075C11.4987 13.8043 11.8936 12.8506 11.8936 11.8562C11.8936 10.8619 11.4987 9.90822 10.7957 9.20499L9.73445 8.14374L10.7957 7.08324L10.7949 7.08249ZM15.8334 11.5907L14.7729 10.5302C15.1237 10.1826 15.4023 9.76906 15.5927 9.31344C15.7832 8.85781 15.8818 8.36905 15.8829 7.87521C15.884 7.38138 15.7875 6.89219 15.5991 6.43573C15.4106 5.97928 15.1338 5.56455 14.7846 5.21535C14.4354 4.86616 14.0207 4.58937 13.5642 4.40089C13.1077 4.2124 12.6186 4.11593 12.1247 4.11701C11.6309 4.11809 11.1421 4.21671 10.6865 4.40719C10.2309 4.59767 9.81736 4.87627 9.4697 5.22699L9.2042 5.49249C8.50118 6.19572 8.10625 7.14937 8.10625 8.14374C8.10625 9.13811 8.50118 10.0918 9.2042 10.795L10.2654 11.8562L9.2042 12.9167L8.1437 11.8562C7.65613 11.3687 7.26937 10.7899 7.0055 10.153C6.74163 9.51596 6.60582 8.83323 6.60582 8.14374C6.60582 7.45426 6.74163 6.77152 7.0055 6.13453C7.26937 5.49754 7.65613 4.91876 8.1437 4.43124L8.4092 4.16649C9.39381 3.18187 10.7292 2.62872 12.1217 2.62872C13.5142 2.62872 14.8496 3.18187 15.8342 4.16649C16.8188 5.15111 17.372 6.48653 17.372 7.87899C17.372 9.27145 16.8188 10.6069 15.8342 11.5915L15.8334 11.5907Z"
-                                fill="var(--icon-sub-600)"
+                                fill="currentColor"
+                  className="text-gray-600"
                               />
                             </svg>
                           </div>
@@ -996,7 +1001,11 @@ export default function KnowledgeBasesManagement() {
                         </div>
 
                         <div
-                          onClick={() => setShowEditDropdown(false)}
+                          onClick={() => {
+                            setShowEditDropdown(false);
+                            setIsCreatingMode(false);
+                            setShowAddTextModal(true);
+                          }}
                           className="flex w-full cursor-pointer items-center justify-start gap-2 rounded-lg bg-white p-2 hover:bg-gray-50"
                         >
                           <div className="flex items-center justify-center gap-2.5 rounded-full border border-[#e1e3e9] p-2.5 shadow">
@@ -1079,7 +1088,8 @@ export default function KnowledgeBasesManagement() {
                             >
                               <path
                                 d="M12.375 4.95H15.75V6.3H14.4V15.075C14.4 15.254 14.3289 15.4257 14.2023 15.5523C14.0757 15.6789 13.904 15.75 13.725 15.75H4.275C4.09598 15.75 3.92429 15.6789 3.7977 15.5523C3.67112 15.4257 3.6 15.254 3.6 15.075V6.3H2.25V4.95H5.625V2.925C5.625 2.74598 5.69612 2.57429 5.8227 2.4477C5.94929 2.32112 6.12098 2.25 6.3 2.25H11.7C11.879 2.25 12.0507 2.32112 12.1773 2.4477C12.3039 2.57429 12.375 2.74598 12.375 2.925V4.95ZM13.05 6.3H4.95V14.4H13.05V6.3ZM6.975 8.325H8.325V12.375H6.975V8.325ZM9.675 8.325H11.025V12.375H9.675V8.325ZM6.975 3.6V4.95H11.025V3.6H6.975Z"
-                                fill="var(--icon-sub-600)"
+                                fill="currentColor"
+                  className="text-gray-600"
                               />
                             </svg>
                           </button>
@@ -1148,7 +1158,8 @@ export default function KnowledgeBasesManagement() {
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
                     d="M10.7949 7.08249L11.8562 8.14374C12.3438 8.63126 12.7305 9.21004 12.9944 9.84703C13.2583 10.484 13.3941 11.1668 13.3941 11.8562C13.3941 12.5457 13.2583 13.2285 12.9944 13.8655C12.7305 14.5024 12.3438 15.0812 11.8562 15.5687L11.5907 15.8335C10.6061 16.8181 9.27066 17.3713 7.8782 17.3713C6.48574 17.3713 5.15031 16.8181 4.1657 15.8335C3.18108 14.8489 2.62793 13.5134 2.62793 12.121C2.62793 10.7285 3.18108 9.39311 4.1657 8.40849L5.22695 9.46974C4.87622 9.81741 4.59763 10.2309 4.40714 10.6865C4.21666 11.1422 4.11805 11.6309 4.11697 12.1248C4.11589 12.6186 4.21236 13.1078 4.40084 13.5642C4.58933 14.0207 4.86611 14.4354 5.21531 14.7846C5.56451 15.1338 5.97924 15.4106 6.43569 15.5991C6.89214 15.7876 7.38133 15.8841 7.87517 15.883C8.36901 15.8819 8.85777 15.7833 9.31339 15.5928C9.76902 15.4023 10.1825 15.1237 10.5302 14.773L10.7957 14.5075C11.4987 13.8043 11.8936 12.8506 11.8936 11.8562C11.8936 10.8619 11.4987 9.90822 10.7957 9.20499L9.73445 8.14374L10.7957 7.08324L10.7949 7.08249ZM15.8334 11.5907L14.7729 10.5302C15.1237 10.1826 15.4023 9.76906 15.5927 9.31344C15.7832 8.85781 15.8818 8.36905 15.8829 7.87521C15.884 7.38138 15.7875 6.89219 15.5991 6.43573C15.4106 5.97928 15.1338 5.56455 14.7846 5.21535C14.4354 4.86616 14.0207 4.58937 13.5642 4.40089C13.1077 4.2124 12.6186 4.11593 12.1247 4.11701C11.6309 4.11809 11.1421 4.21671 10.6865 4.40719C10.2309 4.59767 9.81736 4.87627 9.4697 5.22699L9.2042 5.49249C8.50118 6.19572 8.10625 7.14937 8.10625 8.14374C8.10625 9.13811 8.50118 10.0918 9.2042 10.795L10.2654 11.8562L9.2042 12.9167L8.1437 11.8562C7.65613 11.3687 7.26937 10.7899 7.0055 10.153C6.74163 9.51596 6.60582 8.83323 6.60582 8.14374C6.60582 7.45426 6.74163 6.77152 7.0055 6.13453C7.26937 5.49754 7.65613 4.91876 8.1437 4.43124L8.4092 4.16649C9.39381 3.18187 10.7292 2.62872 12.1217 2.62872C13.5142 2.62872 14.8496 3.18187 15.8342 4.16649C16.8188 5.15111 17.372 6.48653 17.372 7.87899C17.372 9.27145 16.8188 10.6069 15.8342 11.5915L15.8334 11.5907Z"
-                    fill="var(--icon-sub-600)"
+                    fill="currentColor"
+                  className="text-gray-600"
                   />
                 </svg>
               </div>
@@ -1184,6 +1195,8 @@ export default function KnowledgeBasesManagement() {
             <div
               onClick={() => {
                 setShowAddOptionsModal(false);
+                setIsCreatingMode(true);
+                setShowAddTextModal(true);
               }}
               className="flex w-full cursor-pointer items-center justify-start gap-2 rounded-lg bg-white p-2 hover:bg-gray-50"
             >
@@ -1200,6 +1213,107 @@ export default function KnowledgeBasesManagement() {
                 <div className="text-text-sub-600 text-xs font-normal">Agregar artículos manualmente</div>
               </div>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showAddTextModal} onOpenChange={(open) => {
+        if (!open) {
+          setShowAddTextModal(false);
+          setTextFileName('');
+          setTextContent('');
+        }
+      }}>
+        <DialogContent className="flex max-h-[90vh] w-[840px] flex-col overflow-visible rounded-[10px] border border-gray-200 bg-white p-0 shadow-md">
+          <div className="sticky top-0 z-10 flex items-center justify-between bg-white px-5 pt-4">
+            <div className="text-text-strong-950 text-lg font-medium leading-normal">Agregar Texto</div>
+            <button
+              onClick={() => {
+                setShowAddTextModal(false);
+                setTextFileName('');
+                setTextContent('');
+              }}
+              className="ml-auto text-sm font-medium text-[#0d111b]"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M9.99956 8.93949L13.7121 5.22699L14.7726 6.28749L11.0601 9.99999L14.7726 13.7125L13.7121 14.773L9.99956 11.0605L6.28706 14.773L5.22656 13.7125L8.93906 9.99999L5.22656 6.28749L6.28706 5.22699L9.99956 8.93949Z"
+                  fill="currentColor"
+                  className="text-gray-600"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-5">
+            <div className="mt-5 flex h-16 flex-col gap-1">
+              <div className="text-text-strong-950 text-sm font-medium leading-normal">Nombre del archivo</div>
+              <input
+                type="text"
+                value={textFileName}
+                onChange={(e) => setTextFileName(e.target.value)}
+                placeholder="Ingresa el nombre del archivo"
+                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <div className="text-text-strong-950 text-sm font-medium leading-normal">Contenido del texto</div>
+              <textarea
+                value={textContent}
+                onChange={(e) => setTextContent(e.target.value)}
+                placeholder="Ingresa el contenido del texto"
+                rows={12}
+                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+              />
+            </div>
+          </div>
+
+          <div className="sticky bottom-0 flex items-center justify-end gap-3 border-t border-gray-200 bg-white px-5 py-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowAddTextModal(false);
+                setTextFileName('');
+                setTextContent('');
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                if (!textFileName.trim() || !textContent.trim()) {
+                  alert('Por favor ingresa un nombre y contenido para el texto');
+                  return;
+                }
+
+                const newDoc: Document = {
+                  id: Math.random().toString(36).substr(2, 9),
+                  type: 'text',
+                  name: textFileName,
+                  content: textContent
+                };
+
+                if (isCreatingMode) {
+                  setNewKnowledgeBaseData(prev => ({
+                    ...prev,
+                    documents: [...prev.documents, newDoc]
+                  }));
+                } else {
+                  setEditKnowledgeBaseData(prev => ({
+                    ...prev,
+                    documents: [...prev.documents, newDoc]
+                  }));
+                }
+
+                setShowAddTextModal(false);
+                setTextFileName('');
+                setTextContent('');
+              }}
+              className="bg-gray-900 text-white hover:bg-gray-800"
+            >
+              Guardar
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

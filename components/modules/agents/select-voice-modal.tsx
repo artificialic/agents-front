@@ -117,7 +117,7 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
   };
 
   const handlePlayCommunityVoice = (voice: any) => {
-    if (playingVoiceId === voice.voice_id) {
+    if (playingVoiceId === voice.provider_voice_id) {
       if (audioElement) {
         audioElement.pause();
         setPlayingVoiceId(null);
@@ -134,7 +134,7 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
       audio.play();
       audio.onended = () => setPlayingVoiceId(null);
       setAudioElement(audio);
-      setPlayingVoiceId(voice.voice_id);
+      setPlayingVoiceId(voice.provider_voice_id);
     }
   };
 
@@ -149,8 +149,8 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
     try {
       setLoadingCommunityVoices(true);
       const response = await apiService.addCommunityVoice({
-        provider_voice_id: selectedCommunityVoice.voice_id,
-        public_user_id: selectedCommunityVoice.public_owner_id,
+        provider_voice_id: selectedCommunityVoice.provider_voice_id,
+        public_user_id: selectedCommunityVoice.public_user_id,
         voice_name: editableVoiceName
       });
 
@@ -161,8 +161,10 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
       setEditableVoiceName('');
       setCommunityVoices([]);
       setCommunitySearchQuery('');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding community voice:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      alert(`Error al agregar voz: ${error.response?.data?.message || error.message}`);
     } finally {
       setLoadingCommunityVoices(false);
     }
@@ -488,7 +490,7 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
                     ) : communityVoices.length > 0 ? (
                       <div className="divide-y">
                         {communityVoices.map((voice) => (
-                          <div key={voice.voice_id} className="p-4 transition-colors hover:bg-muted/50">
+                          <div key={voice.provider_voice_id} className="p-4 transition-colors hover:bg-muted/50">
                             <div className="flex items-start gap-4">
                               <button
                                 onClick={(e) => {
@@ -497,7 +499,7 @@ export function SelectVoiceModal({ open, onOpenChange, currentVoiceId, onSelectV
                                 }}
                                 className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-muted-foreground hover:text-background"
                               >
-                                {playingVoiceId === voice.voice_id ? (
+                                {playingVoiceId === voice.provider_voice_id ? (
                                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                     <rect x="6" y="4" width="4" height="16" rx="1" />
                                     <rect x="14" y="4" width="4" height="16" rx="1" />
