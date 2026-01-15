@@ -11,14 +11,7 @@ import { ClientTable } from './ClientTable';
 import { ClientModal } from './ClientModal';
 import TransactionHistoryTable from '@/components/modules/billing/transaction-history-table';
 import { apiService } from '@/services';
-
-type Client = {
-  _id: string;
-  firstName?: string;
-  name?: string;
-  email: string;
-  workspaceId?: string;
-};
+import { Client } from '@/types/client';
 
 type ClientFormData = {
   firstName: string;
@@ -115,6 +108,7 @@ export default function Clients() {
           firstName: formData.firstName,
           email: formData.email,
           workspaceId: formData.workspaceId,
+          ...(formData.balance !== undefined ? { balance: formData.balance } : {}),
           ...(formData.billingConfig ? { billingConfig: formData.billingConfig } : {})
         };
         await apiService.updateClient(editingClient._id, updateData);

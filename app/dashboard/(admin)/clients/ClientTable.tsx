@@ -1,16 +1,7 @@
 import { Eye, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-
-type Client = {
-  _id: string;
-  firstName?: string;
-  email: string;
-  workspaceId?: string;
-  billingConfig?: {
-    multiplier: number;
-  };
-};
+import { Client } from '@/types/client';
 
 interface ClientTableProps {
   clients: Client[];
@@ -26,7 +17,9 @@ export function ClientTable({ clients, onEditClient, onViewTransactions }: Clien
           <TableRow>
             <TableHead>Nombre</TableHead>
             <TableHead>Email</TableHead>
+            <TableHead>Teléfono</TableHead>
             <TableHead>Workspace ID</TableHead>
+            <TableHead>Saldo</TableHead>
             <TableHead>Multiplicador</TableHead>
             <TableHead>Acciones</TableHead>
           </TableRow>
@@ -34,7 +27,7 @@ export function ClientTable({ clients, onEditClient, onViewTransactions }: Clien
         <TableBody>
           {clients.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center">
+              <TableCell colSpan={7} className="h-24 text-center">
                 No hay clientes registrados.
               </TableCell>
             </TableRow>
@@ -43,7 +36,11 @@ export function ClientTable({ clients, onEditClient, onViewTransactions }: Clien
               <TableRow key={client._id}>
                 <TableCell className="font-medium">{client.firstName}</TableCell>
                 <TableCell>{client.email}</TableCell>
+                <TableCell>{client.phone || 'No especificado'}</TableCell>
                 <TableCell>{client.workspaceId || 'No especificado'}</TableCell>
+                <TableCell>
+                  <span className="font-mono">${client.balance?.toFixed(2) || '0.00'}</span>
+                </TableCell>
                 <TableCell>
                   <span className="font-mono">
                     {client.billingConfig?.multiplier?.toFixed(1) || 'No especificado'}x

@@ -13,6 +13,7 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Client } from '@/types/client';
 
 const ClientSchema = z.object({
   firstName: z
@@ -34,6 +35,9 @@ const ClientSchema = z.object({
     }),
   password: z.string().optional(),
   apiKey: z.string().min(1, { message: 'La API Key es requerida.' }),
+  balance: z.number().min(0, {
+    message: 'El saldo debe ser mayor o igual a 0.'
+  }),
   billingConfig: z.object({
     multiplier: z.number().min(1.0, {
       message: 'El multiplicador debe ser mayor o igual a 1.0 (sin markup).'
@@ -42,18 +46,6 @@ const ClientSchema = z.object({
 });
 
 type ClientFormData = z.infer<typeof ClientSchema>;
-
-type Client = {
-  _id: string;
-  firstName?: string;
-  name?: string;
-  email: string;
-  workspaceId?: string;
-  apiKey?: string;
-  billingConfig?: {
-    multiplier: number;
-  };
-};
 
 interface ClientModalProps {
   isOpen: boolean;
@@ -74,8 +66,9 @@ export function ClientModal({ isOpen, onClose, onSubmit, editingClient, isLoadin
       workspaceId: '',
       password: '',
       apiKey: '',
+      balance: 0,
       billingConfig: {
-        multiplier: 1.5 // 50% markup = 1.5x
+        multiplier: 1.5
       }
     }
   });
@@ -88,6 +81,7 @@ export function ClientModal({ isOpen, onClose, onSubmit, editingClient, isLoadin
         workspaceId: editingClient.workspaceId || '',
         password: '',
         apiKey: editingClient.apiKey || '',
+        balance: editingClient.balance || 0,
         billingConfig: {
           multiplier: editingClient.billingConfig?.multiplier || 1.5
         }
@@ -99,6 +93,7 @@ export function ClientModal({ isOpen, onClose, onSubmit, editingClient, isLoadin
         workspaceId: '',
         password: '',
         apiKey: '',
+        balance: 0,
         billingConfig: {
           multiplier: 1.5
         }
@@ -129,7 +124,7 @@ export function ClientModal({ isOpen, onClose, onSubmit, editingClient, isLoadin
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <DialogHeader>
@@ -208,6 +203,28 @@ export function ClientModal({ isOpen, onClose, onSubmit, editingClient, isLoadin
                       <Input placeholder="Ingresa la API Key" {...field} />
                     </FormControl>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="balance"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Saldo (USD)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        {...field}
+                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                    <p className="text-xs text-muted-foreground">Saldo disponible en dólares para realizar llamadas</p>
                   </FormItem>
                 )}
               />

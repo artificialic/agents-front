@@ -24,11 +24,21 @@ export default function SignUpViewPage() {
           </p>
           <p className="px-8 text-center text-sm text-muted-foreground">
             Al hacer clic en crear cuenta, aceptas nuestros{' '}
-            <Link href="/terms" className="underline underline-offset-4 hover:text-primary">
+            <Link
+              href="https://desarrollandoando.com/terminos-y-condiciones_desarrollando-ando-s-a-s/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-4 hover:text-primary"
+            >
               Términos de Servicio
             </Link>{' '}
             y{' '}
-            <Link href="/privacy" className="underline underline-offset-4 hover:text-primary">
+            <Link
+              href="https://desarrollandoando.com/politica-de-tratamiento-de-datos/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-4 hover:text-primary"
+            >
               Política de Privacidad
             </Link>
             .
