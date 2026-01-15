@@ -1,4 +1,4 @@
-import { Eye, Edit } from 'lucide-react';
+import { Eye, Edit, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Client } from '@/types/client';
@@ -19,6 +19,7 @@ export function ClientTable({ clients, onEditClient, onViewTransactions }: Clien
             <TableHead>Email</TableHead>
             <TableHead>Teléfono</TableHead>
             <TableHead>Workspace ID</TableHead>
+            <TableHead className="text-center">API Key</TableHead>
             <TableHead>Saldo</TableHead>
             <TableHead>Multiplicador</TableHead>
             <TableHead>Acciones</TableHead>
@@ -27,7 +28,7 @@ export function ClientTable({ clients, onEditClient, onViewTransactions }: Clien
         <TableBody>
           {clients.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="h-24 text-center">
+              <TableCell colSpan={8} className="h-24 text-center">
                 No hay clientes registrados.
               </TableCell>
             </TableRow>
@@ -38,6 +39,15 @@ export function ClientTable({ clients, onEditClient, onViewTransactions }: Clien
                 <TableCell>{client.email}</TableCell>
                 <TableCell>{client.phone || 'No especificado'}</TableCell>
                 <TableCell>{client.workspaceId || 'No especificado'}</TableCell>
+                <TableCell>
+                  <div className="flex justify-center">
+                    {client.apiKey ? (
+                      <Check className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <X className="h-4 w-4 text-red-600" />
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell>
                   <span className="font-mono">${client.balance?.toFixed(2) || '0.00'}</span>
                 </TableCell>

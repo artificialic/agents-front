@@ -108,6 +108,7 @@ export default function Clients() {
           firstName: formData.firstName,
           email: formData.email,
           workspaceId: formData.workspaceId,
+          apiKey: formData.apiKey,
           ...(formData.balance !== undefined ? { balance: formData.balance } : {}),
           ...(formData.billingConfig ? { billingConfig: formData.billingConfig } : {})
         };

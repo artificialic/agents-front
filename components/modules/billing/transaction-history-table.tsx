@@ -23,7 +23,8 @@ const getStatusLabel = (status: string): string => {
     APPROVED: 'Aprobado',
     PENDING: 'Pendiente',
     REJECTED: 'Rechazado',
-    FAILED: 'Fallido'
+    FAILED: 'Fallido',
+    completed: 'Completado'
   };
   return statusMap[status] || status;
 };
@@ -33,7 +34,8 @@ const getStatusStyle = (status: string): string => {
     APPROVED: 'bg-green-100 text-green-800',
     PENDING: 'bg-yellow-100 text-yellow-800',
     REJECTED: 'bg-red-100 text-red-800',
-    FAILED: 'bg-red-100 text-red-800'
+    FAILED: 'bg-red-100 text-red-800',
+    completed: 'bg-green-100 text-green-800'
   };
   return styleMap[status] || 'bg-gray-100 text-gray-800';
 };
