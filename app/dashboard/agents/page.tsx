@@ -115,7 +115,7 @@ export default function AgentsPage() {
               'Finaliza la llamada cuando el usuario tenga que irse (como dice adiós) o se te indique que lo hagas.'
           }
         ],
-        model: 'gpt-4.1'
+        model: 'gpt-4.1-mini'
       };
 
       if (data.agentType === 'multi-prompt') {

@@ -17,6 +17,11 @@ import { LANGUAGES } from '@/components/modules/agents/constants';
 import { PromptTreePreview } from './prompt-tree-preview';
 import { FlowEditorModal } from './flow-editor-modal';
 
+const MODEL_PRICES: Record<string, string> = {
+  'gpt-4.1-mini': '$0.135/min',
+  'gpt-4.1-nano': '$0.105/min'
+};
+
 interface AgentConfigurationProps {
   agent: Agent;
   llmId: string;
@@ -187,6 +192,15 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms, llm, onLlm
     setVoiceConfig({ ...originalVoiceConfig });
   };
 
+  const handleModelChange = async (newModel: string) => {
+    try {
+      await apiService.updateLlm(llmId, { model: newModel });
+      await onLlmUpdate();
+    } catch (error) {
+      console.error('Error updating model:', error);
+    }
+  };
+
   const handleLanguageChange = async (value: string) => {
     try {
       setSelectedLanguage(value);
@@ -342,7 +356,7 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms, llm, onLlm
       <div className="bg-white-0 flex min-h-full w-full flex-col rounded-lg p-4">
         <div className="flex items-center gap-3">
           <div className="flex-1">
-            <Select value={llmId}>
+            <Select value={llm?.model || ''} onValueChange={handleModelChange}>
               <SelectTrigger className="w-full">
                 <div className="flex items-center gap-2">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-foreground">
@@ -358,9 +372,9 @@ export function AgentConfiguration({ agent, llmId, llms, loadingLlms, llm, onLlm
                     Cargando...
                   </SelectItem>
                 ) : (
-                  llms.map((llm) => (
-                    <SelectItem key={llm.llm_id} value={llm.llm_id}>
-                      {llm.model}
+                  llms.map((llmOption) => (
+                    <SelectItem key={llmOption.model} value={llmOption.model}>
+                      {llmOption.model}
                     </SelectItem>
                   ))
                 )}

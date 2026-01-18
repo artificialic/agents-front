@@ -8,7 +8,19 @@ type BreadcrumbItem = {
   link: string;
 };
 
-// This allows to add custom title as well
+const segmentTranslations: Record<string, string> = {
+  dashboard: 'Dashboard',
+  agents: 'Agentes',
+  clients: 'Clientes',
+  overview: 'Overview',
+  'create-campaign': 'Crear Campaña',
+  'knowledge-bases': 'Bases de Conocimiento',
+  'phone-numbers': 'Teléfonos',
+  demos: 'Probar Agentes',
+  billing: 'Facturación',
+  settings: 'Configuración'
+};
+
 const routeMapping: Record<string, BreadcrumbItem[]> = {
   '/dashboard': [{ title: 'Dashboard', link: '/dashboard' }],
   '/dashboard/': [{ title: 'Panel', link: '/dashboard/' }],
@@ -35,6 +47,10 @@ const routeMapping: Record<string, BreadcrumbItem[]> = {
   '/dashboard/phone-numbers': [
     { title: 'Dashboard', link: '/dashboard' },
     { title: 'Teléfonos', link: '/dashboard/phone-numbers' }
+  ],
+  '/dashboard/demos': [
+    { title: 'Dashboard', link: '/dashboard' },
+    { title: 'Probar Agentes', link: '/dashboard/demos' }
   ]
 };
 
@@ -42,17 +58,43 @@ export function useBreadcrumbs() {
   const pathname = usePathname();
 
   const breadcrumbs = useMemo(() => {
-    // Check if we have a custom mapping for this exact path
     if (routeMapping[pathname]) {
       return routeMapping[pathname];
     }
 
-    // If no exact match, fall back to generating breadcrumbs from the path
     const segments = pathname.split('/').filter(Boolean);
+
+    if (segments.length > 2) {
+      const crumbs: BreadcrumbItem[] = [];
+
+      segments.forEach((segment, index) => {
+        const path = `/${segments.slice(0, index + 1).join('/')}`;
+
+        if (segment.startsWith('agent_') || segment.startsWith('llm_') || /^[0-9a-f-]+$/i.test(segment)) {
+          crumbs.push({
+            title: segment,
+            link: path
+          });
+          return;
+        }
+
+        const title = segmentTranslations[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
+
+        crumbs.push({
+          title,
+          link: path
+        });
+      });
+
+      return crumbs;
+    }
+
     return segments.map((segment, index) => {
       const path = `/${segments.slice(0, index + 1).join('/')}`;
+      const title = segmentTranslations[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
+
       return {
-        title: segment.charAt(0).toUpperCase() + segment.slice(1),
+        title,
         link: path
       };
     });

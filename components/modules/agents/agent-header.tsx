@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronLeft, Pencil, MoreHorizontal, RotateCcw, Copy } from 'lucide-react';
+import { ChevronLeft, Pencil, MoreHorizontal, RotateCcw, Copy, Clock } from 'lucide-react';
 import { apiService } from '@/services';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -15,12 +15,18 @@ interface AgentHeaderProps {
   agent: Agent;
   agentId: string;
   llmId: string;
+  llmModel?: string;
   onAgentUpdate: () => Promise<void>;
   onPublish: () => Promise<void>;
   onVersionChange?: (version: number) => Promise<void>;
 }
 
-export function AgentHeader({ agent, agentId, llmId, onAgentUpdate, onPublish, onVersionChange }: AgentHeaderProps) {
+const MODEL_PRICES: Record<string, string> = {
+  'gpt-4.1-mini': '$0.135/min',
+  'gpt-4.1-nano': '$0.105/min'
+};
+
+export function AgentHeader({ agent, agentId, llmId, llmModel, onAgentUpdate, onPublish, onVersionChange }: AgentHeaderProps) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(agent.agent_name || '');
@@ -160,6 +166,15 @@ export function AgentHeader({ agent, agentId, llmId, onAgentUpdate, onPublish, o
                     <Copy className="h-3 w-3" />
                   </button>
                 </span>
+                {llmModel && MODEL_PRICES[llmModel] && (
+                  <>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {MODEL_PRICES[llmModel]}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           </div>

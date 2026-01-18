@@ -30,11 +30,14 @@ export default function AgentConfigPage() {
         setLoadingLlms(true);
         const llmsResponse = await apiService.getLlms();
 
+        const allowedModels = ['gpt-4.1-mini', 'gpt-4.1-nano'];
         const llmMap = new Map<string, Llm>();
         llmsResponse.forEach((llm: Llm) => {
-          const existing = llmMap.get(llm.model);
-          if (!existing) {
-            llmMap.set(llm.model, llm);
+          if (allowedModels.includes(llm.model)) {
+            const existing = llmMap.get(llm.model);
+            if (!existing) {
+              llmMap.set(llm.model, llm);
+            }
           }
         });
 
@@ -227,6 +230,7 @@ export default function AgentConfigPage() {
         agent={agent}
         agentId={agent.agent_id}
         llmId={agent.response_engine.llm_id}
+        llmModel={llm?.model}
         onAgentUpdate={refreshAgent}
         onPublish={handlePublish}
         onVersionChange={handleVersionChange}
