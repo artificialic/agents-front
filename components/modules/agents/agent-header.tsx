@@ -171,7 +171,7 @@ export function AgentHeader({ agent, agentId, llmId, llmModel, onAgentUpdate, on
                     <span>•</span>
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      {MODEL_PRICES[llmModel]}
+                      Costo x min {MODEL_PRICES[llmModel]}
                     </span>
                   </>
                 )}

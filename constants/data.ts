@@ -16,36 +16,18 @@ export const navItems: NavItem[] = [
     role: [ROLES.USER]
   },
   {
-    title: 'Campañas',
-    url: '/dashboard/campaign',
-    icon: 'campaigns',
-    isActive: true,
-    shortcut: ['c', 'l'],
-    items: [],
-    role: [ROLES.USER]
-  },
-  {
-    title: 'Historial de Llamadas',
-    url: '/dashboard/call-history',
-    icon: 'callHistory',
-    isActive: true,
-    shortcut: ['c', 'l'],
-    items: [],
-    role: [ROLES.USER]
-  },
-  {
-    title: 'Llamadas Entrantes',
-    url: '/dashboard/incoming-calls',
-    icon: 'incomingCalls',
-    isActive: true,
-    shortcut: ['c', 'l'],
-    items: [],
-    role: [ROLES.USER]
-  },
-  {
     title: 'Agentes',
     url: '/dashboard/agents',
     icon: 'user2',
+    isActive: true,
+    shortcut: ['c', 'l'],
+    items: [],
+    role: [ROLES.USER]
+  },
+  {
+    title: 'Base de Conocimientos',
+    url: '/dashboard/knowledge-bases',
+    icon: 'fileStack',
     isActive: true,
     shortcut: ['c', 'l'],
     items: [],
@@ -61,18 +43,45 @@ export const navItems: NavItem[] = [
     role: [ROLES.USER]
   },
   {
-    title: 'Base de Conocimientos',
-    url: '/dashboard/knowledge-bases',
-    icon: 'fileStack',
+    title: 'Números de teléfonos',
+    url: '/dashboard/phone-numbers',
+    icon: 'phoneNumbers',
     isActive: true,
     shortcut: ['c', 'l'],
     items: [],
     role: [ROLES.USER]
   },
   {
-    title: 'Números de teléfonos',
-    url: '/dashboard/phone-numbers',
-    icon: 'phoneNumbers',
+    title: 'Campañas',
+    url: '/dashboard/campaign',
+    icon: 'campaigns',
+    isActive: true,
+    shortcut: ['c', 'l'],
+    items: [],
+    role: [ROLES.USER]
+  },
+  {
+    title: 'Llamadas Entrantes',
+    url: '/dashboard/incoming-calls',
+    icon: 'incomingCalls',
+    isActive: true,
+    shortcut: ['c', 'l'],
+    items: [],
+    role: [ROLES.USER]
+  },
+  {
+    title: 'Historial de Llamadas',
+    url: '/dashboard/call-history',
+    icon: 'callHistory',
+    isActive: true,
+    shortcut: ['c', 'l'],
+    items: [],
+    role: [ROLES.USER]
+  },
+  {
+    title: 'Facturación',
+    url: '/dashboard/billing',
+    icon: 'billingAlt',
     isActive: true,
     shortcut: ['c', 'l'],
     items: [],
@@ -86,15 +95,6 @@ export const navItems: NavItem[] = [
     shortcut: ['c', 'l'],
     items: [],
     role: [ROLES.ADMIN]
-  },
-  {
-    title: 'Facturación',
-    url: '/dashboard/billing',
-    icon: 'billingAlt',
-    isActive: true,
-    shortcut: ['c', 'l'],
-    items: [],
-    role: [ROLES.USER]
   },
   {
     title: 'Plantillas',
